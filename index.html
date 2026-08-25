@@ -1,479 +1,1375 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>마음의 결 · 리딩 시트</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<title>승급심사 결과증</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#0A0710;color:#E7E1F0;font-family:'Noto Sans KR',sans-serif;
-    display:flex;flex-direction:column;align-items:center;padding-bottom:80px;}
-  .wrap{width:100%;max-width:760px;padding:0 20px;}
-  header{text-align:center;padding:60px 0 40px;}
-  .eyebrow{font-weight:300;font-size:13px;letter-spacing:.5em;text-indent:.5em;color:#C9A227;}
-  header h1{font-family:'Gowun Batang',serif;font-weight:700;font-size:40px;letter-spacing:.04em;
-    margin-top:18px;background:linear-gradient(175deg,#FBF3DC,#E6D6A4 46%,#A88418);
-    -webkit-background-clip:text;background-clip:text;color:transparent;}
-  header p{font-weight:300;font-size:15px;line-height:1.9;color:#A99BBC;margin-top:18px;}
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-  .step{border:1px solid rgba(201,162,39,.28);border-radius:12px;
-    background:rgba(255,255,255,.02);padding:24px 20px;margin-top:18px;}
-  .step h2{font-weight:400;font-size:16px;color:#E6D6A4;letter-spacing:.06em;
-    display:flex;align-items:center;gap:12px;}
-  .num{width:26px;height:26px;flex:none;border-radius:50%;border:1px solid rgba(201,162,39,.6);
-    display:flex;align-items:center;justify-content:center;font-size:13px;}
-  .step p{font-weight:300;font-size:14px;line-height:1.85;color:#A99BBC;margin-top:12px;}
-  .step p b{font-weight:500;color:#E7E1F0;}
-  .note{font-size:12.5px;color:#7E7290;margin-top:10px;line-height:1.8;}
+  :root{
+    --bg: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #ece7dc;
+    --ink: #201d18;
+    --ink-soft: #514c42;
+    --muted: #8b8477;
+    --line: #ddd5c4;
+    --accent: #a8742a;
+    --accent-ink: #6e4b19;
+    --accent-soft: #efe0c3;
+    --good: #3c7a4f;
+    --good-soft: #e2ede4;
+    --bad: #a53f3f;
+    --bad-soft: #f3e2e2;
+    --pending: #7a6a3f;
+    --pending-soft: #efe9d8;
+    --danger: #a53f3f;
+    --shadow: 0 1px 2px rgba(32,29,24,0.06), 0 8px 24px -12px rgba(32,29,24,0.18);
+  }
 
-  button{font-family:'Noto Sans KR',sans-serif;font-size:15px;border:none;
-    border-radius:8px;padding:15px 20px;cursor:pointer;width:100%;margin-top:12px;}
-  .gold{color:#1A1226;background:linear-gradient(175deg,#F3E6BE,#C9A227);font-weight:500;}
-  .ghost{color:#E6D6A4;background:transparent;border:1px solid rgba(201,162,39,.5);}
-  button:disabled{opacity:.5;cursor:default;}
-  textarea{width:100%;height:170px;margin-top:14px;background:#140E20;color:#E7E1F0;
-    border:1px solid rgba(201,162,39,.3);border-radius:8px;padding:14px;
-    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.6;
-    resize:vertical;outline:none;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #14120f;
+      --surface: #1d1a15;
+      --surface-2: #262119;
+      --ink: #ede7da;
+      --ink-soft: #c3bba9;
+      --muted: #8a8170;
+      --line: #372f24;
+      --accent: #d3a352;
+      --accent-ink: #f0cb87;
+      --accent-soft: #33290f;
+      --good: #7fbd93;
+      --good-soft: #1c2e21;
+      --bad: #d98080;
+      --bad-soft: #331e1e;
+      --pending: #d0be86;
+      --pending-soft: #2c2716;
+      --danger: #d98080;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #14120f;
+    --surface: #1d1a15;
+    --surface-2: #262119;
+    --ink: #ede7da;
+    --ink-soft: #c3bba9;
+    --muted: #8a8170;
+    --line: #372f24;
+    --accent: #d3a352;
+    --accent-ink: #f0cb87;
+    --accent-soft: #33290f;
+    --good: #7fbd93;
+    --good-soft: #1c2e21;
+    --bad: #d98080;
+    --bad-soft: #331e1e;
+    --pending: #d0be86;
+    --pending-soft: #2c2716;
+    --danger: #d98080;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
+  }
 
-  #slides{width:100%;max-width:560px;padding:26px 20px 0;display:flex;
-    flex-direction:column;gap:24px;}
-  #slides.swipe{flex-direction:row;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
-    padding-bottom:14px;scrollbar-width:none;}
-  #slides.swipe::-webkit-scrollbar{display:none;}
-  #slides.swipe .slide{flex:0 0 100%;scroll-snap-align:center;}
-  .slide{position:relative;}
-  #modeRow{width:100%;max-width:560px;padding:22px 20px 0;}
-  #mode{margin-top:0;}
-  #hint{text-align:center;font-size:12.5px;color:#7E7290;margin-top:10px;}
-  .slide canvas{display:block;width:100%;height:auto;border-radius:6px;}
-  .tag{position:absolute;top:10px;left:10px;font-size:11px;letter-spacing:.16em;
-    color:#E6D6A4;background:rgba(10,7,16,.72);border-radius:999px;padding:5px 11px;}
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a{ color: inherit; }
+  button{ font-family: inherit; }
+  input, select, textarea{ font-family: inherit; }
+
+  .wrap{
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  header.top{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .brand{ display:flex; flex-direction:column; gap:4px; }
+  .brand .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+  .brand h1{
+    font-family: "Noto Serif KR", serif;
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 30px);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .top .meta{
+    font-family:"IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .tabs{
+    display:flex;
+    gap: 4px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-btn{
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    margin-right: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    position: relative;
+    top: 1px;
+  }
+  .tab-btn.active{ color: var(--ink); border-bottom-color: var(--accent); }
+  .tab-btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .controls-row{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .controls-left{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
+  .controls-right{ display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
+
+  label.field-label{ font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+
+  select#studentSelect, .btn, input.field-input, select.field-input, textarea.field-input{
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 12px;
+  }
+  select#studentSelect{
+    font-weight: 500;
+    padding-right: 34px;
+    box-shadow: var(--shadow);
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
+  .btn{
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+  }
+  .btn:hover{ border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary{ background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover{ opacity: 0.92; color:#fff; }
+  .btn.ghost{ box-shadow: none; }
+  .btn.danger:hover{ border-color: var(--danger); color: var(--danger); }
+  select#studentSelect:focus-visible, .btn:focus-visible, input.field-input:focus-visible, select.field-input:focus-visible, textarea.field-input:focus-visible{
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .certificate{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .cert-head{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-start;
+    gap: 20px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .cert-id{ display:flex; align-items:center; gap: 18px; }
+  .avatar{ position: relative; flex: none; }
+  .photo-frame{
+    width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--line); background: var(--surface-2);
+    cursor: pointer; position: relative;
+  }
+  .photo-frame:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+  .photo-frame img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-frame .placeholder{
+    display:flex; align-items:center; justify-content:center; height:100%;
+    font-size: 10.5px; color: var(--muted); text-align:center; line-height:1.35; padding: 4px;
+  }
+  .photo-frame .remove-btn{
+    position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(20,17,12,0.6); color: #fff; font-size: 11px; line-height: 17px; text-align: center;
+    border: none; padding: 0; cursor: pointer; display: none;
+  }
+  .photo-frame:hover .remove-btn, .photo-frame:focus-within .remove-btn{ display: block; }
+  .belt-swatch{
+    position: absolute; right: -5px; bottom: -5px;
+    width: 24px; height: 24px; border-radius: 50%; flex: none;
+    border: 2px solid var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .cert-id h2{ font-family: "Noto Serif KR", serif; font-size: 24px; margin: 0 0 4px; }
+  .cert-id input.name-input{
+    font-family: "Noto Serif KR", serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    width: 220px;
+  }
+  .cert-id .sub{ font-size: 13px; color: var(--ink-soft); display:flex; gap: 14px; flex-wrap: wrap; align-items:center; }
+  .cert-id .sub span b{ color: var(--ink); font-weight:600; }
+  .cert-id .sub input.field-input, .cert-id .sub select.field-input{ padding: 5px 8px; font-size: 12.5px; width: 108px; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap: 8px;
+    padding: 8px 16px; border-radius: 999px;
+    font-weight: 700; font-size: 14px; letter-spacing: 0.02em; white-space: nowrap;
+  }
+  .badge .dot{ width:7px; height:7px; border-radius:50%; background: currentColor; }
+  .badge.pass{ background: var(--good-soft); color: var(--good); }
+  .badge.fail{ background: var(--bad-soft); color: var(--bad); }
+  .badge.pending{ background: var(--pending-soft); color: var(--pending); }
+  .badge.toggle{ cursor:pointer; border: none; }
+
+  .cert-body{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; }
+  @media (max-width: 720px){ .cert-body{ grid-template-columns: 1fr; } }
+
+  .panel{ padding: 28px 32px; }
+  .panel + .panel{ border-top: 1px solid var(--line); }
+  @media (min-width: 721px){ .panel + .panel{ border-top: none; border-left: 1px solid var(--line); } }
+
+  .panel h3{
+    font-family: "Noto Serif KR", serif; font-size: 15px; font-weight: 700; margin: 0 0 16px;
+    display:flex; align-items:center; gap: 8px;
+  }
+  .panel h3::before{ content:""; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; display:inline-block; }
+
+  table.scores{ width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 13px; }
+  table.scores td{ padding: 6px 0; border-bottom: 1px dashed var(--line); vertical-align: middle; }
+  table.scores td:first-child{ font-family: "Noto Sans KR", sans-serif; color: var(--ink-soft); font-size: 13px; }
+  table.scores td:last-child{ text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table.scores tr:last-child td{ border-bottom: none; }
+  table.scores tr.total td{ padding-top: 12px; border-top: 1px solid var(--line); border-bottom: none; font-weight: 700; color: var(--ink); }
+  table.scores tr.total td:last-child{ font-size: 16px; color: var(--accent-ink); }
+  input.score-input{
+    width: 56px; text-align: right; padding: 4px 6px; border-radius: 5px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600;
+  }
+
+  .radar-wrap{ display:flex; flex-direction: column; align-items: center; gap: 10px; }
+  .radar-wrap svg{ max-width: 260px; width: 100%; height: auto; }
+  .radar-legend{ font-family:"IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); text-align:center; }
+
+  .verdict{ padding: 24px 32px 28px; border-top: 1px solid var(--line); background: var(--surface-2); }
+  .verdict .grade-row{ display:flex; align-items: baseline; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+  .verdict .score-big{ font-family: "Noto Serif KR", serif; font-weight: 700; font-size: 40px; color: var(--accent-ink); line-height: 1; }
+  .verdict .score-big small{ font-family: "Noto Sans KR", sans-serif; font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .verdict .grade-chip{ font-family:"IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink-soft); }
+  .verdict textarea.field-input{ width: 100%; min-height: 64px; resize: vertical; font-size: 14px; }
+  .verdict p.comment{ white-space: pre-wrap; font-size: 14.5px; color: var(--ink-soft); margin: 0; border-left: 3px solid var(--accent); padding-left: 14px; }
+
+  footer.note{ margin-top: 22px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* --- roster / stats view --- */
+  .stat-cards{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 720px){ .stat-cards{ grid-template-columns: repeat(2,1fr); } }
+  .stat-card{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat-card .label{ font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .stat-card .value{ font-family: "Noto Serif KR", serif; font-size: 26px; font-weight: 700; color: var(--accent-ink); }
+
+  .roster-table-wrap{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); overflow-x: auto; }
+  table.roster{ width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.roster th, table.roster td{ padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.roster th{ font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+  table.roster tbody tr{ cursor: pointer; }
+  table.roster tbody tr:hover{ background: var(--surface-2); }
+  table.roster tbody tr:last-child td{ border-bottom: none; }
+  table.roster td.num{ text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+  .mini-badge{ display:inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .mini-badge.pass{ background: var(--good-soft); color: var(--good); }
+  .mini-badge.fail{ background: var(--bad-soft); color: var(--bad); }
+  .mini-badge.pending{ background: var(--pending-soft); color: var(--pending); }
+  .roster-thumb{ width: 30px; height: 30px; border-radius: 6px; object-fit: cover; display:block; border: 1px solid var(--line); }
+  .roster-thumb.placeholder{ background: var(--surface-2); }
+
+  /* --- modal --- */
+  .modal-backdrop{
+    position: fixed; inset: 0; background: rgba(20,17,12,0.55);
+    display:flex; align-items:center; justify-content:center; padding: 24px; z-index: 50;
+  }
+  .modal-backdrop[hidden]{ display:none; }
+  .modal{
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
+    padding: 26px 26px 22px;
+  }
+  .modal h3{ font-family:"Noto Serif KR", serif; font-size: 18px; margin: 0 0 18px; }
+  .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px 12px; margin-bottom: 16px; }
+  .modal-grid .full{ grid-column: 1 / -1; }
+  .modal-grid label{ font-size: 12px; color: var(--ink-soft); font-weight: 600; display:block; margin-bottom: 4px; }
+  .modal-grid input.field-input, .modal-grid textarea.field-input{ width: 100%; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+
+  .share-modal{ max-width: 420px; }
+  .share-preview-wrap{
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    min-height: 160px; display:flex; align-items:center; justify-content:center;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .share-preview-wrap img{ width: 100%; display:block; border-radius: 8px; }
+  .share-spinner{ font-size: 13px; color: var(--muted); padding: 40px 0; }
+  p.share-hint{ font-size: 12.5px; color: var(--ink-soft); margin: 0 0 4px; line-height: 1.5; }
+
+  /* --- print --- */
+  @media print{
+    body{ background: #fff; }
+    header.top, .tabs, .controls-row, footer.note, .modal-backdrop{ display: none !important; }
+    .wrap{ padding: 0; max-width: none; }
+    .certificate{ box-shadow: none; border: 1px solid #ccc; }
+    input.score-input, .cert-id input.field-input, .cert-id select.field-input{
+      border: none; background: transparent; color: inherit; padding: 0; width: auto;
+    }
+    .badge.toggle{ cursor: default; }
+    .photo-frame{ cursor: default; }
+    .photo-frame .remove-btn{ display: none !important; }
+  }
 </style>
-</head>
-<body>
 
 <div class="wrap">
-  <header>
-    <p class="eyebrow">마음의 결</p>
-    <h1>리딩 시트</h1>
-    <p>리딩을 넘겨 보는 카드 여러 장으로 만들어 줍니다.<br>1080 × 1350, 인스타그램 규격입니다.</p>
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Promotion Test Result</span>
+      <h1>승급심사 결과증</h1>
+    </div>
+    <div class="meta" id="todayMeta"></div>
   </header>
 
-  <div class="step">
-    <h2><span class="num">1</span>프롬프트 복사</h2>
-    <p>버튼을 눌러 복사한 뒤 쓰시는 AI 대화창에 붙여넣고,
-       <b>사연과 질문을 적고 마지막 줄에 카드 번호</b>를 적으세요.</p>
-    <button class="ghost" id="copyBtn">프롬프트 복사</button>
-    <p class="note">78장 덱 기준. 메이저 1~22, 완드 23~36, 컵 37~50, 검 51~64, 펜타클 65~78.</p>
+  <nav class="tabs">
+    <button class="tab-btn active" id="tabCertBtn" type="button">결과증</button>
+    <button class="tab-btn" id="tabRosterBtn" type="button">전체 명단 · 통계</button>
+  </nav>
+
+  <!-- 결과증 view -->
+  <div id="viewCert">
+    <div class="controls-row">
+      <div class="controls-left">
+        <label class="field-label" for="studentSelect">수련생 선택</label>
+        <select id="studentSelect"></select>
+      </div>
+      <div class="controls-right">
+        <button class="btn ghost" id="editToggleBtn" type="button">정보 수정</button>
+        <button class="btn ghost" id="deleteBtn" type="button">삭제</button>
+        <button class="btn ghost" id="printBtn" type="button">인쇄 / PDF</button>
+        <button class="btn ghost" id="shareBtn" type="button">JPG로 저장 · 공유</button>
+        <button class="btn primary" id="addStudentBtn" type="button">+ 새 수련생</button>
+      </div>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-head">
+        <div class="cert-id">
+          <div class="avatar">
+            <div class="photo-frame" id="photoFrame" role="button" tabindex="0" title="클릭해서 사진 업로드">
+              <div class="placeholder" id="photoPlaceholder">사진<br />추가</div>
+              <img id="photoImg" hidden alt="" />
+              <button class="remove-btn" id="photoRemoveBtn" type="button" title="사진 삭제">×</button>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" hidden />
+            <div class="belt-swatch" id="beltSwatch"></div>
+          </div>
+          <div>
+            <h2 id="studentNameView">-</h2>
+            <input class="field-input name-input" id="studentNameEdit" hidden />
+            <div class="sub" id="subInfo"></div>
+          </div>
+        </div>
+        <button class="badge toggle" id="statusBadge" type="button" title="클릭해서 채점 완료 여부 전환"><span class="dot"></span><span id="statusText">-</span></button>
+      </div>
+
+      <div class="cert-body">
+        <div class="panel">
+          <h3>항목별 점수 (10점 만점)</h3>
+          <table class="scores" id="scoreTable"></table>
+        </div>
+        <div class="panel">
+          <h3>육각형 점수</h3>
+          <div class="radar-wrap">
+            <svg id="radarChart" viewBox="0 0 220 220"></svg>
+            <div class="radar-legend">출석 · 감사노트 · 체력 · 발차기 · 겨루기 · 품새</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict">
+        <div class="grade-row">
+          <div class="score-big" id="finalScore">0<small>/ 100점</small></div>
+          <div class="grade-chip" id="gradeChip">등급 -</div>
+        </div>
+        <p class="comment" id="finalCommentView">학생을 선택하세요.</p>
+        <textarea class="field-input" id="finalCommentEdit" hidden placeholder="사범님 코멘트를 입력하세요"></textarea>
+      </div>
+    </div>
+
+    <footer class="note">
+      원본 &lsquo;심사체점시스템&rsquo; 엑셀의 체점표 · 급수기준 · 설문조사 시트 로직을 그대로 옮긴 페이지입니다.
+      점수·수련생 정보는 이 브라우저에만 저장되며(로컬 저장), 다른 기기·사용자와는 공유되지 않습니다.
+      상단 배지를 클릭하면 채점 완료 여부(심사 전 ↔ 합격/불합격)를 전환할 수 있습니다.
+    </footer>
   </div>
 
-  <div class="step">
-    <h2><span class="num">2</span>결과 붙여넣기</h2>
-    <p>AI가 만들어준 <b>const R = { … };</b> 전체를 붙여넣고 적용을 누르세요.</p>
-    <textarea id="ta" placeholder="const R = { ... };" spellcheck="false"></textarea>
-    <button class="gold" id="applyBtn">적용</button>
-  </div>
-
-  <div class="step">
-    <h2><span class="num">3</span>저장</h2>
-    <p>아래 미리보기가 그대로 저장됩니다.</p>
-    <button class="gold" id="dlAll">카드 전체 JPG로 저장</button>
-    <button class="ghost" id="dlPdf">한 파일 PDF로 저장</button>
-    <p class="note">전체 저장을 처음 누르면 브라우저가 "여러 파일 다운로드"를 물어봅니다. 허용을 눌러 주세요.
-       카드 한 장만 필요하면 그 이미지를 길게 누르거나 우클릭해 저장하시면 됩니다.</p>
+  <!-- 전체 명단 view -->
+  <div id="viewRoster" hidden>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="label">전체 인원</div><div class="value" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="label">채점 완료</div><div class="value" id="statScored">0</div></div>
+      <div class="stat-card"><div class="label">합격률</div><div class="value" id="statPassRate">0%</div></div>
+      <div class="stat-card"><div class="label">평균 점수</div><div class="value" id="statAvg">0</div></div>
+    </div>
+    <div class="roster-table-wrap">
+      <table class="roster">
+        <thead>
+          <tr>
+            <th>사진</th><th>이름</th><th>현급 · 띠</th><th>심사일</th><th class="num">최종점수</th><th>등급</th><th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody"></tbody>
+      </table>
+    </div>
+    <footer class="note">행을 클릭하면 해당 수련생의 결과증 화면으로 이동합니다.</footer>
   </div>
 </div>
 
-<div id="modeRow">
-  <button class="ghost" id="mode">옆으로 넘겨보기</button>
-  <p id="hint">좌우로 밀어서 넘겨보세요</p>
+<!-- 새 수련생 모달 -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal">
+    <h3>새 수련생 등록</h3>
+    <div class="modal-grid">
+      <div class="full"><label>이름 *</label><input class="field-input" id="mName" /></div>
+      <div><label>생년월일 (YYMMDD)</label><input class="field-input" id="mBirth" placeholder="예: 120901" /></div>
+      <div><label>현재 급수</label><input class="field-input" id="mGrade" list="gradeList" placeholder="예: 9급" /></div>
+      <div><label>부모님1</label><input class="field-input" id="mParent1" /></div>
+      <div><label>부모님2</label><input class="field-input" id="mParent2" /></div>
+      <div class="full"><label>심사일</label><input class="field-input" type="date" id="mExamDate" /></div>
+      <div class="full"><label>사범님 코멘트</label><textarea class="field-input" id="mComment" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel" type="button">취소</button>
+      <button class="btn primary" id="mSave" type="button">등록</button>
+    </div>
+  </div>
 </div>
-<div id="slides"></div>
+<datalist id="gradeList"></datalist>
 
-<script id="promptSrc" type="text/plain">
-당신은 '마음의 결' 타로 마스터입니다.
-재회·미련·짝사랑으로 찾아온 사람에게 타로 리딩을 전합니다.
-
-[입력]
-사연과 질문을 여러 줄로 길게 적고, 마지막 줄에 카드 번호를 적습니다.
-문장이 흐트러져 있거나 오타가 있어도 그대로 받습니다.
-마지막 줄의 숫자를 카드 번호로 읽고, 그 앞의 모든 내용을 사연으로 읽습니다.
-숫자가 5개면 5장, 3개면 3장 리딩입니다.
-다른 안내가 없어도 입력만 들어오면 바로 결과를 출력합니다.
-
-[번호 기준 · 78장]
-1~22 메이저
- 1 바보 2 마법사 3 여사제 4 여황제 5 황제
- 6 교황 7 연인 8 전차 9 힘 10 은둔자
- 11 운명의수레바퀴 12 정의 13 매달린남자 14 죽음
- 15 절제 16 악마 17 탑 18 별 19 달
- 20 태양 21 심판 22 세계
-23~36 완드   (23=A, 24~32=2~10, 33 페이지 34 기사 35 퀸 36 킹)
-37~50 컵     (37=A, 38~46=2~10, 47 페이지 48 기사 49 퀸 50 킹)
-51~64 검     (51=A, 52~60=2~10, 61 페이지 62 기사 63 퀸 64 킹)
-65~78 펜타클 (65=A, 66~74=2~10, 75 페이지 76 기사 77 퀸 78 킹)
-
-[역방향]
-번호에는 방향 정보가 없습니다. 카드마다 방향을 무작위로 정합니다.
-5장 중 1~2장 정도가 역방향이 되도록 하고, 정한 방향으로 끝까지 일관되게 해석합니다.
-번호 뒤에 R이 붙어 있으면 그 지정을 우선합니다.
-
-[자리]
-5장일 때, 뽑힌 순서대로 놓습니다.
-1 상대의 지금 마음
-2 나에게 남아 있는 감정
-3 상대가 말하지 못하는 것   ← 가장 깊은 자리, 가장 길게
-4 앞으로 세 달의 흐름
-5 지금 내가 쥔 선택지
-3장일 때는 아래 세 자리로 고정합니다.
-1 상대의 지금 마음
-2 상대가 말하지 못하는 것
-3 지금 내가 쥔 선택지
-
-[톤]
-- 감정선이 깊고 현실적입니다. 담백하지만 차갑지 않습니다.
-- 한 호흡에 한 문장. 줄바꿈을 넉넉히 씁니다.
-- 위로와 직언을 함께 놓습니다. 둘 중 하나만 하지 않습니다.
-
-[사연 활용]
-사연 속 구체적인 사실(다툰 일, 연락이 끊긴 시점, 들은 소식 등)을
-opening과 analysis에서 직접 언급합니다.
-일반적인 이야기가 아니라 이 사람의 이야기로 읽혀야 합니다.
-다만 사연을 그대로 요약해 되풀이하지 않습니다.
-
-[반드시 지킬 것]
-- "돌아옵니다" "끝났습니다" 같은 단정을 하지 않습니다.
-  흐름과 선택지를 보여주고, 결정은 질문자에게 남깁니다.
-- 날짜나 시기를 확정하지 않습니다.
-- 상대방을 비난하지 않습니다. 판단이 아니라 해석입니다.
-- 연락하라, 찾아가라 등 상대에게 부담을 주는 행동은 권하지 않습니다.
-- 목록형 조언을 따로 만들지 않습니다.
-  하고 싶은 말은 마무리 글 안에 문장으로 녹입니다.
-- 질문자가 극단적인 상태를 내비치면 리딩을 멈추고,
-  전문적인 도움을 받도록 따뜻하게 안내합니다.
-
-[각 부분의 성격]
-question — 받은 질문을 25자 안팎의 한 줄로 다듬습니다.
-opening — 지금 이 사람의 감정을 정확히 짚습니다.
-  "힘드셨겠어요" 같은 일반적 위로는 쓰지 않습니다. 3~4문단.
-key — 카드 한 장을 한 줄로 요약. 20자 안팎.
-read — 질문자가 아니라 상대방의 심리와 상황의 본질을 읽습니다. 2~3문단.
-analysis — 질문에 정면으로 답합니다.
-  붙들고 있는 환상이 보이면 부드럽게, 그러나 분명히 짚습니다.
-  카드가 좋지 않으면 좋지 않다고 말합니다. 3~4문단.
-closing — 짧은 한마디가 아니라 길게 씁니다.
-  스스로를 탓하고 있는 지점을 짚어주고,
-  그 감정이 어디서 왔는지 해석한 뒤 놓아줍니다.
-  마지막은 "카드는 정해진 답이 아니라 지금의 결입니다"로 닫습니다.
-
-[출력]
-아래 형식만 출력합니다. 설명, 인사말, 코드블록 표시를 붙이지 않습니다.
-문단은 <p class="body">…</p>, 줄바꿈은 <br>, 강조는 <b>…</b>
-closing 안에서만 <p>…</p> 를 씁니다.
-name 에는 카드 이름만 넣고, 역방향은 reversed:true 로 표시합니다.
-전체 2,500자 이상.
-
-const R = {
-  title:"결 깊은 리딩",
-  question:"",
-  opening:`
-    <p class="body"></p>`,
-  cards:[
-    { pos:"상대의 지금 마음", name:"", reversed:false,
-      key:"", read:`<p class="body"></p>` }
-  ],
-  analysis:`
-    <p class="body"></p>`,
-  closing:`
-    <p></p>`
-};
-</script>
+<!-- 공유 이미지 미리보기 모달 -->
+<div class="modal-backdrop" id="shareModalBackdrop" hidden>
+  <div class="modal share-modal">
+    <h3>결과증 이미지</h3>
+    <div class="share-preview-wrap">
+      <div class="share-spinner" id="shareSpinner">이미지 생성 중…</div>
+      <img id="sharePreviewImg" alt="결과증 캡처 이미지" hidden />
+    </div>
+    <p class="share-hint">이미지를 길게 눌러 &lsquo;사진에 저장&rsquo; 하거나, 아래 버튼으로 부모님께 바로 공유하세요.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="shareCloseBtn" type="button">닫기</button>
+      <button class="btn ghost" id="shareOpenTabBtn" type="button">새 탭에서 열기</button>
+      <button class="btn primary" id="shareSendBtn" type="button">공유하기</button>
+    </div>
+  </div>
+</div>
+<canvas id="shareCanvas" hidden></canvas>
 
 <script>
-let R = {
-  title:"결 깊은 리딩",
-  question:"헤어진 지 두 달, 다시 만날 수 있을까요",
-  opening:`
-    <p class="body">두 달이면 아직 아무것도 정리되지 않는 시간입니다.<br>
-    잊었다고 생각한 날에 더 선명하게 떠오르고,<br>
-    괜찮다가도 사소한 것에 무너지셨을 거예요.</p>
-    <p class="body">다시 만날 수 있는지 묻고 계시지만,<br>
-    사실 더 견디기 힘든 건 <b>아무것도 모르는 상태로 기다리는 것</b>이었을 겁니다.</p>`,
-  cards:[
-    { pos:"상대의 지금 마음", name:"컵 8", reversed:false,
-      key:"떠나왔지만 아직 뒤를 돌아보고 있는 자리",
-      read:`<p class="body">이 카드는 등을 돌리고 걸어가는 사람의 카드입니다.<br>
-      다만 완전히 떠난 사람의 카드는 아닙니다.</p>
-      <p class="body">상대는 관계에서 물러섰지만,<br>
-      그 결정이 <b>후련해서 내린 것이 아닙니다</b>.<br>
-      더 감당할 수 없어서 자리를 옮긴 쪽에 가깝습니다.</p>`},
-    { pos:"나에게 남아 있는 감정", name:"완드 5", reversed:true,
-      key:"미련보다 정리되지 않은 억울함이 먼저",
-      read:`<p class="body">역방향으로 나온 이 카드는 밖이 아니라<br>
-      <b>안에서 계속되고 있는 다툼</b>을 말합니다.</p>`},
-    { pos:"상대가 말하지 못하는 것", name:"펜타클 기사", reversed:false,
-      key:"확신이 설 때까지 움직이지 않겠다는 마음",
-      read:`<p class="body">이 카드의 사람은 느립니다.<br>
-      마음이 없어서가 아니라, <b>확신 없이는 한 발도 떼지 않기 때문</b>입니다.</p>`},
-    { pos:"앞으로 세 달의 흐름", name:"달", reversed:false,
-      key:"윤곽이 흐린 시기, 성급한 확인은 어긋납니다",
-      read:`<p class="body">달빛 아래에서는 모든 것이 실제보다 크거나 작게 보입니다.</p>`},
-    { pos:"지금 내가 쥔 선택지", name:"별", reversed:false,
-      key:"기다림이 아니라 나를 회복시키는 쪽",
-      read:`<p class="body">별은 상처 다음에 오는 카드입니다.</p>`}
-  ],
-  analysis:`
-    <p class="body">지금 카드에는 <b>마음이 끊어졌다는 신호가 없습니다</b>.<br>
-    다만 <b>움직일 준비가 되었다는 신호도 없습니다</b>.</p>`,
-  closing:`
-    <p>스스로를 많이 탓하셨을 겁니다.<br>
-    하지만 카드에는 당신의 잘못으로 끝났다는 자리가 없습니다.</p>
-    <p>카드는 정해진 답이 아니라 지금의 결입니다.</p>`
-};
+(function(){
+  var STORAGE_KEY = "taekwondoStudentsV2";
+  var ITEM_LABELS = ["효도","성실","인성(감사노트)","인성(리더십)","체력(스쿼트)","체력(점핑잭)","기술(품새)","기술(겨루기)","기술(발차기)","기술(격파)"];
+  var HEX_LABELS = ["출석","감사노트","체력","발차기","겨루기","품새"];
+  function zeroItems(){
+    var o = {}; ITEM_LABELS.forEach(function(k){ o[k] = 0; }); return o;
+  }
 
-/* ── 규격 ── */
-const W=1080, H=1350, PAD=92, TOP=150, BOT=H-150;
-const CW=W-PAD*2;
-const C={gold:'#C9A227',goldPale:'#E6D6A4',paper:'#F3EFE6',
-  body:'#E7E1F0',bodyB:'#FBF0D2',q:'#DED2EE',closing:'#F0E6CF'};
-const SERIF="'Gowun Batang', serif", SANS="'Noto Sans KR', sans-serif";
-
-/* ── 파싱 ── */
-function paras(h){const o=[],re=/<p[^>]*>([\s\S]*?)<\/p>/g;let m;while((m=re.exec(h||'')))o.push(runs(m[1]));return o;}
-function runs(s){s=(s||'').replace(/\s*\n\s*/g,'').replace(/<br\s*\/?>/g,'\u0001');
-  const o=[],re=/<b>([\s\S]*?)<\/b>|([^<]+)/g;let m;
-  while((m=re.exec(s))){if(m[1]!=null)o.push({t:m[1],b:true});else if(m[2])o.push({t:m[2],b:false});}return o;}
-function tokens(t){return t.match(/[A-Za-z0-9'’.,!?()\-]+|\s|[\s\S]/g)||[];}
-
-function text(ctx,rs,x,maxW,st,y,draw){
-  const lines=[];let line=[],w=0;
-  const set=b=>ctx.font=(b?st.wb:st.w)+' '+st.size+'px '+st.font;
-  for(const r of rs)for(const tk of tokens(r.t)){
-    if(tk==='\u0001'){lines.push(line);line=[];w=0;continue;}
-    set(r.b);const tw=ctx.measureText(tk).width;
-    if(w+tw>maxW&&line.length&&tk.trim()){lines.push(line);line=[];w=0;}
-    if(!line.length&&!tk.trim())continue;
-    line.push({t:tk,b:r.b,w:tw});w+=tw;}
-  if(line.length)lines.push(line);
-  const lh=st.size*st.lh;
-  if(draw){ctx.textBaseline='alphabetic';
-    lines.forEach((ln,i)=>{const total=ln.reduce((a,b)=>a+b.w,0);
-      let cx=st.align==='center'?x+(maxW-total)/2:x;const by=y+lh*i+st.size*0.76;
-      for(const p of ln){ctx.font=(p.b?st.wb:st.w)+' '+st.size+'px '+st.font;
-        ctx.fillStyle=p.b?(st.bc||st.c):st.c;ctx.fillText(p.t,cx,by);cx+=p.w;}});}
-  return lines.length*lh;
-}
-function spaced(ctx,s,cx,y,size,ls,color,font,weight,align){
-  ctx.font=weight+' '+size+'px '+font;ctx.fillStyle=color;ctx.textBaseline='alphabetic';
-  const ch=[...s],total=ch.reduce((a,c)=>a+ctx.measureText(c).width+ls,0)-ls;
-  let x=align==='center'?cx-total/2:cx;
-  for(const c of ch){ctx.fillText(c,x,y+size*0.76);x+=ctx.measureText(c).width+ls;}}
-
-const ST={
-  body:{size:34,lh:2.0,font:SANS,w:'300',wb:'500',c:C.body,bc:C.bodyB},
-  close:{size:35,lh:2.0,font:SERIF,w:'400',wb:'700',c:C.closing,bc:C.closing,align:'center'},
-  cover:{size:38,lh:1.8,font:SERIF,w:'400',wb:'700',c:C.q,align:'center'}
-};
-
-/* ── 배경 ── */
-function bg(ctx,seed){
-  let g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#120C1B');g.addColorStop(.42,'#1E1430');
-  g.addColorStop(.64,'#1E1430');g.addColorStop(1,'#120C1B');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  const glow=(cy,ry,col)=>{const rx=972;ctx.save();ctx.translate(W/2,cy);ctx.scale(1,ry/rx);
-    const rg=ctx.createRadialGradient(0,0,0,0,0,rx);
-    rg.addColorStop(0,col);rg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=rg;ctx.fillRect(-rx,-rx,rx*2,rx*2);ctx.restore();};
-  glow(0,H*.22,'rgba(51,32,79,.95)');glow(H,H*.18,'rgba(42,25,67,.95)');
-  ctx.fillStyle='rgba(255,255,255,.32)';
-  const pts=[[11,6],[83,9],[27,17],[93,26],[6,44],[71,61],[17,76],[88,88],[38,95],[54,33]];
-  pts.forEach((p,i)=>{const r=1+((i+seed)%3)*0.25;
-    ctx.beginPath();ctx.arc(W*p[0]/100,H*p[1]/100,r,0,7);ctx.fill();});
-  ctx.strokeStyle='rgba(201,162,39,.22)';ctx.lineWidth=1;
-  ctx.strokeRect(40.5,40.5,W-81,H-81);
-}
-function foot(ctx,i,n){
-  spaced(ctx,'@gyeol_taro',PAD,H-96,19,8,'rgba(201,162,39,.6)',SANS,'300');
-  ctx.font='300 19px '+SANS;ctx.fillStyle='rgba(180,167,198,.7)';
-  ctx.textAlign='right';ctx.fillText(i+' / '+n,W-PAD,H-96+15);ctx.textAlign='left';
-}
-function moon(ctx,x,y,d,i,n){
-  const r=d/2,cx=x+r,cy=y+r,frac=n<2?1:i/(n-1);
-  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.clip();
-  if(frac>0){ctx.fillStyle=C.goldPale;ctx.fillRect(x,y,d*frac,d);}ctx.restore();
-  ctx.beginPath();ctx.arc(cx,cy,r-.5,0,7);
-  ctx.strokeStyle='rgba(201,162,39,.5)';ctx.lineWidth=1;ctx.stroke();
-}
-
-/* ── 항목 만들기 → 장 나누기 ── */
-function buildItems(ctx){
-  const it=[];
-  // 표지
-  it.push({brk:true,cover:true,h:0,draw:(c)=>{
-    spaced(c,'마음의 결 타로',W/2,H*0.30,24,12,C.gold,SANS,'300','center');
-    const g=c.createLinearGradient(0,H*0.36,0,H*0.36+88);
-    g.addColorStop(0,'#FBF3DC');g.addColorStop(.46,'#E6D6A4');g.addColorStop(1,'#A88418');
-    c.font='700 88px '+SERIF;c.fillStyle=g;c.textAlign='center';
-    c.fillText(R.title,W/2,H*0.36+70);c.textAlign='left';
-    c.fillStyle='rgba(201,162,39,.5)';c.fillRect(W/2-40,H*0.50,80,1);
-    text(c,runs(R.question||''),PAD+30,CW-60,ST.cover,H*0.55,true);
-  }});
-  const addParas=(html,st,x,w)=>{
-    for(const p of paras(html)){
-      const h=text(ctx,p,x,w,st,0,false);
-      it.push({h:h+36,draw:(c,y)=>text(c,p,x,w,st,y,true)});
-    }
+  var seedStudents = [
+    { name:"네이뜬", birth:"060901", parent1:"김민우", parent2:"김건부", grade:"9급", examDate:"2024-09-12", scored:true,
+      comment:"사랑합니다. 더욱더 열심히 합시다. \n다음 심사까지 사범님과 열심히 수련합시다",
+      items:{ 효도:4, 성실:2, "인성(감사노트)":4, "인성(리더십)":4, "체력(스쿼트)":5, "체력(점핑잭)":4, "기술(품새)":5, "기술(겨루기)":6, "기술(발차기)":7, "기술(격파)":7 },
+      hexagon:{ 출석:2, 감사노트:4, 체력:4.5, 발차기:7, 겨루기:6, 품새:5 } },
+    { name:"캠런", birth:"110230", parent1:"이정석", parent2:"김민아", grade:"9급", examDate:"2024-10-04", scored:true,
+      comment:"^^ 고맙습니다. \n시범단에 꼭 지원하세요",
+      items:{ 효도:10, 성실:9, "인성(감사노트)":7, "인성(리더십)":8, "체력(스쿼트)":9, "체력(점핑잭)":10, "기술(품새)":8, "기술(겨루기)":8, "기술(발차기)":7, "기술(격파)":9 },
+      hexagon:{ 출석:9, 감사노트:7, 체력:9.5, 발차기:7, 겨루기:8, 품새:8 } },
+    { name:"데이비드", birth:"100424", parent1:"윤민수", parent2:"이지애", grade:"8급", examDate:"2024-04-01", scored:true,
+      comment:"",
+      items:{ 효도:8.5, 성실:5.5, "인성(감사노트)":7.8, "인성(리더십)":9.9, "체력(스쿼트)":10, "체력(점핑잭)":7.7, "기술(품새)":8.8, "기술(겨루기)":7.7, "기술(발차기)":9.9, "기술(격파)":10 },
+      hexagon:{ 출석:5.5, 감사노트:7.8, 체력:8.85, 발차기:9.9, 겨루기:7.7, 품새:8.8 } },
+    { name:"제임스", birth:"120901", parent1:"김해석", parent2:"이승애", grade:"9급", examDate:"2024-06-01", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"김진호", birth:"990901", parent1:"김진짜", parent2:"이아라", grade:"9급", examDate:"2024-06-01", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"레이쓴", birth:"100822", parent1:"이건민", parent2:"조은혜", grade:"1단", examDate:"2024-06-03", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"제이슨", birth:"130922", parent1:"제이슨리", parent2:"제인슨라", grade:"3급", examDate:"2024-06-03", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"마테호", birth:"130911", parent1:"마테호마", parent2:"마테호호", grade:"9급", examDate:"2024-09-03", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"이지나", birth:"110209", parent1:"이지나이", parent2:"이지나나", grade:"1단", examDate:"2024-08-05", scored:false, comment:"",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
+    { name:"조나단", birth:"130303", parent1:"조나단조", parent2:"조나단단", grade:"2급", examDate:"2024-08-08", scored:false,
+      comment:"지난2개월동안 목표를 가지고 노력하였기에 칭찬합니다.\n앞으로도 더욱 노력하는 모습 보여주시길 바랍니다.",
+      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } }
+  ];
+  var beltByGrade = {
+    "9급":"흰띠","8급":"노란띠","7급":"초록띠","6급":"파랑띠","5급":"보라띠",
+    "4급":"밤띠","3급":"주황띠","2급":"빨강띠","1급":"빨강띠",
+    "1품":"품띠","2품":"검정띠","3품":"검정띠","4품":"검정띠"
   };
-  addParas(R.opening,ST.body,PAD,CW);
+  var beltColor = {
+    "흰띠":"#f4f1ea","노란띠":"#e3b23c","초록띠":"#3c8c4a","파랑띠":"#3763a8",
+    "보라띠":"#6d4d96","밤띠":"#6b4226","주황띠":"#d9722a","빨강띠":"#b23a3a",
+    "품띠":"linear-gradient(135deg, #b23a3a 50%, #1c1c1c 50%)","검정띠":"#1c1c1c"
+  };
+  var gradeBands = [
+    {min:95, label:"A+"}, {min:90, label:"A"}, {min:85, label:"B+"}, {min:80, label:"B"},
+    {min:75, label:"C+"}, {min:70, label:"C"}, {min:65, label:"D+"}, {min:60, label:"D"}, {min:55, label:"F"}
+  ];
 
-  const n=R.cards.length;
-  R.cards.forEach((cd,i)=>{
-    const keyH=text(ctx,runs(cd.key||''),PAD,CW,
-      {size:31,lh:1.65,font:SERIF,w:'400',wb:'700',c:'rgba(230,214,164,.85)'},0,false);
-    it.push({brk:true,h:56+62+keyH+46,draw:(c,y)=>{
-      moon(c,PAD,y+2,32,i,n);
-      spaced(c,cd.pos,PAD+56,y+4,24,5.6,'rgba(180,167,198,.9)',SANS,'300');
-      c.font='700 56px '+SERIF;c.fillStyle=C.paper;c.textBaseline='alphabetic';
-      c.fillText(cd.name,PAD,y+56+46);
-      if(cd.reversed){
-        const bx=PAD+c.measureText(cd.name).width+18;
-        c.font='400 22px '+SANS;const bw=c.measureText('역방향').width;
-        c.fillStyle=C.goldPale;c.fillRect(bx,y+56+14,bw+24,34);
-        c.fillStyle='#120C1B';c.fillText('역방향',bx+12,y+56+38);
-      }
-      text(c,runs(cd.key||''),PAD,CW,
-        {size:31,lh:1.65,font:SERIF,w:'400',wb:'700',c:'rgba(230,214,164,.85)'},y+56+62,true);
-    }});
-    addParas(cd.read,ST.body,PAD,CW);
-  });
+  // ---- state ----
+  var students = loadState();
+  var currentIdx = 0;
+  var editMode = false;
 
-  it.push({brk:true,h:0,label:'분석'});
-  addParas(R.analysis,ST.body,PAD,CW);
-  it.push({brk:true,h:0,label:'마무리'});
-  addParas(R.closing,ST.close,PAD,CW);
-  return it;
-}
-function paginate(items){
-  const pages=[];let cur=[],y=TOP;
-  for(const it of items){
-    if(it.h===0&&!it.cover){ if(cur.length){pages.push(cur);cur=[];y=TOP;} continue; }
-    if(it.cover){ if(cur.length){pages.push(cur);cur=[];} pages.push([{...it,y:0}]); y=TOP; continue; }
-    if((it.brk&&cur.length)||y+it.h>BOT){ if(cur.length){pages.push(cur);} cur=[];y=TOP; }
-    cur.push({...it,y});y+=it.h;
-  }
-  if(cur.length)pages.push(cur);
-  return pages;
-}
-
-/* ── 그리기 ── */
-let PAGES=[];
-function drawAll(){
-  const probe=document.createElement('canvas').getContext('2d');
-  PAGES=paginate(buildItems(probe));
-  const box=document.getElementById('slides');box.innerHTML='';
-  PAGES.forEach((pg,i)=>{
-    const wrap=document.createElement('div');wrap.className='slide';
-    const cv=document.createElement('canvas');cv.width=W;cv.height=Hs();
-    const c=cv.getContext('2d');
-    bg(c,i);
-    pg.forEach(it=>it.draw(c,it.y));
-    if(!pg[0].cover)foot(c,i+1,PAGES.length);
-    else spaced(c,String(PAGES.length)+' 장',W/2,H-110,19,8,'rgba(180,167,198,.6)',SANS,'300','center');
-    const tag=document.createElement('div');tag.className='tag';tag.textContent=(i+1)+' / '+PAGES.length;
-    wrap.appendChild(cv);wrap.appendChild(tag);box.appendChild(wrap);
-  });
-}
-function Hs(){return H;}
-
-(document.fonts?document.fonts.load('700 88px "Gowun Batang"')
-  .then(()=>document.fonts.load('300 34px "Noto Sans KR"'))
-  .then(()=>document.fonts.ready):Promise.resolve()).then(drawAll);
-
-/* ── 버튼 ── */
-document.getElementById('copyBtn').onclick=function(){
-  const t=document.getElementById('promptSrc').textContent.trim();
-  const done=()=>{this.textContent='복사했습니다';setTimeout(()=>this.textContent='프롬프트 복사',1600);};
-  if(navigator.clipboard)navigator.clipboard.writeText(t).then(done).catch(fb.bind(this));else fb.call(this);
-  function fb(){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);
-    a.select();document.execCommand('copy');a.remove();done();}
-};
-document.getElementById('applyBtn').onclick=function(){
-  let t=document.getElementById('ta').value.trim();
-  t=t.replace(/^(const|let|var)\s+R\s*=/,'').replace(/;\s*$/,'').trim();
-  if(!t){alert('붙여넣은 내용이 없습니다.');return;}
-  try{
-    const next=new Function('return ('+t+')')();
-    if(!next||!Array.isArray(next.cards)||!next.cards.length)throw 0;
-    R=next;drawAll();
-    document.getElementById('slides').scrollIntoView({behavior:'smooth'});
-  }catch(e){alert('형식을 읽지 못했습니다.\n{ 로 시작해서 } 로 끝나는 부분까지 통째로 붙여넣었는지 확인해 주세요.');}
-};
-document.getElementById('hint').style.display='none';
-document.getElementById('mode').onclick=function(){
-  const box=document.getElementById('slides'), on=box.classList.toggle('swipe');
-  this.textContent = on ? '세로로 보기' : '옆으로 넘겨보기';
-  document.getElementById('hint').style.display = on ? 'block' : 'none';
-  if(on) box.scrollLeft=0;
-};
-
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-document.getElementById('dlAll').onclick=async function(){
-  const btn=this;btn.disabled=true;
-  const cvs=document.querySelectorAll('#slides canvas');
-  const d=new Date().toISOString().slice(0,10);
-  for(let i=0;i<cvs.length;i++){
-    btn.textContent=(i+1)+' / '+cvs.length+' 저장 중…';
-    const a=document.createElement('a');
-    a.download='리딩_'+d+'_'+String(i+1).padStart(2,'0')+'.jpg';
-    a.href=cvs[i].toDataURL('image/jpeg',0.95);a.click();
-    await sleep(500);
-  }
-  btn.textContent='카드 전체 JPG로 저장';btn.disabled=false;
-};
-document.getElementById('dlPdf').onclick=function(){
-  const btn=this;btn.disabled=true;btn.textContent='만드는 중…';
-  setTimeout(()=>{
+  function loadState(){
     try{
-      const PW=595.28,PH=PW*(H/W);
-      const cvs=document.querySelectorAll('#slides canvas');
-      const imgs=[...cvs].map(c=>{
-        const bin=atob(c.toDataURL('image/jpeg',0.95).split(',')[1]);
-        const a=new Uint8Array(bin.length);
-        for(let j=0;j<bin.length;j++)a[j]=bin.charCodeAt(j);return a;});
-      const enc=new TextEncoder();let parts=[],len=0,off=[];
-      const push=x=>{const b=(typeof x==='string')?enc.encode(x):x;parts.push(b);len+=b.length;};
-      const obj=(num,dict,stream)=>{off[num]=len;push(num+' 0 obj\n'+dict+'\n');
-        if(stream){push('stream\n');push(stream);push('\nendstream\n');}push('endobj\n');};
-      push('%PDF-1.4\n');
-      const n=imgs.length,kids=[];for(let i=0;i<n;i++)kids.push((3+i*3)+' 0 R');
-      obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
-      obj(2,'<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+n+' >>');
-      imgs.forEach((im,i)=>{
-        const P=3+i*3,CT=4+i*3,IG=5+i*3;
-        obj(P,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW.toFixed(2)+' '+PH.toFixed(2)+
-          '] /Resources << /XObject << /Im0 '+IG+' 0 R >> >> /Contents '+CT+' 0 R >>');
-        const cs='q '+PW.toFixed(2)+' 0 0 '+PH.toFixed(2)+' 0 0 cm /Im0 Do Q';
-        obj(CT,'<< /Length '+cs.length+' >>',cs);
-        obj(IG,'<< /Type /XObject /Subtype /Image /Width '+W+' /Height '+H+
-          ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+im.length+' >>',im);
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw){
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      }
+    } catch(e){}
+    return JSON.parse(JSON.stringify(seedStudents));
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(students)); return true; }
+    catch(e){ return false; }
+  }
+
+  function scoreOf(s){
+    var sum = 0;
+    ITEM_LABELS.forEach(function(k){ sum += (s.items[k] || 0); });
+    return Math.round(sum * 100) / 100;
+  }
+  function gradeLabel(score){
+    for (var i=0;i<gradeBands.length;i++){ if (score >= gradeBands[i].min) return gradeBands[i].label; }
+    return "";
+  }
+  function ageOf(code){
+    if (!code || code.length < 6) return "-";
+    var yy = code.slice(0,2), mm = code.slice(2,4), dd = code.slice(4,6);
+    var today = new Date();
+    var curYY = today.getFullYear() % 100;
+    var century = (parseInt(yy,10) > curYY) ? 1900 : 2000;
+    var birth = new Date(century + parseInt(yy,10), parseInt(mm,10)-1, parseInt(dd,10));
+    var age = today.getFullYear() - birth.getFullYear();
+    var m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+  function fmtDate(iso){
+    if (!iso) return "-";
+    var d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.getFullYear() + "." + String(d.getMonth()+1).padStart(2,"0") + "." + String(d.getDate()).padStart(2,"0");
+  }
+
+  function buildRadar(hex){
+    var order = HEX_LABELS;
+    var cx=110, cy=110, r=82, max=10;
+    var pts = order.map(function(k,i){
+      var angle = -Math.PI/2 + i * (2*Math.PI/6);
+      var val = Math.max(0, Math.min(max, hex[k]||0));
+      var rr = (val/max) * r;
+      return [cx + rr*Math.cos(angle), cy + rr*Math.sin(angle)];
+    });
+    var ringPts = function(frac){
+      return order.map(function(k,i){
+        var angle = -Math.PI/2 + i * (2*Math.PI/6);
+        return (cx + r*frac*Math.cos(angle)) + "," + (cy + r*frac*Math.sin(angle));
+      }).join(" ");
+    };
+    var svg = "";
+    [0.25,0.5,0.75,1].forEach(function(f){
+      svg += '<polygon points="'+ringPts(f)+'" fill="none" stroke="var(--line)" stroke-width="1"/>';
+    });
+    order.forEach(function(k,i){
+      var angle = -Math.PI/2 + i * (2*Math.PI/6);
+      var x2 = cx + r*Math.cos(angle), y2 = cy + r*Math.sin(angle);
+      svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2+'" y2="'+y2+'" stroke="var(--line)" stroke-width="1"/>';
+      var lx = cx + (r+18)*Math.cos(angle), ly = cy + (r+18)*Math.sin(angle);
+      svg += '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="middle" font-size="10.5" fill="var(--muted)" font-family="Noto Sans KR, sans-serif">'+k+'</text>';
+    });
+    var poly = pts.map(function(p){ return p[0]+","+p[1]; }).join(" ");
+    svg += '<polygon points="'+poly+'" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2" opacity="0.92"/>';
+    pts.forEach(function(p){ svg += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.6" fill="var(--accent-ink)"/>'; });
+    return svg;
+  }
+
+  function recomputeHexagon(s){
+    s.hexagon.출석 = s.items["성실"] || 0;
+    s.hexagon.감사노트 = s.items["인성(감사노트)"] || 0;
+    s.hexagon.체력 = Math.round((((s.items["체력(스쿼트)"]||0) + (s.items["체력(점핑잭)"]||0)) / 2) * 100) / 100;
+    s.hexagon.발차기 = s.items["기술(발차기)"] || 0;
+    s.hexagon.겨루기 = s.items["기술(겨루기)"] || 0;
+    s.hexagon.품새 = s.items["기술(품새)"] || 0;
+  }
+
+  // ---- render: certificate ----
+  var selectEl = document.getElementById("studentSelect");
+  function fillSelect(){
+    selectEl.innerHTML = "";
+    students.forEach(function(s, i){
+      var opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = s.name + " (" + s.grade + ")";
+      selectEl.appendChild(opt);
+    });
+  }
+
+  function renderCert(){
+    var s = students[currentIdx];
+    if (!s){ currentIdx = 0; s = students[0]; }
+    if (!s) return;
+    selectEl.value = currentIdx;
+
+    var nameView = document.getElementById("studentNameView");
+    var nameEdit = document.getElementById("studentNameEdit");
+    nameView.textContent = s.name;
+    nameEdit.value = s.name;
+    nameView.hidden = editMode;
+    nameEdit.hidden = !editMode;
+
+    var belt = beltByGrade[s.grade];
+    var swatch = document.getElementById("beltSwatch");
+    if (belt && beltColor[belt]){ swatch.style.background = beltColor[belt]; swatch.title = belt; }
+    else { swatch.style.background = "var(--surface-2)"; swatch.title = "급수 정보 없음"; }
+
+    var photoImg = document.getElementById("photoImg");
+    var photoPlaceholder = document.getElementById("photoPlaceholder");
+    var photoRemoveBtn = document.getElementById("photoRemoveBtn");
+    if (s.photo){
+      photoImg.src = s.photo;
+      photoImg.hidden = false;
+      photoPlaceholder.hidden = true;
+      photoRemoveBtn.style.display = "";
+    } else {
+      photoImg.hidden = true;
+      photoPlaceholder.hidden = false;
+      photoRemoveBtn.style.display = "none";
+    }
+
+    var sub = document.getElementById("subInfo");
+    sub.innerHTML = "";
+    var fields = [
+      { key:"age", label:"나이", display: ageOf(s.birth) + "세", editable:false },
+      { key:"birth", label:"생년월일", value: s.birth, type:"text", placeholder:"YYMMDD" },
+      { key:"grade", label:"급수", value: s.grade, type:"text", list:"gradeList" },
+      { key:"examDate", label:"심사일", value: s.examDate, type:"date" },
+      { key:"parent1", label:"부모님1", value: s.parent1, type:"text" },
+      { key:"parent2", label:"부모님2", value: s.parent2, type:"text" }
+    ];
+    fields.forEach(function(f){
+      var span = document.createElement("span");
+      if (!editMode || f.editable === false){
+        var displayVal = f.key === "age" ? f.display : (f.key === "examDate" ? fmtDate(s.examDate) : (s[f.key] || "-"));
+        span.innerHTML = f.label + " <b>" + displayVal + "</b>";
+      } else {
+        var lbl = document.createElement("label");
+        lbl.textContent = f.label + " ";
+        var input = document.createElement("input");
+        input.className = "field-input";
+        input.type = f.type;
+        input.value = s[f.key] || "";
+        if (f.list) input.setAttribute("list", f.list);
+        input.addEventListener("change", function(){
+          s[f.key] = input.value;
+          saveState();
+          renderCert();
+          renderRoster();
+        });
+        lbl.appendChild(input);
+        span.appendChild(lbl);
+      }
+      sub.appendChild(span);
+    });
+
+    var score = scoreOf(s);
+    var badge = document.getElementById("statusBadge");
+    var statusText = document.getElementById("statusText");
+    badge.className = "badge toggle " + (!s.scored ? "pending" : (score >= 70 ? "pass" : "fail"));
+    statusText.textContent = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
+
+    var tbl = document.getElementById("scoreTable");
+    tbl.innerHTML = "";
+    ITEM_LABELS.forEach(function(k){
+      var tr = document.createElement("tr");
+      var tdLabel = document.createElement("td");
+      tdLabel.textContent = k;
+      var tdVal = document.createElement("td");
+      var input = document.createElement("input");
+      input.type = "number"; input.min = "0"; input.max = "10"; input.step = "0.1";
+      input.className = "score-input";
+      input.value = s.items[k];
+      input.addEventListener("input", function(){
+        var v = parseFloat(input.value);
+        s.items[k] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
+        recomputeHexagon(s);
+        saveState();
+        renderCertNumbersOnly();
+        renderRoster();
       });
-      const max=2+n*3,xref=len;
-      push('xref\n0 '+(max+1)+'\n0000000000 65535 f \n');
-      for(let i=1;i<=max;i++)push(String(off[i]).padStart(10,'0')+' 00000 n \n');
-      push('trailer\n<< /Size '+(max+1)+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
-      const url=URL.createObjectURL(new Blob(parts,{type:'application/pdf'}));
-      const a=document.createElement('a');
-      a.download='리딩카드_'+new Date().toISOString().slice(0,10)+'.pdf';
-      a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);
-    }catch(e){alert('PDF를 만들지 못했습니다. 새로고침 후 다시 시도해 주세요.');}
-    btn.textContent='한 파일 PDF로 저장';btn.disabled=false;
-  },30);
-};
+      tdVal.appendChild(input);
+      tr.appendChild(tdLabel); tr.appendChild(tdVal);
+      tbl.appendChild(tr);
+    });
+    var totalTr = document.createElement("tr");
+    totalTr.className = "total";
+    totalTr.innerHTML = "<td>합계</td><td id=\"totalCell\">" + score + "</td>";
+    tbl.appendChild(totalTr);
+
+    document.getElementById("radarChart").innerHTML = buildRadar(s.hexagon);
+
+    document.getElementById("finalScore").innerHTML = score + '<small>/ 100점</small>';
+    document.getElementById("gradeChip").textContent = "등급 " + (gradeLabel(score) || "미달");
+
+    var commentView = document.getElementById("finalCommentView");
+    var commentEdit = document.getElementById("finalCommentEdit");
+    commentView.hidden = editMode;
+    commentEdit.hidden = !editMode;
+    commentEdit.value = s.comment || "";
+    if (!s.scored){
+      commentView.textContent = s.name + " 수련생은 아직 채점되지 않았습니다.";
+    } else {
+      var g = gradeLabel(score);
+      var verdict = score >= 70 ? "합격" : "불합격";
+      var text = "<최종평가>\n" + s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
+      if (s.comment) text += "\n" + s.comment;
+      commentView.textContent = text;
+    }
+
+    try { localStorage.setItem("lastStudentName", s.name); } catch(e){}
+  }
+  // lightweight refresh for score-typing (avoid rebuilding inputs mid-keystroke)
+  function renderCertNumbersOnly(){
+    var s = students[currentIdx];
+    var score = scoreOf(s);
+    var badge = document.getElementById("statusBadge");
+    var statusText = document.getElementById("statusText");
+    badge.className = "badge toggle " + (!s.scored ? "pending" : (score >= 70 ? "pass" : "fail"));
+    statusText.textContent = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
+    var totalCell = document.getElementById("totalCell");
+    if (totalCell) totalCell.textContent = score;
+    document.getElementById("radarChart").innerHTML = buildRadar(s.hexagon);
+    document.getElementById("finalScore").innerHTML = score + '<small>/ 100점</small>';
+    document.getElementById("gradeChip").textContent = "등급 " + (gradeLabel(score) || "미달");
+    var commentView = document.getElementById("finalCommentView");
+    if (!s.scored){
+      commentView.textContent = s.name + " 수련생은 아직 채점되지 않았습니다.";
+    } else {
+      var g = gradeLabel(score);
+      var verdict = score >= 70 ? "합격" : "불합격";
+      var text = "<최종평가>\n" + s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
+      if (s.comment) text += "\n" + s.comment;
+      commentView.textContent = text;
+    }
+  }
+
+  // ---- render: roster ----
+  function renderRoster(){
+    var total = students.length;
+    var scored = students.filter(function(s){ return s.scored; });
+    var passed = scored.filter(function(s){ return scoreOf(s) >= 70; });
+    var avg = scored.length ? (scored.reduce(function(a,s){ return a + scoreOf(s); }, 0) / scored.length) : 0;
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statScored").textContent = scored.length;
+    document.getElementById("statPassRate").textContent = scored.length ? Math.round(passed.length / scored.length * 100) + "%" : "-";
+    document.getElementById("statAvg").textContent = scored.length ? (Math.round(avg*10)/10) : "-";
+
+    var body = document.getElementById("rosterBody");
+    body.innerHTML = "";
+    students.forEach(function(s, i){
+      var score = scoreOf(s);
+      var belt = beltByGrade[s.grade] || "";
+      var statusClass = !s.scored ? "pending" : (score >= 70 ? "pass" : "fail");
+      var statusLabel = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
+      var tr = document.createElement("tr");
+      var thumbHtml = s.photo
+        ? "<img class=\"roster-thumb\" src=\"" + s.photo + "\" alt=\"\" />"
+        : "<div class=\"roster-thumb placeholder\"></div>";
+      tr.innerHTML =
+        "<td>" + thumbHtml + "</td>" +
+        "<td><b>" + s.name + "</b></td>" +
+        "<td>" + s.grade + (belt ? " · " + belt : "") + "</td>" +
+        "<td>" + fmtDate(s.examDate) + "</td>" +
+        "<td class=\"num\">" + (s.scored ? score : "&mdash;") + "</td>" +
+        "<td>" + (s.scored ? (gradeLabel(score) || "미달") : "&mdash;") + "</td>" +
+        "<td><span class=\"mini-badge " + statusClass + "\">" + statusLabel + "</span></td>";
+      tr.addEventListener("click", function(){
+        currentIdx = i;
+        showTab("cert");
+        renderCert();
+      });
+      body.appendChild(tr);
+    });
+  }
+
+  // ---- tabs ----
+  function showTab(which){
+    var certBtn = document.getElementById("tabCertBtn");
+    var rosterBtn = document.getElementById("tabRosterBtn");
+    var certView = document.getElementById("viewCert");
+    var rosterView = document.getElementById("viewRoster");
+    if (which === "cert"){
+      certBtn.classList.add("active"); rosterBtn.classList.remove("active");
+      certView.hidden = false; rosterView.hidden = true;
+    } else {
+      rosterBtn.classList.add("active"); certBtn.classList.remove("active");
+      certView.hidden = true; rosterView.hidden = false;
+      renderRoster();
+    }
+  }
+  document.getElementById("tabCertBtn").addEventListener("click", function(){ showTab("cert"); });
+  document.getElementById("tabRosterBtn").addEventListener("click", function(){ showTab("roster"); });
+
+  // ---- controls ----
+  selectEl.addEventListener("change", function(){ currentIdx = parseInt(selectEl.value,10); editMode = false; renderCert(); });
+
+  document.getElementById("editToggleBtn").addEventListener("click", function(){
+    editMode = !editMode;
+    this.textContent = editMode ? "수정 완료" : "정보 수정";
+    renderCert();
+  });
+
+  document.getElementById("studentNameEdit").addEventListener("change", function(){
+    var val = this.value.trim();
+    if (!val) { this.value = students[currentIdx].name; return; }
+    students[currentIdx].name = val;
+    saveState();
+    fillSelect();
+    renderCert();
+    renderRoster();
+  });
+
+  document.getElementById("statusBadge").addEventListener("click", function(){
+    var s = students[currentIdx];
+    s.scored = !s.scored;
+    saveState();
+    renderCert();
+    renderRoster();
+  });
+
+  document.getElementById("finalCommentEdit").addEventListener("change", function(){
+    students[currentIdx].comment = this.value;
+    saveState();
+    renderCert();
+  });
+
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+  // ---- photo upload ----
+  var photoFrame = document.getElementById("photoFrame");
+  var photoInput = document.getElementById("photoInput");
+  var photoRemoveBtn = document.getElementById("photoRemoveBtn");
+
+  photoFrame.addEventListener("click", function(){ photoInput.click(); });
+  photoFrame.addEventListener("keydown", function(e){
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); photoInput.click(); }
+  });
+  photoRemoveBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    students[currentIdx].photo = null;
+    saveState();
+    renderCert();
+    renderRoster();
+  });
+  photoInput.addEventListener("change", function(){
+    var file = photoInput.files && photoInput.files[0];
+    photoInput.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")){
+      alert("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(){
+      var img = new Image();
+      img.onload = function(){
+        // downscale so the local-storage footprint stays small
+        var maxDim = 320;
+        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        var w = Math.max(1, Math.round(img.width * scale));
+        var h = Math.max(1, Math.round(img.height * scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        var prevPhoto = students[currentIdx].photo;
+        students[currentIdx].photo = dataUrl;
+        if (!saveState()){
+          students[currentIdx].photo = prevPhoto;
+          alert("사진 저장에 실패했습니다. 브라우저 저장 공간이 가득 찼을 수 있어요. 다른 사진으로 시도해 주세요.");
+        }
+        renderCert();
+        renderRoster();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  var deleteArmed = false;
+  var deleteBtn = document.getElementById("deleteBtn");
+  deleteBtn.addEventListener("click", function(){
+    if (students.length <= 1) return;
+    if (!deleteArmed){
+      deleteArmed = true;
+      deleteBtn.textContent = "정말 삭제?";
+      deleteBtn.classList.add("danger");
+      setTimeout(function(){ deleteArmed = false; deleteBtn.textContent = "삭제"; deleteBtn.classList.remove("danger"); }, 3000);
+      return;
+    }
+    students.splice(currentIdx, 1);
+    currentIdx = 0;
+    deleteArmed = false;
+    deleteBtn.textContent = "삭제";
+    deleteBtn.classList.remove("danger");
+    saveState();
+    fillSelect();
+    renderCert();
+    renderRoster();
+  });
+
+  // ---- add-student modal ----
+  var modal = document.getElementById("modalBackdrop");
+  document.getElementById("addStudentBtn").addEventListener("click", function(){
+    ["mName","mBirth","mGrade","mParent1","mParent2","mExamDate","mComment"].forEach(function(id){
+      document.getElementById(id).value = "";
+    });
+    modal.hidden = false;
+    document.getElementById("mName").focus();
+  });
+  document.getElementById("mCancel").addEventListener("click", function(){ modal.hidden = true; });
+  modal.addEventListener("click", function(e){ if (e.target === modal) modal.hidden = true; });
+
+  document.getElementById("mSave").addEventListener("click", function(){
+    var name = document.getElementById("mName").value.trim();
+    if (!name){ document.getElementById("mName").focus(); return; }
+    var newStudent = {
+      name: name,
+      birth: document.getElementById("mBirth").value.trim(),
+      grade: document.getElementById("mGrade").value.trim() || "9급",
+      parent1: document.getElementById("mParent1").value.trim(),
+      parent2: document.getElementById("mParent2").value.trim(),
+      examDate: document.getElementById("mExamDate").value || new Date().toISOString().slice(0,10),
+      comment: document.getElementById("mComment").value.trim(),
+      scored: false,
+      photo: null,
+      items: zeroItems(),
+      hexagon: { 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 }
+    };
+    students.push(newStudent);
+    currentIdx = students.length - 1;
+    saveState();
+    fillSelect();
+    modal.hidden = true;
+    showTab("cert");
+    renderCert();
+    renderRoster();
+  });
+
+  // ---- JPG share-card capture ----
+  var SHARE_COLORS = {
+    bg:"#f4f1ea", surface:"#ffffff", surface2:"#ece7dc", ink:"#201d18", inkSoft:"#514c42",
+    muted:"#8b8477", line:"#ddd5c4", accent:"#a8742a", accentInk:"#6e4b19", accentSoft:"#efe0c3",
+    good:"#3c7a4f", goodSoft:"#e2ede4", bad:"#a53f3f", badSoft:"#f3e2e2", pending:"#7a6a3f", pendingSoft:"#efe9d8"
+  };
+
+  function loadImageEl(src){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapLines(ctx, text, maxWidth){
+    var lines = [];
+    String(text).split("\n").forEach(function(paragraph){
+      if (paragraph === ""){ lines.push(""); return; }
+      var line = "";
+      for (var i=0; i<paragraph.length; i++){
+        var test = line + paragraph[i];
+        if (ctx.measureText(test).width > maxWidth && line.length > 0){
+          lines.push(line);
+          line = paragraph[i];
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+    });
+    return lines;
+  }
+
+  function buildCommentText(s, score){
+    if (!s.scored) return s.name + " 수련생은 아직 채점되지 않았습니다.";
+    var g = gradeLabel(score);
+    var verdict = score >= 70 ? "합격" : "불합격";
+    var text = s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
+    if (s.comment) text += "\n" + s.comment;
+    return text;
+  }
+
+  function drawShareRadar(ctx, cx, cy, r, hex, C){
+    var order = HEX_LABELS, max = 10;
+    [0.25,0.5,0.75,1].forEach(function(f){
+      ctx.beginPath();
+      order.forEach(function(k,i){
+        var angle = -Math.PI/2 + i*(2*Math.PI/6);
+        var x = cx + r*f*Math.cos(angle), yy = cy + r*f*Math.sin(angle);
+        if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    ctx.font = "500 20px 'Noto Sans KR', sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    order.forEach(function(k,i){
+      var angle = -Math.PI/2 + i*(2*Math.PI/6);
+      var x2 = cx + r*Math.cos(angle), y2 = cy + r*Math.sin(angle);
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x2,y2); ctx.stroke();
+      var lx = cx + (r+34)*Math.cos(angle), ly = cy + (r+34)*Math.sin(angle);
+      ctx.fillStyle = C.muted;
+      ctx.fillText(k, lx, ly);
+    });
+    ctx.beginPath();
+    order.forEach(function(k,i){
+      var angle = -Math.PI/2 + i*(2*Math.PI/6);
+      var val = Math.max(0, Math.min(max, hex[k]||0));
+      var rr = (val/max) * r;
+      var x = cx + rr*Math.cos(angle), yy = cy + rr*Math.sin(angle);
+      if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+    });
+    ctx.closePath();
+    ctx.globalAlpha = 0.92; ctx.fillStyle = C.accentSoft; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.stroke();
+    order.forEach(function(k,i){
+      var angle = -Math.PI/2 + i*(2*Math.PI/6);
+      var val = Math.max(0, Math.min(max, hex[k]||0));
+      var rr = (val/max) * r;
+      var x = cx + rr*Math.cos(angle), yy = cy + rr*Math.sin(angle);
+      ctx.beginPath(); ctx.arc(x,yy,5,0,Math.PI*2); ctx.fillStyle = C.accentInk; ctx.fill();
+    });
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  function drawShareBeltCircle(ctx, cx, cy, r, belt, name, C){
+    if (belt === "품띠"){
+      ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,Math.PI/2); ctx.closePath();
+      ctx.fillStyle = "#b23a3a"; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI/2,Math.PI*1.5); ctx.closePath();
+      ctx.fillStyle = "#1c1c1c"; ctx.fill();
+    } else {
+      var beltHex = belt ? beltColor[belt] : null;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle = (beltHex && beltHex.indexOf("gradient") === -1) ? beltHex : C.surface2;
+      ctx.fill();
+    }
+    ctx.fillStyle = (!belt || belt === "흰띠") ? C.inkSoft : "#ffffff";
+    ctx.font = "700 64px 'Noto Serif KR', serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText((name || "?").charAt(0), cx, cy+4);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Renders the full share card onto ctx and returns the total content height (drives the final canvas size).
+  function renderShareCard(ctx, s, W, photoImg){
+    var C = SHARE_COLORS;
+    var pad = 64;
+    var score = scoreOf(s);
+    var belt = beltByGrade[s.grade];
+
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, 3200);
+
+    var y = 80;
+    ctx.fillStyle = C.accentInk;
+    ctx.font = "600 20px 'IBM Plex Mono', monospace";
+    ctx.fillText("PROMOTION TEST RESULT", pad, y);
+    y += 46;
+
+    ctx.fillStyle = C.ink;
+    ctx.font = "700 46px 'Noto Serif KR', serif";
+    ctx.fillText("승급심사 결과증", pad, y);
+    y += 34;
+
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    y += 60;
+
+    var circleR = 96;
+    var circleCX = pad + circleR;
+    var circleCY = y + circleR;
+    if (photoImg){
+      ctx.save();
+      ctx.beginPath(); ctx.arc(circleCX, circleCY, circleR, 0, Math.PI*2); ctx.closePath(); ctx.clip();
+      var scale = Math.max((circleR*2)/photoImg.width, (circleR*2)/photoImg.height);
+      var dw = photoImg.width*scale, dh = photoImg.height*scale;
+      ctx.drawImage(photoImg, circleCX-dw/2, circleCY-dh/2, dw, dh);
+      ctx.restore();
+    } else {
+      drawShareBeltCircle(ctx, circleCX, circleCY, circleR, belt, s.name, C);
+    }
+    ctx.strokeStyle = C.surface; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(circleCX, circleCY, circleR, 0, Math.PI*2); ctx.stroke();
+
+    var infoX = pad + circleR*2 + 40;
+    var infoY = y + 36;
+    ctx.fillStyle = C.ink;
+    ctx.font = "700 44px 'Noto Serif KR', serif";
+    ctx.fillText(s.name, infoX, infoY);
+    infoY += 42;
+
+    ctx.font = "500 22px 'Noto Sans KR', sans-serif";
+    ctx.fillStyle = C.inkSoft;
+    ctx.fillText("나이 " + ageOf(s.birth) + "세    급수 " + s.grade + (belt ? " · " + belt : ""), infoX, infoY);
+    infoY += 34;
+    ctx.fillText("심사일 " + fmtDate(s.examDate), infoX, infoY);
+    infoY += 34;
+    if (s.parent1 || s.parent2){
+      ctx.fillText("부모님 " + [s.parent1, s.parent2].filter(Boolean).join(" · "), infoX, infoY);
+      infoY += 34;
+    }
+
+    var statusLabel = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
+    var statusColor = !s.scored ? C.pending : (score >= 70 ? C.good : C.bad);
+    var statusBg = !s.scored ? C.pendingSoft : (score >= 70 ? C.goodSoft : C.badSoft);
+    ctx.font = "700 22px 'Noto Sans KR', sans-serif";
+    var badgeW = ctx.measureText(statusLabel).width + 48;
+    roundRectPath(ctx, infoX, infoY+6, badgeW, 44, 22);
+    ctx.fillStyle = statusBg; ctx.fill();
+    ctx.fillStyle = statusColor; ctx.textBaseline = "middle";
+    ctx.fillText(statusLabel, infoX+24, infoY+6+22);
+    ctx.textBaseline = "alphabetic";
+
+    y = Math.max(circleCY + circleR, infoY + 70) + 30;
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    y += 50;
+
+    ctx.fillStyle = C.accent; ctx.fillRect(pad, y-20, 6, 22);
+    ctx.fillStyle = C.ink; ctx.font = "700 26px 'Noto Serif KR', serif";
+    ctx.fillText("항목별 점수 (10점 만점)", pad+18, y);
+    y += 46;
+
+    var colGap = 24;
+    var colWidth = (W - pad*2 - colGap) / 2;
+    var rowH = 44;
+    var leftItems = ITEM_LABELS.slice(0,5);
+    var rightItems = ITEM_LABELS.slice(5,10);
+    function drawScoreRow(x, ry, w, label, value){
+      ctx.fillStyle = C.inkSoft; ctx.font = "500 21px 'Noto Sans KR', sans-serif"; ctx.textBaseline = "middle";
+      ctx.fillText(label, x, ry+14);
+      ctx.fillStyle = C.ink; ctx.font = "600 22px 'IBM Plex Mono', monospace"; ctx.textAlign = "right";
+      ctx.fillText((value==null ? "-" : value), x+w, ry+14);
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.strokeStyle = C.line; ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, ry+34); ctx.lineTo(x+w, ry+34); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    leftItems.forEach(function(k,i){ drawScoreRow(pad, y+i*rowH, colWidth, k, s.items[k]); });
+    rightItems.forEach(function(k,i){ drawScoreRow(pad+colWidth+colGap, y+i*rowH, colWidth, k, s.items[k]); });
+    y += 5*rowH + 20;
+
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    y += 50;
+
+    ctx.fillStyle = C.accent; ctx.fillRect(pad, y-20, 6, 22);
+    ctx.fillStyle = C.ink; ctx.font = "700 26px 'Noto Serif KR', serif";
+    ctx.fillText("육각형 점수", pad+18, y);
+    y += 40;
+    var radarR = 160;
+    var radarCY = y + radarR + 20;
+    drawShareRadar(ctx, W/2, radarCY, radarR, s.hexagon, C);
+    y = radarCY + radarR + 60;
+
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    y += 50;
+
+    // verdict panel
+    ctx.font = "500 24px 'Noto Sans KR', sans-serif";
+    var commentText = buildCommentText(s, score);
+    var wrapWidth = W - pad*2 - 80 - 20;
+    var lines = wrapLines(ctx, commentText, wrapWidth);
+    var lineHeight = 36;
+    var panelPadX = 40, panelPadY = 36;
+    var panelH = panelPadY + 60 + 40 + lines.length*lineHeight + panelPadY;
+    var panelX = pad, panelY = y, panelW = W - pad*2;
+    roundRectPath(ctx, panelX, panelY, panelW, panelH, 16);
+    ctx.fillStyle = C.surface2; ctx.fill();
+
+    var bigY = panelY + panelPadY + 50;
+    var scoreText = String(s.scored ? score : 0);
+    ctx.fillStyle = C.accentInk; ctx.font = "700 66px 'Noto Serif KR', serif";
+    ctx.fillText(scoreText, panelX+panelPadX, bigY);
+    var scoreTextW = ctx.measureText(scoreText).width;
+    ctx.font = "500 24px 'Noto Sans KR', sans-serif"; ctx.fillStyle = C.muted;
+    ctx.fillText(" / 100점", panelX+panelPadX+scoreTextW, bigY);
+
+    var gradeText = "등급 " + (s.scored ? (gradeLabel(score) || "미달") : "-");
+    ctx.font = "600 22px 'IBM Plex Mono', monospace";
+    var gradeW = ctx.measureText(gradeText).width + 32;
+    var chipX = panelX+panelPadX+scoreTextW+150;
+    roundRectPath(ctx, chipX, bigY-34, gradeW, 44, 8);
+    ctx.fillStyle = C.surface; ctx.fill();
+    ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = C.inkSoft; ctx.textBaseline = "middle";
+    ctx.fillText(gradeText, chipX+16, bigY-34+22);
+    ctx.textBaseline = "alphabetic";
+
+    var commentY = panelY + panelPadY + 50 + 46;
+    ctx.fillStyle = C.accent;
+    ctx.fillRect(panelX+panelPadX, commentY-26, 5, lines.length*lineHeight+6);
+    ctx.fillStyle = C.inkSoft;
+    ctx.font = "500 24px 'Noto Sans KR', sans-serif";
+    lines.forEach(function(line,i){ ctx.fillText(line, panelX+panelPadX+22, commentY+i*lineHeight); });
+
+    y = panelY + panelH + 50;
+
+    ctx.fillStyle = C.muted;
+    ctx.font = "500 18px 'IBM Plex Mono', monospace";
+    ctx.fillText("심사체점시스템 자동 생성 · " + fmtDate(new Date().toISOString().slice(0,10)), pad, y);
+    y += 40;
+
+    return y;
+  }
+
+  async function buildShareImageDataUrl(s){
+    if (window.document.fonts && document.fonts.ready){ try{ await document.fonts.ready; } catch(e){} }
+    var W = 1080;
+    var photoImg = null;
+    if (s.photo){ try{ photoImg = await loadImageEl(s.photo); } catch(e){ photoImg = null; } }
+
+    var scratch = document.createElement("canvas");
+    scratch.width = W; scratch.height = 3200;
+    var finalY = renderShareCard(scratch.getContext("2d"), s, W, photoImg);
+
+    var canvas = document.getElementById("shareCanvas");
+    canvas.width = W;
+    canvas.height = Math.ceil(finalY);
+    renderShareCard(canvas.getContext("2d"), s, W, photoImg);
+
+    return canvas.toDataURL("image/jpeg", 0.92);
+  }
+
+  var shareModal = document.getElementById("shareModalBackdrop");
+  var shareSpinner = document.getElementById("shareSpinner");
+  var sharePreviewImg = document.getElementById("sharePreviewImg");
+
+  document.getElementById("shareBtn").addEventListener("click", async function(){
+    var s = students[currentIdx];
+    sharePreviewImg.hidden = true;
+    sharePreviewImg.removeAttribute("src");
+    shareSpinner.hidden = false;
+    shareSpinner.textContent = "이미지 생성 중…";
+    shareModal.hidden = false;
+    try {
+      var dataUrl = await buildShareImageDataUrl(s);
+      sharePreviewImg.src = dataUrl;
+      sharePreviewImg.hidden = false;
+      shareSpinner.hidden = true;
+      shareModal.dataset.currentDataUrl = dataUrl;
+      shareModal.dataset.filename = (s.name || "student") + "_결과증.jpg";
+    } catch(e){
+      shareSpinner.textContent = "이미지 생성에 실패했습니다. 다시 시도해 주세요.";
+    }
+  });
+  document.getElementById("shareCloseBtn").addEventListener("click", function(){ shareModal.hidden = true; });
+  shareModal.addEventListener("click", function(e){ if (e.target === shareModal) shareModal.hidden = true; });
+
+  document.getElementById("shareOpenTabBtn").addEventListener("click", function(){
+    var dataUrl = shareModal.dataset.currentDataUrl;
+    if (dataUrl) window.open(dataUrl, "_blank");
+  });
+
+  document.getElementById("shareSendBtn").addEventListener("click", async function(){
+    var dataUrl = shareModal.dataset.currentDataUrl;
+    var filename = shareModal.dataset.filename || "result.jpg";
+    if (!dataUrl) return;
+    try {
+      var res = await fetch(dataUrl);
+      var blob = await res.blob();
+      var file = new File([blob], filename, { type: "image/jpeg" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ files: [file], title: "승급심사 결과증", text: "승급심사 결과증입니다." });
+        return;
+      }
+    } catch(e){ /* fall through */ }
+    window.open(dataUrl, "_blank");
+  });
+
+  // ---- init ----
+  var gradeList = document.getElementById("gradeList");
+  Object.keys(beltByGrade).forEach(function(g){
+    var opt = document.createElement("option");
+    opt.value = g;
+    gradeList.appendChild(opt);
+  });
+
+  fillSelect();
+  try {
+    var last = localStorage.getItem("lastStudentName");
+    if (last){
+      var found = students.findIndex(function(s){ return s.name === last; });
+      if (found >= 0) currentIdx = found;
+    }
+  } catch(e){}
+  renderCert();
+  renderRoster();
+
+  document.getElementById("todayMeta").textContent = "조회일 " + fmtDate(new Date().toISOString().slice(0,10));
+})();
 </script>
-</body>
-</html>
