@@ -1,1375 +1,356 @@
-<title>승급심사 결과증</title>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>랜덤인생게임</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
-
   :root{
-    --bg: #f4f1ea;
-    --surface: #ffffff;
-    --surface-2: #ece7dc;
-    --ink: #201d18;
-    --ink-soft: #514c42;
-    --muted: #8b8477;
-    --line: #ddd5c4;
-    --accent: #a8742a;
-    --accent-ink: #6e4b19;
-    --accent-soft: #efe0c3;
-    --good: #3c7a4f;
-    --good-soft: #e2ede4;
-    --bad: #a53f3f;
-    --bad-soft: #f3e2e2;
-    --pending: #7a6a3f;
-    --pending-soft: #efe9d8;
-    --danger: #a53f3f;
-    --shadow: 0 1px 2px rgba(32,29,24,0.06), 0 8px 24px -12px rgba(32,29,24,0.18);
+    --bg:#f5f2ea; --surface:#fff; --ink:#1f1d19; --soft:#58534a; --muted:#8c8578;
+    --line:#ddd6c6; --accent:#a8742a; --accent-soft:#efe0c3; --good:#3c7a4f; --bad:#a53f3f;
   }
-
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg: #14120f;
-      --surface: #1d1a15;
-      --surface-2: #262119;
-      --ink: #ede7da;
-      --ink-soft: #c3bba9;
-      --muted: #8a8170;
-      --line: #372f24;
-      --accent: #d3a352;
-      --accent-ink: #f0cb87;
-      --accent-soft: #33290f;
-      --good: #7fbd93;
-      --good-soft: #1c2e21;
-      --bad: #d98080;
-      --bad-soft: #331e1e;
-      --pending: #d0be86;
-      --pending-soft: #2c2716;
-      --danger: #d98080;
-      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
-    }
+    :root{ --bg:#14120f; --surface:#1e1b16; --ink:#ede7da; --soft:#c3bba9; --muted:#8a8170;
+      --line:#383025; --accent:#d3a352; --accent-soft:#33290f; --good:#7fbd93; --bad:#d98080; }
   }
-  :root[data-theme="dark"]{
-    --bg: #14120f;
-    --surface: #1d1a15;
-    --surface-2: #262119;
-    --ink: #ede7da;
-    --ink-soft: #c3bba9;
-    --muted: #8a8170;
-    --line: #372f24;
-    --accent: #d3a352;
-    --accent-ink: #f0cb87;
-    --accent-soft: #33290f;
-    --good: #7fbd93;
-    --good-soft: #1c2e21;
-    --bad: #d98080;
-    --bad-soft: #331e1e;
-    --pending: #d0be86;
-    --pending-soft: #2c2716;
-    --danger: #d98080;
-    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
-  }
-
-  *{ box-sizing: border-box; }
-  html,body{ margin:0; padding:0; }
-  body{
-    background: var(--bg);
-    color: var(--ink);
-    font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  a{ color: inherit; }
-  button{ font-family: inherit; }
-  input, select, textarea{ font-family: inherit; }
-
-  .wrap{
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-  }
-
-  header.top{
-    display:flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 18px;
-    margin-bottom: 22px;
-    flex-wrap: wrap;
-  }
-  .brand{ display:flex; flex-direction:column; gap:4px; }
-  .brand .eyebrow{
-    font-family:"IBM Plex Mono", monospace;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent-ink);
-  }
-  .brand h1{
-    font-family: "Noto Serif KR", serif;
-    font-weight: 700;
-    font-size: clamp(22px, 3vw, 30px);
-    margin: 0;
-    text-wrap: balance;
-  }
-  .top .meta{
-    font-family:"IBM Plex Mono", monospace;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: right;
-  }
-
-  .tabs{
-    display:flex;
-    gap: 4px;
-    margin-bottom: 22px;
-    border-bottom: 1px solid var(--line);
-  }
-  .tab-btn{
-    background: none;
-    border: none;
-    padding: 10px 4px;
-    margin-right: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    position: relative;
-    top: 1px;
-  }
-  .tab-btn.active{ color: var(--ink); border-bottom-color: var(--accent); }
-  .tab-btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  .controls-row{
-    display:flex;
-    align-items:center;
-    gap: 12px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  .controls-left{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
-  .controls-right{ display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
-
-  label.field-label{ font-size: 13px; color: var(--ink-soft); font-weight: 500; }
-
-  select#studentSelect, .btn, input.field-input, select.field-input, textarea.field-input{
-    font-size: 14px;
-    color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 9px 12px;
-  }
-  select#studentSelect{
-    font-weight: 500;
-    padding-right: 34px;
-    box-shadow: var(--shadow);
-    appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
-    cursor: pointer;
-  }
-  .btn{
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    white-space: nowrap;
-  }
-  .btn:hover{ border-color: var(--accent); color: var(--accent-ink); }
-  .btn.primary{ background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn.primary:hover{ opacity: 0.92; color:#fff; }
-  .btn.ghost{ box-shadow: none; }
-  .btn.danger:hover{ border-color: var(--danger); color: var(--danger); }
-  select#studentSelect:focus-visible, .btn:focus-visible, input.field-input:focus-visible, select.field-input:focus-visible, textarea.field-input:focus-visible{
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .certificate{
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-
-  .cert-head{
-    display:flex;
-    justify-content: space-between;
-    align-items:flex-start;
-    gap: 20px;
-    padding: 28px 32px;
-    border-bottom: 1px solid var(--line);
-    flex-wrap: wrap;
-  }
-  .cert-id{ display:flex; align-items:center; gap: 18px; }
-  .avatar{ position: relative; flex: none; }
-  .photo-frame{
-    width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
-    border: 1px solid var(--line); background: var(--surface-2);
-    cursor: pointer; position: relative;
-  }
-  .photo-frame:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
-  .photo-frame img{ width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photo-frame .placeholder{
-    display:flex; align-items:center; justify-content:center; height:100%;
-    font-size: 10.5px; color: var(--muted); text-align:center; line-height:1.35; padding: 4px;
-  }
-  .photo-frame .remove-btn{
-    position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%;
-    background: rgba(20,17,12,0.6); color: #fff; font-size: 11px; line-height: 17px; text-align: center;
-    border: none; padding: 0; cursor: pointer; display: none;
-  }
-  .photo-frame:hover .remove-btn, .photo-frame:focus-within .remove-btn{ display: block; }
-  .belt-swatch{
-    position: absolute; right: -5px; bottom: -5px;
-    width: 24px; height: 24px; border-radius: 50%; flex: none;
-    border: 2px solid var(--surface);
-    box-shadow: var(--shadow);
-  }
-  .cert-id h2{ font-family: "Noto Serif KR", serif; font-size: 24px; margin: 0 0 4px; }
-  .cert-id input.name-input{
-    font-family: "Noto Serif KR", serif;
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 6px;
-    width: 220px;
-  }
-  .cert-id .sub{ font-size: 13px; color: var(--ink-soft); display:flex; gap: 14px; flex-wrap: wrap; align-items:center; }
-  .cert-id .sub span b{ color: var(--ink); font-weight:600; }
-  .cert-id .sub input.field-input, .cert-id .sub select.field-input{ padding: 5px 8px; font-size: 12.5px; width: 108px; }
-
-  .badge{
-    display:inline-flex; align-items:center; gap: 8px;
-    padding: 8px 16px; border-radius: 999px;
-    font-weight: 700; font-size: 14px; letter-spacing: 0.02em; white-space: nowrap;
-  }
-  .badge .dot{ width:7px; height:7px; border-radius:50%; background: currentColor; }
-  .badge.pass{ background: var(--good-soft); color: var(--good); }
-  .badge.fail{ background: var(--bad-soft); color: var(--bad); }
-  .badge.pending{ background: var(--pending-soft); color: var(--pending); }
-  .badge.toggle{ cursor:pointer; border: none; }
-
-  .cert-body{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; }
-  @media (max-width: 720px){ .cert-body{ grid-template-columns: 1fr; } }
-
-  .panel{ padding: 28px 32px; }
-  .panel + .panel{ border-top: 1px solid var(--line); }
-  @media (min-width: 721px){ .panel + .panel{ border-top: none; border-left: 1px solid var(--line); } }
-
-  .panel h3{
-    font-family: "Noto Serif KR", serif; font-size: 15px; font-weight: 700; margin: 0 0 16px;
-    display:flex; align-items:center; gap: 8px;
-  }
-  .panel h3::before{ content:""; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; display:inline-block; }
-
-  table.scores{ width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 13px; }
-  table.scores td{ padding: 6px 0; border-bottom: 1px dashed var(--line); vertical-align: middle; }
-  table.scores td:first-child{ font-family: "Noto Sans KR", sans-serif; color: var(--ink-soft); font-size: 13px; }
-  table.scores td:last-child{ text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-  table.scores tr:last-child td{ border-bottom: none; }
-  table.scores tr.total td{ padding-top: 12px; border-top: 1px solid var(--line); border-bottom: none; font-weight: 700; color: var(--ink); }
-  table.scores tr.total td:last-child{ font-size: 16px; color: var(--accent-ink); }
-  input.score-input{
-    width: 56px; text-align: right; padding: 4px 6px; border-radius: 5px;
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-    font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600;
-  }
-
-  .radar-wrap{ display:flex; flex-direction: column; align-items: center; gap: 10px; }
-  .radar-wrap svg{ max-width: 260px; width: 100%; height: auto; }
-  .radar-legend{ font-family:"IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); text-align:center; }
-
-  .verdict{ padding: 24px 32px 28px; border-top: 1px solid var(--line); background: var(--surface-2); }
-  .verdict .grade-row{ display:flex; align-items: baseline; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
-  .verdict .score-big{ font-family: "Noto Serif KR", serif; font-weight: 700; font-size: 40px; color: var(--accent-ink); line-height: 1; }
-  .verdict .score-big small{ font-family: "Noto Sans KR", sans-serif; font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 4px; }
-  .verdict .grade-chip{ font-family:"IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink-soft); }
-  .verdict textarea.field-input{ width: 100%; min-height: 64px; resize: vertical; font-size: 14px; }
-  .verdict p.comment{ white-space: pre-wrap; font-size: 14.5px; color: var(--ink-soft); margin: 0; border-left: 3px solid var(--accent); padding-left: 14px; }
-
-  footer.note{ margin-top: 22px; font-size: 12px; color: var(--muted); line-height: 1.6; }
-
-  /* --- roster / stats view --- */
-  .stat-cards{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
-  @media (max-width: 720px){ .stat-cards{ grid-template-columns: repeat(2,1fr); } }
-  .stat-card{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow); }
-  .stat-card .label{ font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-  .stat-card .value{ font-family: "Noto Serif KR", serif; font-size: 26px; font-weight: 700; color: var(--accent-ink); }
-
-  .roster-table-wrap{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); overflow-x: auto; }
-  table.roster{ width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
-  table.roster th, table.roster td{ padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  table.roster th{ font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; background: var(--surface-2); }
-  table.roster tbody tr{ cursor: pointer; }
-  table.roster tbody tr:hover{ background: var(--surface-2); }
-  table.roster tbody tr:last-child td{ border-bottom: none; }
-  table.roster td.num{ text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
-  .mini-badge{ display:inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-  .mini-badge.pass{ background: var(--good-soft); color: var(--good); }
-  .mini-badge.fail{ background: var(--bad-soft); color: var(--bad); }
-  .mini-badge.pending{ background: var(--pending-soft); color: var(--pending); }
-  .roster-thumb{ width: 30px; height: 30px; border-radius: 6px; object-fit: cover; display:block; border: 1px solid var(--line); }
-  .roster-thumb.placeholder{ background: var(--surface-2); }
-
-  /* --- modal --- */
-  .modal-backdrop{
-    position: fixed; inset: 0; background: rgba(20,17,12,0.55);
-    display:flex; align-items:center; justify-content:center; padding: 24px; z-index: 50;
-  }
-  .modal-backdrop[hidden]{ display:none; }
-  .modal{
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    box-shadow: var(--shadow); width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
-    padding: 26px 26px 22px;
-  }
-  .modal h3{ font-family:"Noto Serif KR", serif; font-size: 18px; margin: 0 0 18px; }
-  .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px 12px; margin-bottom: 16px; }
-  .modal-grid .full{ grid-column: 1 / -1; }
-  .modal-grid label{ font-size: 12px; color: var(--ink-soft); font-weight: 600; display:block; margin-bottom: 4px; }
-  .modal-grid input.field-input, .modal-grid textarea.field-input{ width: 100%; }
-  .modal-actions{ display:flex; justify-content:flex-end; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-
-  .share-modal{ max-width: 420px; }
-  .share-preview-wrap{
-    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
-    min-height: 160px; display:flex; align-items:center; justify-content:center;
-    margin-bottom: 14px; overflow: hidden;
-  }
-  .share-preview-wrap img{ width: 100%; display:block; border-radius: 8px; }
-  .share-spinner{ font-size: 13px; color: var(--muted); padding: 40px 0; }
-  p.share-hint{ font-size: 12.5px; color: var(--ink-soft); margin: 0 0 4px; line-height: 1.5; }
-
-  /* --- print --- */
-  @media print{
-    body{ background: #fff; }
-    header.top, .tabs, .controls-row, footer.note, .modal-backdrop{ display: none !important; }
-    .wrap{ padding: 0; max-width: none; }
-    .certificate{ box-shadow: none; border: 1px solid #ccc; }
-    input.score-input, .cert-id input.field-input, .cert-id select.field-input{
-      border: none; background: transparent; color: inherit; padding: 0; width: auto;
-    }
-    .badge.toggle{ cursor: default; }
-    .photo-frame{ cursor: default; }
-    .photo-frame .remove-btn{ display: none !important; }
-  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:28px 16px 64px}
+  h1{font-size:26px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 24px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  .card h2{font-size:15px;color:var(--accent);margin:0 0 8px;letter-spacing:.02em}
+  .big{font-size:22px;font-weight:700;margin:2px 0 6px}
+  button{font:inherit;cursor:pointer}
+  .btn{display:block;width:100%;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:8px}
+  .btn:hover,.btn:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
+  .primary{background:var(--accent);color:#fff;border:0;text-align:center;font-weight:700;padding:14px}
+  .primary:hover{background:var(--accent);filter:brightness(1.1)}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:12px;color:var(--soft)}
+  .stat b{display:block;font-size:17px;color:var(--ink)}
+  .bar{height:4px;background:var(--line);border-radius:2px;margin-top:4px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .age{font-size:13px;color:var(--muted);margin-bottom:4px}
+  .res{border-left:3px solid var(--accent);padding:4px 12px;margin:12px 0;color:var(--soft)}
+  .log{font-size:14px;color:var(--soft);margin:0;padding:0;list-style:none}
+  .log li{padding:5px 0;border-bottom:1px dashed var(--line)}
+  .log li span{color:var(--accent);font-weight:700;margin-right:8px;font-variant-numeric:tabular-nums}
+  .tag{display:inline-block;font-size:12px;background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 10px;margin:0 4px 4px 0}
+  .fx{font-size:12px;color:var(--muted);margin-top:6px}
+  .note{font-size:12px;color:var(--muted);margin-top:24px}
+  .roll{font-variant-numeric:tabular-nums}
+  @media (max-width:420px){.stats{grid-template-columns:repeat(3,1fr)}}
 </style>
-
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <span class="eyebrow">Promotion Test Result</span>
-      <h1>승급심사 결과증</h1>
-    </div>
-    <div class="meta" id="todayMeta"></div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab-btn active" id="tabCertBtn" type="button">결과증</button>
-    <button class="tab-btn" id="tabRosterBtn" type="button">전체 명단 · 통계</button>
-  </nav>
-
-  <!-- 결과증 view -->
-  <div id="viewCert">
-    <div class="controls-row">
-      <div class="controls-left">
-        <label class="field-label" for="studentSelect">수련생 선택</label>
-        <select id="studentSelect"></select>
-      </div>
-      <div class="controls-right">
-        <button class="btn ghost" id="editToggleBtn" type="button">정보 수정</button>
-        <button class="btn ghost" id="deleteBtn" type="button">삭제</button>
-        <button class="btn ghost" id="printBtn" type="button">인쇄 / PDF</button>
-        <button class="btn ghost" id="shareBtn" type="button">JPG로 저장 · 공유</button>
-        <button class="btn primary" id="addStudentBtn" type="button">+ 새 수련생</button>
-      </div>
-    </div>
-
-    <div class="certificate">
-      <div class="cert-head">
-        <div class="cert-id">
-          <div class="avatar">
-            <div class="photo-frame" id="photoFrame" role="button" tabindex="0" title="클릭해서 사진 업로드">
-              <div class="placeholder" id="photoPlaceholder">사진<br />추가</div>
-              <img id="photoImg" hidden alt="" />
-              <button class="remove-btn" id="photoRemoveBtn" type="button" title="사진 삭제">×</button>
-            </div>
-            <input type="file" id="photoInput" accept="image/*" hidden />
-            <div class="belt-swatch" id="beltSwatch"></div>
-          </div>
-          <div>
-            <h2 id="studentNameView">-</h2>
-            <input class="field-input name-input" id="studentNameEdit" hidden />
-            <div class="sub" id="subInfo"></div>
-          </div>
-        </div>
-        <button class="badge toggle" id="statusBadge" type="button" title="클릭해서 채점 완료 여부 전환"><span class="dot"></span><span id="statusText">-</span></button>
-      </div>
-
-      <div class="cert-body">
-        <div class="panel">
-          <h3>항목별 점수 (10점 만점)</h3>
-          <table class="scores" id="scoreTable"></table>
-        </div>
-        <div class="panel">
-          <h3>육각형 점수</h3>
-          <div class="radar-wrap">
-            <svg id="radarChart" viewBox="0 0 220 220"></svg>
-            <div class="radar-legend">출석 · 감사노트 · 체력 · 발차기 · 겨루기 · 품새</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="verdict">
-        <div class="grade-row">
-          <div class="score-big" id="finalScore">0<small>/ 100점</small></div>
-          <div class="grade-chip" id="gradeChip">등급 -</div>
-        </div>
-        <p class="comment" id="finalCommentView">학생을 선택하세요.</p>
-        <textarea class="field-input" id="finalCommentEdit" hidden placeholder="사범님 코멘트를 입력하세요"></textarea>
-      </div>
-    </div>
-
-    <footer class="note">
-      원본 &lsquo;심사체점시스템&rsquo; 엑셀의 체점표 · 급수기준 · 설문조사 시트 로직을 그대로 옮긴 페이지입니다.
-      점수·수련생 정보는 이 브라우저에만 저장되며(로컬 저장), 다른 기기·사용자와는 공유되지 않습니다.
-      상단 배지를 클릭하면 채점 완료 여부(심사 전 ↔ 합격/불합격)를 전환할 수 있습니다.
-    </footer>
-  </div>
-
-  <!-- 전체 명단 view -->
-  <div id="viewRoster" hidden>
-    <div class="stat-cards">
-      <div class="stat-card"><div class="label">전체 인원</div><div class="value" id="statTotal">0</div></div>
-      <div class="stat-card"><div class="label">채점 완료</div><div class="value" id="statScored">0</div></div>
-      <div class="stat-card"><div class="label">합격률</div><div class="value" id="statPassRate">0%</div></div>
-      <div class="stat-card"><div class="label">평균 점수</div><div class="value" id="statAvg">0</div></div>
-    </div>
-    <div class="roster-table-wrap">
-      <table class="roster">
-        <thead>
-          <tr>
-            <th>사진</th><th>이름</th><th>현급 · 띠</th><th>심사일</th><th class="num">최종점수</th><th>등급</th><th>상태</th>
-          </tr>
-        </thead>
-        <tbody id="rosterBody"></tbody>
-      </table>
-    </div>
-    <footer class="note">행을 클릭하면 해당 수련생의 결과증 화면으로 이동합니다.</footer>
-  </div>
-</div>
-
-<!-- 새 수련생 모달 -->
-<div class="modal-backdrop" id="modalBackdrop" hidden>
-  <div class="modal">
-    <h3>새 수련생 등록</h3>
-    <div class="modal-grid">
-      <div class="full"><label>이름 *</label><input class="field-input" id="mName" /></div>
-      <div><label>생년월일 (YYMMDD)</label><input class="field-input" id="mBirth" placeholder="예: 120901" /></div>
-      <div><label>현재 급수</label><input class="field-input" id="mGrade" list="gradeList" placeholder="예: 9급" /></div>
-      <div><label>부모님1</label><input class="field-input" id="mParent1" /></div>
-      <div><label>부모님2</label><input class="field-input" id="mParent2" /></div>
-      <div class="full"><label>심사일</label><input class="field-input" type="date" id="mExamDate" /></div>
-      <div class="full"><label>사범님 코멘트</label><textarea class="field-input" id="mComment" rows="2"></textarea></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn ghost" id="mCancel" type="button">취소</button>
-      <button class="btn primary" id="mSave" type="button">등록</button>
-    </div>
-  </div>
-</div>
-<datalist id="gradeList"></datalist>
-
-<!-- 공유 이미지 미리보기 모달 -->
-<div class="modal-backdrop" id="shareModalBackdrop" hidden>
-  <div class="modal share-modal">
-    <h3>결과증 이미지</h3>
-    <div class="share-preview-wrap">
-      <div class="share-spinner" id="shareSpinner">이미지 생성 중…</div>
-      <img id="sharePreviewImg" alt="결과증 캡처 이미지" hidden />
-    </div>
-    <p class="share-hint">이미지를 길게 눌러 &lsquo;사진에 저장&rsquo; 하거나, 아래 버튼으로 부모님께 바로 공유하세요.</p>
-    <div class="modal-actions">
-      <button class="btn ghost" id="shareCloseBtn" type="button">닫기</button>
-      <button class="btn ghost" id="shareOpenTabBtn" type="button">새 탭에서 열기</button>
-      <button class="btn primary" id="shareSendBtn" type="button">공유하기</button>
-    </div>
-  </div>
-</div>
-<canvas id="shareCanvas" hidden></canvas>
-
+</head>
+<body>
+<div class="wrap" id="app"></div>
 <script>
-(function(){
-  var STORAGE_KEY = "taekwondoStudentsV2";
-  var ITEM_LABELS = ["효도","성실","인성(감사노트)","인성(리더십)","체력(스쿼트)","체력(점핑잭)","기술(품새)","기술(겨루기)","기술(발차기)","기술(격파)"];
-  var HEX_LABELS = ["출석","감사노트","체력","발차기","겨루기","품새"];
-  function zeroItems(){
-    var o = {}; ITEM_LABELS.forEach(function(k){ o[k] = 0; }); return o;
-  }
+/* 국가 데이터: World Bank Open Data (CC BY 4.0) — [iso3, 영문명, 한글명, 지역, 소득, 추정출생수, 기대수명, 영아사망(천명당), 1인당GDP(PPP)] */
+const REGIONS=["중남미·카리브해", "중동·북아프리카", "사하라 이남 아프리카", "유럽·중앙아시아", "동아시아·태평양", "남아시아", "북아메리카"];
+const INCOMES=["저소득국","중하위소득국","중상위소득국","고소득국"];
+const COUNTRIES=[["ABW","Aruba","Aruba",0,3,827,76.5,null,null],["AFG","Afghanistan","아프가니스탄",1,0,1534544,66.3,48.3,null],["AGO","Angola","앙골라",2,1,1452289,64.8,32.1,10251.0],["ALB","Albania","Albania",3,2,23731,79.8,8.3,28221.0],["AND","Andorra","Andorra",3,3,572,84.2,2.4,79567.0],["ARE","United Arab Emirates","아랍에미리트",1,3,112829,83.1,3.8,null],["ARG","Argentina","아르헨티나",0,2,508950,77.5,8,32587.0],["ARM","Armenia","Armenia",3,2,34262,78.3,8.5,24754.0],["ASM","American Samoa","American Samoa",4,3,690,73.0,null,null],["ATG","Antigua and Barbuda","Antigua and Barbuda",0,3,1102,77.8,7,35832.0],["AUS","Australia","호주",4,3,295474,83.1,3.1,71934.0],["AUT","Austria","오스트리아",3,3,77349,82.0,2.8,76778.0],["AZE","Azerbaijan","Azerbaijan",3,2,102470,74.6,12.5,26113.0],["BDI","Burundi","Burundi",2,0,477748,63.8,30.5,1248.0],["BEL","Belgium","벨기에",3,3,109864,82.3,3.1,74676.0],["BEN","Benin","Benin",2,1,494803,61.0,45.2,4817.0],["BFA","Burkina Faso","부르키나파소",2,0,753534,61.3,43.6,3072.0],["BGD","Bangladesh","방글라데시",5,1,3513738,74.9,24.4,10154.0],["BGR","Bulgaria","Bulgaria",3,3,53396,75.8,4.6,44451.0],["BHR","Bahrain","Bahrain",1,3,19204,81.4,7.3,70997.0],["BHS","Bahamas, The","Bahamas, The",0,3,4353,74.7,11.1,null],["BIH","Bosnia and Herzegovina","Bosnia and Herzegovina",3,2,24179,78.0,5.5,25814.0],["BLR","Belarus","Belarus",3,2,63602,74.4,1.8,34716.0],["BLZ","Belize","Belize",0,2,7655,73.7,10.8,14966.0],["BMU","Bermuda","Bermuda",6,3,510,82.5,null,null],["BOL","Bolivia","볼리비아",0,1,264219,68.7,14.2,12873.0],["BRA","Brazil","브라질",0,2,2575030,76.0,12.3,23433.0],["BRB","Barbados","Barbados",0,3,3137,76.3,9.1,25894.0],["BRN","Brunei Darussalam","Brunei Darussalam",4,3,6202,75.5,8.6,92430.0],["BTN","Bhutan","Bhutan",5,1,9959,73.3,13.7,19594.0],["BWA","Botswana","Botswana",2,2,62516,69.3,32.1,20698.0],["CAF","Central African Republic","Central African Republic",2,0,254714,57.7,58.8,1314.0],["CAN","Canada","캐나다",6,3,370700,82.1,4.7,66746.0],["CHE","Switzerland","스위스",3,3,79104,84.4,3.4,102513.0],["CHI","Channel Islands","Channel Islands",3,3,1381,81.2,null,null],["CHL","Chile","칠레",0,3,172781,81.4,5.8,37774.0],["CHN","China","중국",4,2,9564778,78.0,4.1,29333.0],["CIV","Cote d'Ivoire","코트디부아르",2,1,1033685,62.1,44.8,8209.0],["CMR","Cameroon","카메룬",2,1,994982,64.0,40.2,5788.0],["COD","Congo, Dem. Rep.","콩고민주공화국",2,0,4614848,62.1,56.4,1920.0],["COG","Congo, Rep.","Congo, Rep.",2,1,197127,66.0,27,7248.0],["COL","Colombia","콜롬비아",0,2,710561,77.9,10.5,22640.0],["COM","Comoros","Comoros",2,1,24896,67.0,35,4238.0],["CPV","Cabo Verde","Cabo Verde",2,2,6433,76.2,10.6,12165.0],["CRI","Costa Rica","Costa Rica",0,3,51530,81.0,9.1,33815.0],["CUB","Cuba","쿠바",0,2,94060,78.3,6.8,null],["CUW","Curacao","Curacao",0,3,1125,77.0,null,null],["CYM","Cayman Islands","Cayman Islands",0,3,880,80.5,null,null],["CYP","Cyprus","Cyprus",3,3,14393,81.8,4.1,64575.0],["CZE","Czechia","Czechia",3,3,83829,80.0,2.1,60487.0],["DEU","Germany","독일",3,3,676279,80.8,3.1,75407.0],["DJI","Djibouti","Djibouti",1,1,24747,66.2,43,8452.0],["DMA","Dominica","Dominica",0,2,725,71.3,33.3,22713.0],["DNK","Denmark","덴마크",3,3,57087,82.3,3.5,83218.0],["DOM","Dominican Republic","Dominican Republic",0,2,202761,73.9,27.7,28721.0],["DZA","Algeria","알제리",1,2,891784,76.5,19.5,18586.0],["ECU","Ecuador","에콰도르",0,2,270690,77.6,10.9,16757.0],["EGY","Egypt, Arab Rep.","이집트",1,1,2473849,71.8,20.8,20204.0],["ERI","Eritrea","Eritrea",2,0,103521,68.9,24.7,null],["ESP","Spain","스페인",3,3,320808,83.9,2.6,59868.0],["EST","Estonia","Estonia",3,3,9702,79.3,1.5,52106.0],["ETH","Ethiopia","에티오피아",2,0,4267370,67.6,34.5,3622.0],["FIN","Finland","핀란드",3,3,44042,82.3,1.9,65884.0],["FJI","Fiji","Fiji",4,2,16703,67.5,23.5,16338.0],["FRA","France","프랑스",3,3,666587,83.0,3.4,63975.0],["FRO","Faroe Islands","Faroe Islands",3,3,593,83.1,null,null],["FSM","Micronesia, Fed. Sts.","Micronesia, Fed. Sts.",4,2,2535,67.4,20.3,4604.0],["GAB","Gabon","Gabon",2,2,70274,68.5,25.9,22218.0],["GBR","United Kingdom","영국",3,3,687921,81.4,4.1,64606.0],["GEO","Georgia","Georgia",3,2,44474,74.7,7.5,29414.0],["GHA","Ghana","가나",2,1,908165,65.7,27.5,8610.0],["GIB","Gibraltar","Gibraltar",3,3,490,83.6,null,null],["GIN","Guinea","기니",2,1,502821,60.9,59.8,4935.0],["GMB","Gambia, The","Gambia, The",2,0,84381,66.1,32.7,3706.0],["GNB","Guinea-Bissau","Guinea-Bissau",2,0,66586,64.3,42.1,3293.0],["GNQ","Equatorial Guinea","Equatorial Guinea",2,2,58153,63.9,47.6,16133.0],["GRC","Greece","그리스",3,3,68732,81.8,3.2,45264.0],["GRD","Grenada","Grenada",0,2,1349,75.4,16.4,21346.0],["GRL","Greenland","Greenland",3,3,682,70.3,null,null],["GTM","Guatemala","과테말라",0,2,384970,72.7,17.2,15197.0],["GUM","Guam","Guam",4,3,2924,77.4,null,null],["GUY","Guyana","Guyana",0,3,16636,70.3,23.2,97899.0],["HKG","Hong Kong SAR, China","홍콩",4,3,36745,85.4,null,80423.0],["HND","Honduras","Honduras",0,1,237726,73.0,12.8,7871.0],["HRV","Croatia","Croatia",3,3,32172,78.9,4.1,50946.0],["HTI","Haiti","아이티",0,1,260743,65.1,39,3134.0],["HUN","Hungary","Hungary",3,3,78017,76.7,3.1,49838.0],["IDN","Indonesia","인도네시아",4,2,4514396,71.3,15.2,17660.0],["IMN","Isle of Man","Isle of Man",3,3,698,81.1,null,null],["IND","India","인도",5,1,23421848,72.2,23.3,11748.0],["IRL","Ireland","아일랜드",3,3,54844,83.0,3.4,155089.0],["IRN","Iran, Islamic Rep.","이란",1,2,1164463,77.9,10.3,19699.0],["IRQ","Iraq","이라크",1,2,1203732,72.4,20.1,14267.0],["ISL","Iceland","Iceland",3,3,4395,82.8,2.1,83431.0],["ISR","Israel","이스라엘",1,3,188284,83.2,2.7,59717.0],["ITA","Italy","이탈리아",3,3,371169,84.0,2.3,62803.0],["JAM","Jamaica","Jamaica",0,2,32343,71.6,16.4,13291.0],["JOR","Jordan","요르단",1,2,236174,78.0,12,12632.0],["JPN","Japan","일본",4,3,703190,84.0,1.8,55422.0],["KAZ","Kazakhstan","카자흐스탄",3,2,406453,74.5,7.4,44293.0],["KEN","Kenya","케냐",2,1,1553377,63.8,34.2,7016.0],["KGZ","Kyrgyz Republic","Kyrgyz Republic",3,1,142455,72.4,14.8,9220.0],["KHM","Cambodia","캄보디아",4,1,362314,70.8,16.4,8543.0],["KIR","Kiribati","Kiribati",4,1,3453,66.6,38.8,3937.0],["KNA","St. Kitts and Nevis","St. Kitts and Nevis",0,3,549,72.3,13.9,36777.0],["KOR","Korea, Rep.","대한민국",4,3,242917,83.6,2.3,63125.0],["KWT","Kuwait","Kuwait",1,3,48653,84.6,7,56468.0],["LAO","Lao PDR","라오스",4,1,164547,69.2,27.2,10383.0],["LBN","Lebanon","Lebanon",1,1,93591,77.9,15.3,null],["LBR","Liberia","Liberia",2,0,175375,62.3,63.2,1981.0],["LBY","Libya","리비아",1,2,123066,71.1,7.9,16521.0],["LCA","St. Lucia","St. Lucia",0,2,2018,72.8,15.8,28674.0],["LIE","Liechtenstein","Liechtenstein",3,3,345,84.2,null,null],["LKA","Sri Lanka","스리랑카",5,2,219736,77.7,5.2,17065.0],["LSO","Lesotho","Lesotho",2,1,56247,57.8,56.3,3184.0],["LTU","Lithuania","Lithuania",3,3,19066,77.2,2.8,56838.0],["LUX","Luxembourg","Luxembourg",3,3,6526,83.2,1.9,156542.0],["LVA","Latvia","Latvia",3,3,12750,76.4,2.2,46137.0],["MAC","Macao SAR, China","Macao SAR, China",4,3,3635,83.3,null,137031.0],["MAF","St. Martin (French part)","St. Martin (French part)",0,3,374,80.4,null,null],["MAR","Morocco","모로코",1,1,630265,75.5,14.7,11112.0],["MCO","Monaco","Monaco",3,3,368,86.5,2.2,null],["MDA","Moldova","Moldova",3,2,25022,71.3,15.1,19996.0],["MDG","Madagascar","마다가스카르",2,0,1037879,63.8,43,1952.0],["MDV","Maldives","Maldives",5,2,5615,81.3,4.7,28555.0],["MEX","Mexico","멕시코",0,2,2045177,75.3,12.1,25868.0],["MHL","Marshall Islands","Marshall Islands",4,2,729,67.1,22.7,8964.0],["MKD","North Macedonia","North Macedonia",3,2,16024,76.6,2.5,28029.0],["MLI","Mali","말리",2,0,995353,60.7,47.5,3503.0],["MLT","Malta","Malta",1,3,4464,83.0,4.7,72210.0],["MMR","Myanmar","미얀마",4,1,905036,67.1,32.8,6012.0],["MNE","Montenegro","Montenegro",3,2,6979,77.9,1.9,35423.0],["MNG","Mongolia","몽골",4,2,60316,72.4,11.2,20798.0],["MNP","Northern Mariana Islands","Northern Mariana Islands",4,3,527,78.9,null,null],["MOZ","Mozambique","모잠비크",2,0,1318371,63.8,43.7,1698.0],["MRT","Mauritania","Mauritania",2,1,180712,68.7,30.2,7676.0],["MUS","Mauritius","Mauritius",2,2,12811,73.8,13.8,33667.0],["MWI","Malawi","말라위",2,0,690921,67.6,38,1899.0],["MYS","Malaysia","말레이시아",4,2,446125,76.8,7,41498.0],["NAM","Namibia","Namibia",2,1,80104,67.5,36.4,11986.0],["NCL","New Caledonia","New Caledonia",4,3,4135,78.9,null,null],["NER","Niger","니제르",2,0,1155798,61.4,65.6,2177.0],["NGA","Nigeria","나이지리아",2,1,7719653,54.6,69.8,9532.0],["NIC","Nicaragua","Nicaragua",0,1,133843,75.1,9.4,9284.0],["NLD","Netherlands","네덜란드",3,3,166406,82.0,3.4,87320.0],["NOR","Norway","노르웨이",3,3,54425,83.2,2,104044.0],["NPL","Nepal","네팔",5,1,562744,70.6,22.2,6175.0],["NRU","Naoero","Naoero",4,3,296,62.3,7.7,14200.0],["NZL","New Zealand","뉴질랜드",4,3,58572,82.0,4,57350.0],["OMN","Oman","Oman",1,3,92311,80.2,8.3,42295.0],["PAK","Pakistan","파키스탄",1,1,6993016,67.8,48.2,6573.0],["PAN","Panama","Panama",0,3,72682,79.8,12,43902.0],["PER","Peru","페루",0,2,546311,77.9,11,18816.0],["PHL","Philippines","필리핀",4,2,1856913,69.9,21.7,12577.0],["PLW","Palau","Palau",4,3,189,69.4,18.6,23052.0],["PNG","Papua New Guinea","Papua New Guinea",4,1,261536,66.3,31.3,5215.0],["POL","Poland","폴란드",3,3,251407,78.4,3.6,54262.0],["PRI","Puerto Rico (US)","Puerto Rico (US)",0,3,18154,81.9,null,52196.0],["PRK","Korea, Dem. People's Rep.","북한",4,0,342766,73.7,13.3,null],["PRT","Portugal","포르투갈",3,3,85358,82.4,2.7,53146.0],["PRY","Paraguay","Paraguay",0,2,138158,74.0,14.5,20181.0],["PSE","West Bank and Gaza","West Bank and Gaza",1,1,143460,69.2,17,5000.0],["PYF","French Polynesia","French Polynesia",4,3,3022,84.2,null,null],["QAT","Qatar","Qatar",1,3,28236,82.5,4.8,128883.0],["ROU","Romania","Romania",3,3,142652,76.5,6,50895.0],["RUS","Russian Federation","러시아",3,3,1205512,73.4,4.1,49568.0],["RWA","Rwanda","르완다",2,0,409398,68.0,29.4,4164.0],["SAU","Saudi Arabia","사우디아라비아",1,3,610064,79.0,4.7,73784.0],["SDN","Sudan","수단",2,0,1704851,66.5,42.9,2192.0],["SEN","Senegal","세네갈",2,1,552813,68.9,28.9,5463.0],["SGP","Singapore","싱가포르",4,3,45223,83.3,2.2,163354.0],["SLB","Solomon Islands","Solomon Islands",4,1,22392,70.7,16.4,2788.0],["SLE","Sierra Leone","Sierra Leone",2,0,265476,62.0,54.6,3717.0],["SLV","El Salvador","El Salvador",0,2,99302,72.3,8.8,14101.0],["SMR","San Marino","San Marino",3,3,143,85.8,1.2,null],["SOM","Somalia, Fed. Rep.","소말리아",2,0,831395,59.0,65.4,1643.0],["SRB","Serbia","Serbia",3,2,60252,76.0,4.6,33910.0],["SSD","South Sudan","남수단",2,0,355913,57.7,71.9,null],["STP","Sao Tome and Principe","Sao Tome and Principe",2,1,6751,69.9,9.2,6388.0],["SUR","Suriname","Suriname",0,2,11005,73.8,14.8,22652.0],["SVK","Slovak Republic","Slovak Republic",3,3,46017,78.4,5.3,49309.0],["SVN","Slovenia","Slovenia",3,3,16835,82.3,1.8,59245.0],["SWE","Sweden","스웨덴",3,3,98549,84.1,2,72529.0],["SWZ","Eswatini","Eswatini",2,1,29646,64.3,42.2,12529.0],["SXM","Sint Maarten (Dutch part)","Sint Maarten (Dutch part)",0,3,400,76.5,null,56491.0],["SYC","Seychelles","Seychelles",2,3,1350,76.3,12.9,35854.0],["SYR","Syrian Arab Republic","시리아",1,0,594394,72.6,17.7,null],["TCA","Turks and Caicos Islands","Turks and Caicos Islands",0,3,492,78.2,3,null],["TCD","Chad","차드",2,0,909460,55.2,56.3,2903.0],["TGO","Togo","Togo",2,1,275791,62.9,34.8,4079.0],["THA","Thailand","태국",4,2,580121,76.6,7.7,26250.0],["TJK","Tajikistan","Tajikistan",3,1,272904,71.9,23.5,5923.0],["TKM","Turkmenistan","Turkmenistan",3,2,159234,70.2,30.4,22602.0],["TLS","Timor-Leste","Timor-Leste",4,1,30924,67.9,34.6,4809.0],["TON","Tonga","Tonga",4,2,2386,73.1,7.8,8675.0],["TTO","Trinidad and Tobago","Trinidad and Tobago",0,3,14362,73.6,17,37121.0],["TUN","Tunisia","Tunisia",1,1,165471,76.7,9.7,15233.0],["TUR","Turkiye","튀르키예",3,2,944664,77.4,8,45288.0],["TUV","Tuvalu","Tuvalu",4,2,209,67.3,16.5,6759.0],["TZA","Tanzania","탄자니아",2,1,2454996,67.2,28.7,4471.0],["UGA","Uganda","우간다",2,0,1767640,68.5,35.9,3488.0],["UKR","Ukraine","우크라이나",3,2,214392,74.7,7.6,18905.0],["URY","Uruguay","Uruguay",0,3,33170,78.3,6.2,38315.0],["USA","United States","미국",6,3,3622919,78.9,5.5,90027.0],["UZB","Uzbekistan","우즈베키스탄",3,1,948568,72.5,12.8,13601.0],["VCT","St. Vincent and the Grenadines","St. Vincent and the Grenadines",0,2,1199,71.4,10.2,22799.0],["VEN","Venezuela, RB","베네수엘라",0,1,433457,72.7,21.2,null],["VGB","British Virgin Islands","British Virgin Islands",0,3,326,77.4,11.4,null],["VIR","Virgin Islands (U.S.)","Virgin Islands (U.S.)",0,3,1152,80.8,null,null],["VNM","Viet Nam","베트남",4,2,1361420,74.7,12,18088.0],["VUT","Vanuatu","Vanuatu",4,1,9284,71.7,14.4,4525.0],["WSM","Samoa","Samoa",4,2,5483,71.8,12.3,9319.0],["XKX","Kosovo","Kosovo",3,2,18765,78.2,8,19263.0],["YEM","Yemen, Rep.","예멘",1,0,1437021,69.4,33.8,null],["ZAF","South Africa","남아프리카공화국",2,2,1197825,66.3,24.2,15906.0],["ZMB","Zambia","잠비아",2,1,716584,66.5,34.6,4379.0],["ZWE","Zimbabwe","Zimbabwe",2,1,506829,63.1,62.4,6470.0]];
 
-  var seedStudents = [
-    { name:"네이뜬", birth:"060901", parent1:"김민우", parent2:"김건부", grade:"9급", examDate:"2024-09-12", scored:true,
-      comment:"사랑합니다. 더욱더 열심히 합시다. \n다음 심사까지 사범님과 열심히 수련합시다",
-      items:{ 효도:4, 성실:2, "인성(감사노트)":4, "인성(리더십)":4, "체력(스쿼트)":5, "체력(점핑잭)":4, "기술(품새)":5, "기술(겨루기)":6, "기술(발차기)":7, "기술(격파)":7 },
-      hexagon:{ 출석:2, 감사노트:4, 체력:4.5, 발차기:7, 겨루기:6, 품새:5 } },
-    { name:"캠런", birth:"110230", parent1:"이정석", parent2:"김민아", grade:"9급", examDate:"2024-10-04", scored:true,
-      comment:"^^ 고맙습니다. \n시범단에 꼭 지원하세요",
-      items:{ 효도:10, 성실:9, "인성(감사노트)":7, "인성(리더십)":8, "체력(스쿼트)":9, "체력(점핑잭)":10, "기술(품새)":8, "기술(겨루기)":8, "기술(발차기)":7, "기술(격파)":9 },
-      hexagon:{ 출석:9, 감사노트:7, 체력:9.5, 발차기:7, 겨루기:8, 품새:8 } },
-    { name:"데이비드", birth:"100424", parent1:"윤민수", parent2:"이지애", grade:"8급", examDate:"2024-04-01", scored:true,
-      comment:"",
-      items:{ 효도:8.5, 성실:5.5, "인성(감사노트)":7.8, "인성(리더십)":9.9, "체력(스쿼트)":10, "체력(점핑잭)":7.7, "기술(품새)":8.8, "기술(겨루기)":7.7, "기술(발차기)":9.9, "기술(격파)":10 },
-      hexagon:{ 출석:5.5, 감사노트:7.8, 체력:8.85, 발차기:9.9, 겨루기:7.7, 품새:8.8 } },
-    { name:"제임스", birth:"120901", parent1:"김해석", parent2:"이승애", grade:"9급", examDate:"2024-06-01", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"김진호", birth:"990901", parent1:"김진짜", parent2:"이아라", grade:"9급", examDate:"2024-06-01", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"레이쓴", birth:"100822", parent1:"이건민", parent2:"조은혜", grade:"1단", examDate:"2024-06-03", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"제이슨", birth:"130922", parent1:"제이슨리", parent2:"제인슨라", grade:"3급", examDate:"2024-06-03", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"마테호", birth:"130911", parent1:"마테호마", parent2:"마테호호", grade:"9급", examDate:"2024-09-03", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"이지나", birth:"110209", parent1:"이지나이", parent2:"이지나나", grade:"1단", examDate:"2024-08-05", scored:false, comment:"",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } },
-    { name:"조나단", birth:"130303", parent1:"조나단조", parent2:"조나단단", grade:"2급", examDate:"2024-08-08", scored:false,
-      comment:"지난2개월동안 목표를 가지고 노력하였기에 칭찬합니다.\n앞으로도 더욱 노력하는 모습 보여주시길 바랍니다.",
-      items: zeroItems(), hexagon:{ 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 } }
-  ];
-  var beltByGrade = {
-    "9급":"흰띠","8급":"노란띠","7급":"초록띠","6급":"파랑띠","5급":"보라띠",
-    "4급":"밤띠","3급":"주황띠","2급":"빨강띠","1급":"빨강띠",
-    "1품":"품띠","2품":"검정띠","3품":"검정띠","4품":"검정띠"
+const rnd=Math.random;
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const randn=()=>{let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const pct=(n,d)=>Math.round(n/d*1000)/10;
+
+const STATS=[["h","건강"],["w","재산"],["j","행복"],["r","관계"],["e","교육"]];
+const SKEY=Object.fromEntries(STATS);
+
+let G=null;           // 현재 인생
+const app=document.getElementById("app");
+
+/* ---------- 출생 ---------- */
+function weightedBirth(){
+  const total=COUNTRIES.reduce((s,c)=>s+c[5],0);
+  let x=rnd()*total;
+  for(const c of COUNTRIES){ x-=c[5]; if(x<=0) return c; }
+  return COUNTRIES[0];
+}
+function newLife(){
+  const c=weightedBirth();
+  const [iso,en,ko,reg,inc,births,le,imr,gdp]=c;
+  const sex=rnd()<0.512?"남":"여";
+  const base=[14,30,50,72][inc];
+  const fam=clamp(Math.round(base+randn()*17));
+  const famTier=fam<25?0:fam<48?1:fam<70?2:3;
+  // 수명: 영아기 사망 → 아니면 기대수명 기반
+  const imrP=(imr==null?[45,25,12,4][inc]:imr)/1000;
+  let lifespan;
+  if(rnd()<imrP) lifespan=Math.floor(rnd()*2);
+  else if(rnd()<0.09+ (3-inc)*0.02) lifespan=Math.floor(2+rnd()*Math.max(8,le-5)); // 사고·질병·분쟁 등 이른 죽음
+  else lifespan=Math.round(clamp(le+7+randn()*10,15,108));
+  if(sex==="여") lifespan=Math.min(110,lifespan+ (lifespan>20?2:0));
+  const parents=[
+    ["농사·일용직","시장 노점","가사·돌봄 노동"],
+    ["공장 노동자","소규모 자영업","운전·배달","간호·돌봄"],
+    ["회사원","교사","공무원","중소기업 운영"],
+    ["전문직","대기업 임원","연구자·의사","사업가"]
+  ][famTier];
+  return {
+    c, sex, fam, famTier, lifespan, parent:pick(parents), age:0, stageIdx:0,
+    s:{h:clamp(60+randn()*10+(inc-1.5)*4),w:clamp(fam),j:clamp(55+randn()*8),r:clamp(50+randn()*12),e:clamp(fam*0.4+10)},
+    log:[], seen:new Set(), cause:"", tags:[]
   };
-  var beltColor = {
-    "흰띠":"#f4f1ea","노란띠":"#e3b23c","초록띠":"#3c8c4a","파랑띠":"#3763a8",
-    "보라띠":"#6d4d96","밤띠":"#6b4226","주황띠":"#d9722a","빨강띠":"#b23a3a",
-    "품띠":"linear-gradient(135deg, #b23a3a 50%, #1c1c1c 50%)","검정띠":"#1c1c1c"
-  };
-  var gradeBands = [
-    {min:95, label:"A+"}, {min:90, label:"A"}, {min:85, label:"B+"}, {min:80, label:"B"},
-    {min:75, label:"C+"}, {min:70, label:"C"}, {min:65, label:"D+"}, {min:60, label:"D"}, {min:55, label:"F"}
-  ];
+}
+const fmt=n=>n>=1e8?(n/1e8).toFixed(1)+"억":n>=1e4?Math.round(n/1e4)+"만":n;
 
-  // ---- state ----
-  var students = loadState();
-  var currentIdx = 0;
-  var editMode = false;
+/* ---------- 사건 정의 ---------- */
+// s: 단계, ok(G): 조건, t(G): 본문, ch: 선택지 [{l, fx:{h,w,j,r,e}, res, risk:{p, fx, res, die}}]
+const L=G=>G.c[8]!=null?G.c[8]:[2500,7000,20000,55000][G.c[4]];
+const poor=G=>G.famTier===0, rich=G=>G.famTier>=2, lowInc=G=>G.c[4]<=1;
+const EV=[
+ /* 유년기 3~9 */
+ {s:1,t:G=>`일곱 살이 가까워 옵니다. ${lowInc(G)&&poor(G)?"학교는 걸어서 한 시간 거리이고, 일손이 필요한 집안 사정도 있습니다.":"입학 준비로 집이 바쁩니다."}`,
+  ch:[{l:"학교에 다닌다",fx:{e:12,j:3},res:"글을 읽고 쓰기 시작했습니다."},
+      {l:"가족 일을 돕는다",fx:{w:6,e:-6,r:4},res:"일찍 철이 들었습니다. 학교는 띄엄띄엄 다닙니다."}],
+  ok:G=>poor(G)&&lowInc(G)},
+ {s:1,t:G=>`${G.parent} 일을 하는 부모님이 가끔 아이를 어떻게 키울지 다툽니다.`,
+  ch:[{l:"조용히 방에서 책을 읽는다",fx:{e:6,j:-2},res:"책이 가장 가까운 친구가 됐습니다."},
+      {l:"밖에서 동네 친구들과 논다",fx:{r:8,h:3},res:"동네에서 대장 노릇을 했습니다."}]},
+ {s:1,t:G=>"심하게 열이 오릅니다.",
+  ch:[{l:"병원에 간다",fx:{h:4,w:-6},res:G=>poor(G)&&lowInc(G)?"먼 거리를 업혀서 갔고, 돈이 많이 들었지만 나았습니다.":"치료를 받고 곧 나았습니다.",risk:{p:G=>poor(G)&&lowInc(G)?0.08:0.01,die:"어린 시절 감염병으로"}},
+      {l:"집에서 버틴다",fx:{h:-5},res:"며칠 앓고 겨우 일어났습니다.",risk:{p:G=>poor(G)&&lowInc(G)?0.25:0.05,die:"어린 시절 감염병으로"}}],
+  ok:G=>G.famTier<=1},
+ {s:1,t:G=>"전학을 가게 됐습니다. 낯선 교실의 첫날.",
+  ch:[{l:"먼저 말을 건다",fx:{r:9,j:2},res:"금방 친구가 생겼습니다."},
+      {l:"눈치를 보며 지낸다",fx:{r:-2,e:3},res:"조용히 적응했습니다."}],
+  ok:G=>G.famTier>=1},
+ {s:1,t:G=>"생일에 가족이 작은 파티를 열어 줍니다.",
+  ch:[{l:"기쁘게 즐긴다",fx:{j:7,r:4},res:"오래 기억에 남을 하루였습니다."},
+      {l:"장난감보다 책을 부탁한다",fx:{e:6,j:2},res:"책 몇 권이 세계를 넓혀 줬습니다."}],
+  ok:G=>rich(G)},
+ /* 청소년기 10~18 */
+ {s:2,t:G=>`학교에서 진로 이야기가 나옵니다. ${lowInc(G)?"주변에는 일찍 일터로 가는 아이도 많습니다.":"성적과 학원 이야기가 한창입니다."}`,
+  ch:[{l:"공부에 매달린다",fx:{e:14,h:-4,j:-3},res:"성적은 올랐지만 몸과 마음이 지쳤습니다."},
+      {l:"기술을 배우며 일을 시작한다",fx:{w:8,e:4,r:3},res:"일찍 손에 익은 기술이 생겼습니다."},
+      {l:"균형 있게 지낸다",fx:{e:6,j:5,r:4},res:"무난한 청소년기를 보냈습니다."}]},
+ {s:2,t:G=>"집안 사정이 갑자기 어려워졌습니다.",
+  ch:[{l:"학업을 잠시 접고 일한다",fx:{w:10,e:-8,j:-4},res:"가족을 위해 일터로 나갔습니다."},
+      {l:"장학금과 친척 도움을 알아본다",fx:{e:5,w:-2,r:3},res:"어렵게 학교를 이어 갔습니다.",risk:{p:G=>0.35,fx:{e:-8,j:-4},res:"도움은 닿지 않았고 결국 학업을 중단했습니다."}}],
+  ok:G=>G.famTier<=2&&rnd()<0.6},
+ {s:2,t:G=>"처음으로 마음이 가는 사람이 생겼습니다.",
+  ch:[{l:"용기 내어 고백한다",fx:{r:7,j:6},res:"결과가 어떻든 잊지 못할 경험이 됐습니다.",risk:{p:G=>0.4,fx:{j:-8,r:-3},res:"거절당해 한동안 마음이 쓰렸습니다."}},
+      {l:"혼자 마음에 담아 둔다",fx:{j:-1,e:3},res:"일기장에만 이름을 적었습니다."}]},
+ {s:2,t:G=>"또래들이 위험한 일탈을 함께 하자고 합니다.",
+  ch:[{l:"함께 어울린다",fx:{r:6,j:5,h:-5},res:"짜릿했지만 후폭풍이 따랐습니다.",risk:{p:G=>0.25,fx:{h:-10,e:-8},res:"사고가 나 크게 다쳤습니다."}},
+      {l:"거절한다",fx:{r:-4,e:4},res:"친구 몇 명을 잃었지만 자신을 지켰습니다."}]},
+ {s:2,t:G=>`${G.c[2]}에서는 ${lowInc(G)?"학교가 멀고 시설이 부족해":"입시 경쟁이 치열해"} 선택이 쉽지 않습니다. 대학이나 상급학교 진학을 준비합니다.`,
+  ch:[{l:"끝까지 도전한다",fx:{e:12,j:-3,w:-4},res:"고생 끝에 진학의 문턱에 닿았습니다.",risk:{p:G=>poor(G)?0.45:0.2,fx:{e:-2,j:-6},res:"원하는 곳에 가지 못해 낙담했습니다."}},
+      {l:"현실적인 길을 택한다",fx:{w:6,e:3},res:"안정적인 직업 훈련 쪽으로 방향을 잡았습니다."}]},
+ /* 청년기 19~29 */
+ {s:3,t:G=>"첫 직장을 구해야 합니다.",
+  ch:[{l:"안정적인 곳에 들어간다",fx:{w:12,j:-2},res:"월급은 일정하지만 변화는 적습니다."},
+      {l:"도전적인 일에 뛰어든다",fx:{w:3,j:6,e:4},res:"배우는 건 많았지만 불안했습니다.",risk:{p:G=>0.35,fx:{w:-8,j:-5},res:"사업이 어려워져 일을 잃었습니다."}},
+      {l:"고향을 떠나 더 큰 도시나 해외로 간다",fx:{w:10,r:-6,e:3},res:"낯선 곳에서 새로 시작했습니다.",risk:{p:G=>lowInc(G)?0.3:0.15,fx:{w:-8,h:-4},res:"기대한 일자리는 없었고 힘든 시기를 보냈습니다."}}]},
+ {s:3,t:G=>"결혼이나 동거 이야기가 오갑니다.",
+  ch:[{l:"함께하기로 한다",fx:{r:14,j:6,w:-4},res:"가정을 이뤘습니다."},
+      {l:"아직은 혼자가 좋다",fx:{j:3,w:4,r:-3},res:"자기 시간을 더 쌓기로 했습니다."}]},
+ {s:3,t:G=>"몸이 보내는 이상 신호가 느껴집니다.",
+  ch:[{l:"검진을 받는다",fx:{h:6,w:-3},res:"일찍 발견해 큰 문제를 막았습니다."},
+      {l:"일이 바빠 미룬다",fx:{w:3,h:-6},res:"잠깐 괜찮아진 듯했습니다.",risk:{p:G=>lowInc(G)?0.12:0.06,fx:{h:-14},res:"병이 깊어졌습니다."}}]},
+ {s:3,t:G=>"큰 기회가 찾아옵니다. 해외 연수·장학·이민 중 하나입니다.",
+  ch:[{l:"붙잡는다",fx:{e:10,w:8,r:-5},res:"세상이 훨씬 넓어졌습니다."},
+      {l:"가족 곁에 남는다",fx:{r:8,j:3},res:"익숙한 사람들 곁이 편했습니다."}],
+  ok:G=>G.s.e>=45},
+ {s:3,t:G=>"분쟁과 불안이 사회를 뒤흔듭니다.",
+  ch:[{l:"안전한 곳으로 피신한다",fx:{w:-10,h:2,r:-4},res:"가진 것을 두고 떠났습니다."},
+      {l:"버티며 일상을 지킨다",fx:{j:-4,r:6},res:"이웃과 서로 의지했습니다.",risk:{p:G=>0.18,fx:{h:-18},res:"크게 다쳤습니다.",die:"폭력과 분쟁 속에서"}}],
+  ok:G=>G.c[4]<=1&&rnd()<0.35},
+ /* 장년기 30~49 */
+ {s:4,t:G=>"아이를 키우며 살림이 빠듯해집니다.",
+  ch:[{l:"일을 더 늘린다",fx:{w:10,h:-6,r:-3},res:"쉴 틈이 사라졌습니다."},
+      {l:"가족과 시간을 우선한다",fx:{r:10,j:6,w:-4},res:"집에 웃음이 늘었습니다."}]},
+ {s:4,t:G=>"직장·사업에서 큰 결정을 해야 합니다.",
+  ch:[{l:"모험을 건다",fx:{w:15,j:3},res:"위험을 감수한 보상이 돌아왔습니다.",risk:{p:G=>0.4,fx:{w:-16,j:-8},res:"크게 손해를 보았습니다."}},
+      {l:"안정을 택한다",fx:{w:5,j:1},res:"큰 변화 없이 흘러갔습니다."}]},
+ {s:4,t:G=>"부모님이 아프십니다.",
+  ch:[{l:"곁에서 돌본다",fx:{r:9,w:-8,j:-2},res:"힘들었지만 후회는 남지 않았습니다."},
+      {l:"돈을 보내고 일에 집중한다",fx:{w:3,r:-6},res:"마음 한구석이 계속 무거웠습니다."}]},
+ {s:4,t:G=>"예상치 못한 큰 사건이 닥칩니다.",
+  ch:[{l:"주변에 도움을 청한다",fx:{r:7,j:2},res:"사람들이 기꺼이 손을 내밀었습니다."},
+      {l:"혼자 해결하려 한다",fx:{h:-5,j:-3,w:2},res:"스스로 버텨 냈지만 지쳤습니다."}]},
+ {s:4,t:G=>"몸과 마음이 번아웃에 빠집니다.",
+  ch:[{l:"휴식을 취한다",fx:{h:8,j:7,w:-5},res:"잠시 멈춘 덕에 다시 걸을 힘이 생겼습니다."},
+      {l:"계속 달린다",fx:{w:6,h:-9},res:"성과는 났지만 몸이 상했습니다.",risk:{p:G=>0.08,fx:{h:-15},res:"쓰러져 병원에 실려 갔습니다."}}],
+  ok:G=>G.s.h<70},
+ /* 중년 50~64 */
+ {s:5,t:G=>"자녀가 독립할 나이가 됐습니다.",
+  ch:[{l:"모은 것을 지원한다",fx:{r:9,w:-9,j:4},res:"자녀의 첫걸음을 도왔습니다."},
+      {l:"노후 대비를 우선한다",fx:{w:6,r:-3},res:"스스로의 미래를 챙겼습니다."}]},
+ {s:5,t:G=>"건강에 빨간불이 켜졌습니다.",
+  ch:[{l:"생활을 바꾼다",fx:{h:10,j:2},res:"식단과 운동을 바꾸니 몸이 달라졌습니다."},
+      {l:"약으로 버틴다",fx:{h:-2,w:-3},res:"문제가 미뤄졌을 뿐입니다.",risk:{p:G=>lowInc(G)?0.14:0.08,fx:{h:-18},res:"합병증이 찾아왔습니다.",die:"만성질환으로"}}]},
+ {s:5,t:G=>"오랜 친구가 도움을 청합니다.",
+  ch:[{l:"기꺼이 돕는다",fx:{r:9,w:-6,j:3},res:"우정이 더 깊어졌습니다."},
+      {l:"정중히 거절한다",fx:{w:2,r:-5},res:"서먹해졌지만 살림은 지켰습니다."}]},
+ {s:5,t:G=>"오래 해 온 일을 정리할 때가 가까워집니다.",
+  ch:[{l:"후배에게 물려주고 은퇴를 준비한다",fx:{r:6,j:5,w:-2},res:"아름다운 마무리를 했습니다."},
+      {l:"가능한 한 오래 일한다",fx:{w:8,h:-5},res:"일하는 쪽이 마음 편합니다."}]},
+ /* 노년 65+ */
+ {s:6,t:G=>"은퇴 후 시간이 많아졌습니다.",
+  ch:[{l:"취미와 봉사를 시작한다",fx:{j:9,r:7},res:"새로운 사람들을 만났습니다."},
+      {l:"집에서 조용히 지낸다",fx:{h:2,j:-2},res:"평온하지만 조금 외롭습니다."}]},
+ {s:6,t:G=>`${lowInc(G)?"연금이 거의 없어 생활이 막막합니다.":"연금과 저축으로 생활을 꾸립니다."}`,
+  ch:[{l:"가족에게 의지한다",fx:{r:6,w:2,j:-1},res:"가족이 곁을 지켜 주었습니다."},
+      {l:"자립을 고집한다",fx:{w:-3,j:4},res:"어렵지만 당당하게 지냈습니다."}]},
+ {s:6,t:G=>"손주가 찾아와 옛이야기를 들려 달라고 합니다.",
+  ch:[{l:"살아온 이야기를 들려준다",fx:{j:10,r:8},res:"이야기가 손주의 마음에 남았습니다."},
+      {l:"조용히 웃고 만다",fx:{j:3},res:"그저 곁에 있어 주는 것으로 충분했습니다."}]},
+ {s:6,t:G=>"큰 병이 찾아왔습니다.",
+  ch:[{l:"적극적으로 치료한다",fx:{h:6,w:-12},res:"치료비가 컸지만 회복했습니다.",risk:{p:G=>0.2,fx:{h:-15},res:"치료에도 병세가 나빠졌습니다.",die:"노환과 질병으로"}},
+      {l:"자연스럽게 받아들인다",fx:{j:5,h:-8},res:"남은 시간을 소중하게 보냈습니다.",risk:{p:G=>0.25,fx:{h:-15},res:"병세가 빠르게 깊어졌습니다.",die:"노환으로"}}],
+  ok:G=>G.s.h<65}
+];
+const STAGES=[
+ {n:"유아기",a:0,b:2,evs:0},
+ {n:"어린 시절",a:3,b:9,evs:2},
+ {n:"청소년기",a:10,b:18,evs:3},
+ {n:"청년기",a:19,b:29,evs:3},
+ {n:"장년기",a:30,b:49,evs:3},
+ {n:"중년기",a:50,b:64,evs:2},
+ {n:"노년기",a:65,b:120,evs:2}
+];
 
-  function loadState(){
-    try{
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw){
-        var parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) return parsed;
-      }
-    } catch(e){}
-    return JSON.parse(JSON.stringify(seedStudents));
+/* ---------- 렌더링 ---------- */
+function statsHTML(){
+  return `<div class="stats">`+STATS.map(([k,n])=>`<div class="stat">${n}<b>${Math.round(G.s[k])}</b><div class="bar"><i style="width:${G.s[k]}%"></i></div></div>`).join("")+`</div>`;
+}
+function fxText(fx){
+  if(!fx) return "";
+  const t=Object.entries(fx).filter(([,v])=>v).map(([k,v])=>`${SKEY[k]} ${v>0?"+":""}${v}`);
+  return t.length?`<div class="fx">${t.join(" · ")}</div>`:"";
+}
+function applyFx(fx){ if(fx) for(const k in fx) G.s[k]=clamp(G.s[k]+fx[k]); }
+
+function renderStart(){
+  app.innerHTML=`
+    <h1>랜덤인생게임</h1>
+    <p class="sub">지구에 태어나는 아기 한 명이 되어, 그 사람의 일생을 살아 봅니다.</p>
+    <div class="card">
+      <h2>어떻게 정해지나요</h2>
+      <p>출생지는 세계은행 통계로 계산한 <b>국가별 연간 출생 수</b>에 비례해 뽑힙니다. 아이가 많이 태어나는 나라일수록 당첨 확률이 높습니다. 성별과 가정 형편은 무작위로 정해지고, 이후 나이대마다 선택을 하며 인생이 흘러갑니다.</p>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:0">연간 총 ${fmt(COUNTRIES.reduce((s,c)=>s+c[5],0))}명의 출생 · ${COUNTRIES.length}개 국가·지역</p>
+    </div>
+    <button class="btn primary" id="go">태어나기</button>
+    <p class="note">사건과 선택지는 게임을 위해 단순화한 허구입니다. 국가 통계(출생 수·기대수명·영아사망률·소득 수준)만 실제 데이터에 기반합니다. 출처: World Bank Open Data, CC BY 4.0.</p>`;
+  document.getElementById("go").onclick=()=>{G=newLife();renderBirth()};
+}
+
+function renderBirth(){
+  const c=G.c, share=pct(c[5],COUNTRIES.reduce((s,x)=>s+x[5],0));
+  const tier=["어려운 형편","넉넉하지 않은 형편","중산층 가정","풍족한 가정"][G.famTier];
+  app.innerHTML=`
+    <h1>당신은 태어났습니다</h1>
+    <div class="card">
+      <h2>출생지</h2>
+      <div class="big">${c[2]}</div>
+      <div><span class="tag">${REGIONS[c[3]]}</span><span class="tag">${INCOMES[c[4]]}</span></div>
+      <p style="margin-bottom:0;color:var(--soft)">전 세계 신생아 중 약 <b>${share}%</b>가 이곳에서 태어납니다. 이 나라의 기대수명은 <b>${c[6].toFixed(1)}세</b>입니다.</p>
+    </div>
+    <div class="card">
+      <h2>나는 누구</h2>
+      <div class="big">${G.sex==="남"?"남자아이":"여자아이"} · ${tier}</div>
+      <p style="margin-bottom:0;color:var(--soft)">부모님은 ${G.parent} 일을 합니다.</p>
+    </div>
+    ${statsHTML()}
+    <button class="btn primary" id="next">인생 시작</button>`;
+  document.getElementById("next").onclick=()=>{ G.log.push([0,`${c[2]}에서 ${G.sex==="남"?"남자":"여자"}아이로 태어났다`]); startStage(); };
+}
+
+let queue=[], cur=null;
+function startStage(){
+  const st=STAGES[G.stageIdx];
+  if(!st||G.lifespan<st.a) return ending();
+  // 이 단계의 사건 뽑기
+  let pool=EV.filter(e=>e.s===G.stageIdx&&!G.seen.has(e)&&(!e.ok||e.ok(G)));
+  pool.sort(()=>rnd()-0.5);
+  const n=Math.min(st.evs,pool.length);
+  const end=Math.min(st.b,G.lifespan);
+  queue=pool.slice(0,n).map((e,i)=>({e,age:Math.min(end,Math.round(st.a+(end-st.a+1)*(i+0.5)/(n||1)))}));
+  if(G.stageIdx===0){ // 유아기는 건너뜀
+    G.age=Math.min(2,G.lifespan);
+    if(G.lifespan<=2) return ending(); else { G.stageIdx++; return startStage(); }
   }
-  function saveState(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(students)); return true; }
-    catch(e){ return false; }
+  nextEvent();
+}
+function nextEvent(){
+  if(!queue.length){
+    const st=STAGES[G.stageIdx];
+    G.age=Math.min(st.b,G.lifespan);
+    if(G.lifespan<=st.b) return ending();
+    G.stageIdx++; return startStage();
   }
-
-  function scoreOf(s){
-    var sum = 0;
-    ITEM_LABELS.forEach(function(k){ sum += (s.items[k] || 0); });
-    return Math.round(sum * 100) / 100;
+  cur=queue.shift(); G.seen.add(cur.e);
+  G.age=Math.min(cur.age,G.lifespan);
+  if(G.age>=G.lifespan) return ending();
+  const e=cur.e;
+  app.innerHTML=`
+    <div class="age">${STAGES[G.stageIdx].n} · ${G.age}세 · ${G.c[2]}</div>
+    ${statsHTML()}
+    <div class="card"><div class="big" style="font-size:18px;font-weight:500">${e.t(G)}</div>
+      ${e.ch.map((c,i)=>`<button class="btn" data-i="${i}">${c.l}</button>`).join("")}
+    </div>`;
+  app.querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+}
+function choose(i){
+  const e=cur.e, ch=e.ch[i];
+  applyFx(ch.fx);
+  let resText=typeof ch.res==="function"?ch.res(G):ch.res, fxs=[ch.fx], died=null;
+  if(ch.risk && rnd()<ch.risk.p(G)){
+    applyFx(ch.risk.fx); fxs.push(ch.risk.fx);
+    resText=ch.risk.res||resText;
+    if(ch.risk.die){ G.lifespan=Math.min(G.lifespan,G.age+ (rnd()<0.5?0:1)); G.cause=ch.risk.die; died=true; }
   }
-  function gradeLabel(score){
-    for (var i=0;i<gradeBands.length;i++){ if (score >= gradeBands[i].min) return gradeBands[i].label; }
-    return "";
-  }
-  function ageOf(code){
-    if (!code || code.length < 6) return "-";
-    var yy = code.slice(0,2), mm = code.slice(2,4), dd = code.slice(4,6);
-    var today = new Date();
-    var curYY = today.getFullYear() % 100;
-    var century = (parseInt(yy,10) > curYY) ? 1900 : 2000;
-    var birth = new Date(century + parseInt(yy,10), parseInt(mm,10)-1, parseInt(dd,10));
-    var age = today.getFullYear() - birth.getFullYear();
-    var m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-  }
-  function fmtDate(iso){
-    if (!iso) return "-";
-    var d = new Date(iso + "T00:00:00");
-    if (isNaN(d)) return iso;
-    return d.getFullYear() + "." + String(d.getMonth()+1).padStart(2,"0") + "." + String(d.getDate()).padStart(2,"0");
-  }
-
-  function buildRadar(hex){
-    var order = HEX_LABELS;
-    var cx=110, cy=110, r=82, max=10;
-    var pts = order.map(function(k,i){
-      var angle = -Math.PI/2 + i * (2*Math.PI/6);
-      var val = Math.max(0, Math.min(max, hex[k]||0));
-      var rr = (val/max) * r;
-      return [cx + rr*Math.cos(angle), cy + rr*Math.sin(angle)];
-    });
-    var ringPts = function(frac){
-      return order.map(function(k,i){
-        var angle = -Math.PI/2 + i * (2*Math.PI/6);
-        return (cx + r*frac*Math.cos(angle)) + "," + (cy + r*frac*Math.sin(angle));
-      }).join(" ");
-    };
-    var svg = "";
-    [0.25,0.5,0.75,1].forEach(function(f){
-      svg += '<polygon points="'+ringPts(f)+'" fill="none" stroke="var(--line)" stroke-width="1"/>';
-    });
-    order.forEach(function(k,i){
-      var angle = -Math.PI/2 + i * (2*Math.PI/6);
-      var x2 = cx + r*Math.cos(angle), y2 = cy + r*Math.sin(angle);
-      svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2+'" y2="'+y2+'" stroke="var(--line)" stroke-width="1"/>';
-      var lx = cx + (r+18)*Math.cos(angle), ly = cy + (r+18)*Math.sin(angle);
-      svg += '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="middle" font-size="10.5" fill="var(--muted)" font-family="Noto Sans KR, sans-serif">'+k+'</text>';
-    });
-    var poly = pts.map(function(p){ return p[0]+","+p[1]; }).join(" ");
-    svg += '<polygon points="'+poly+'" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2" opacity="0.92"/>';
-    pts.forEach(function(p){ svg += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.6" fill="var(--accent-ink)"/>'; });
-    return svg;
-  }
-
-  function recomputeHexagon(s){
-    s.hexagon.출석 = s.items["성실"] || 0;
-    s.hexagon.감사노트 = s.items["인성(감사노트)"] || 0;
-    s.hexagon.체력 = Math.round((((s.items["체력(스쿼트)"]||0) + (s.items["체력(점핑잭)"]||0)) / 2) * 100) / 100;
-    s.hexagon.발차기 = s.items["기술(발차기)"] || 0;
-    s.hexagon.겨루기 = s.items["기술(겨루기)"] || 0;
-    s.hexagon.품새 = s.items["기술(품새)"] || 0;
-  }
-
-  // ---- render: certificate ----
-  var selectEl = document.getElementById("studentSelect");
-  function fillSelect(){
-    selectEl.innerHTML = "";
-    students.forEach(function(s, i){
-      var opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = s.name + " (" + s.grade + ")";
-      selectEl.appendChild(opt);
-    });
-  }
-
-  function renderCert(){
-    var s = students[currentIdx];
-    if (!s){ currentIdx = 0; s = students[0]; }
-    if (!s) return;
-    selectEl.value = currentIdx;
-
-    var nameView = document.getElementById("studentNameView");
-    var nameEdit = document.getElementById("studentNameEdit");
-    nameView.textContent = s.name;
-    nameEdit.value = s.name;
-    nameView.hidden = editMode;
-    nameEdit.hidden = !editMode;
-
-    var belt = beltByGrade[s.grade];
-    var swatch = document.getElementById("beltSwatch");
-    if (belt && beltColor[belt]){ swatch.style.background = beltColor[belt]; swatch.title = belt; }
-    else { swatch.style.background = "var(--surface-2)"; swatch.title = "급수 정보 없음"; }
-
-    var photoImg = document.getElementById("photoImg");
-    var photoPlaceholder = document.getElementById("photoPlaceholder");
-    var photoRemoveBtn = document.getElementById("photoRemoveBtn");
-    if (s.photo){
-      photoImg.src = s.photo;
-      photoImg.hidden = false;
-      photoPlaceholder.hidden = true;
-      photoRemoveBtn.style.display = "";
-    } else {
-      photoImg.hidden = true;
-      photoPlaceholder.hidden = false;
-      photoRemoveBtn.style.display = "none";
-    }
-
-    var sub = document.getElementById("subInfo");
-    sub.innerHTML = "";
-    var fields = [
-      { key:"age", label:"나이", display: ageOf(s.birth) + "세", editable:false },
-      { key:"birth", label:"생년월일", value: s.birth, type:"text", placeholder:"YYMMDD" },
-      { key:"grade", label:"급수", value: s.grade, type:"text", list:"gradeList" },
-      { key:"examDate", label:"심사일", value: s.examDate, type:"date" },
-      { key:"parent1", label:"부모님1", value: s.parent1, type:"text" },
-      { key:"parent2", label:"부모님2", value: s.parent2, type:"text" }
-    ];
-    fields.forEach(function(f){
-      var span = document.createElement("span");
-      if (!editMode || f.editable === false){
-        var displayVal = f.key === "age" ? f.display : (f.key === "examDate" ? fmtDate(s.examDate) : (s[f.key] || "-"));
-        span.innerHTML = f.label + " <b>" + displayVal + "</b>";
-      } else {
-        var lbl = document.createElement("label");
-        lbl.textContent = f.label + " ";
-        var input = document.createElement("input");
-        input.className = "field-input";
-        input.type = f.type;
-        input.value = s[f.key] || "";
-        if (f.list) input.setAttribute("list", f.list);
-        input.addEventListener("change", function(){
-          s[f.key] = input.value;
-          saveState();
-          renderCert();
-          renderRoster();
-        });
-        lbl.appendChild(input);
-        span.appendChild(lbl);
-      }
-      sub.appendChild(span);
-    });
-
-    var score = scoreOf(s);
-    var badge = document.getElementById("statusBadge");
-    var statusText = document.getElementById("statusText");
-    badge.className = "badge toggle " + (!s.scored ? "pending" : (score >= 70 ? "pass" : "fail"));
-    statusText.textContent = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
-
-    var tbl = document.getElementById("scoreTable");
-    tbl.innerHTML = "";
-    ITEM_LABELS.forEach(function(k){
-      var tr = document.createElement("tr");
-      var tdLabel = document.createElement("td");
-      tdLabel.textContent = k;
-      var tdVal = document.createElement("td");
-      var input = document.createElement("input");
-      input.type = "number"; input.min = "0"; input.max = "10"; input.step = "0.1";
-      input.className = "score-input";
-      input.value = s.items[k];
-      input.addEventListener("input", function(){
-        var v = parseFloat(input.value);
-        s.items[k] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
-        recomputeHexagon(s);
-        saveState();
-        renderCertNumbersOnly();
-        renderRoster();
-      });
-      tdVal.appendChild(input);
-      tr.appendChild(tdLabel); tr.appendChild(tdVal);
-      tbl.appendChild(tr);
-    });
-    var totalTr = document.createElement("tr");
-    totalTr.className = "total";
-    totalTr.innerHTML = "<td>합계</td><td id=\"totalCell\">" + score + "</td>";
-    tbl.appendChild(totalTr);
-
-    document.getElementById("radarChart").innerHTML = buildRadar(s.hexagon);
-
-    document.getElementById("finalScore").innerHTML = score + '<small>/ 100점</small>';
-    document.getElementById("gradeChip").textContent = "등급 " + (gradeLabel(score) || "미달");
-
-    var commentView = document.getElementById("finalCommentView");
-    var commentEdit = document.getElementById("finalCommentEdit");
-    commentView.hidden = editMode;
-    commentEdit.hidden = !editMode;
-    commentEdit.value = s.comment || "";
-    if (!s.scored){
-      commentView.textContent = s.name + " 수련생은 아직 채점되지 않았습니다.";
-    } else {
-      var g = gradeLabel(score);
-      var verdict = score >= 70 ? "합격" : "불합격";
-      var text = "<최종평가>\n" + s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
-      if (s.comment) text += "\n" + s.comment;
-      commentView.textContent = text;
-    }
-
-    try { localStorage.setItem("lastStudentName", s.name); } catch(e){}
-  }
-  // lightweight refresh for score-typing (avoid rebuilding inputs mid-keystroke)
-  function renderCertNumbersOnly(){
-    var s = students[currentIdx];
-    var score = scoreOf(s);
-    var badge = document.getElementById("statusBadge");
-    var statusText = document.getElementById("statusText");
-    badge.className = "badge toggle " + (!s.scored ? "pending" : (score >= 70 ? "pass" : "fail"));
-    statusText.textContent = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
-    var totalCell = document.getElementById("totalCell");
-    if (totalCell) totalCell.textContent = score;
-    document.getElementById("radarChart").innerHTML = buildRadar(s.hexagon);
-    document.getElementById("finalScore").innerHTML = score + '<small>/ 100점</small>';
-    document.getElementById("gradeChip").textContent = "등급 " + (gradeLabel(score) || "미달");
-    var commentView = document.getElementById("finalCommentView");
-    if (!s.scored){
-      commentView.textContent = s.name + " 수련생은 아직 채점되지 않았습니다.";
-    } else {
-      var g = gradeLabel(score);
-      var verdict = score >= 70 ? "합격" : "불합격";
-      var text = "<최종평가>\n" + s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
-      if (s.comment) text += "\n" + s.comment;
-      commentView.textContent = text;
-    }
-  }
-
-  // ---- render: roster ----
-  function renderRoster(){
-    var total = students.length;
-    var scored = students.filter(function(s){ return s.scored; });
-    var passed = scored.filter(function(s){ return scoreOf(s) >= 70; });
-    var avg = scored.length ? (scored.reduce(function(a,s){ return a + scoreOf(s); }, 0) / scored.length) : 0;
-
-    document.getElementById("statTotal").textContent = total;
-    document.getElementById("statScored").textContent = scored.length;
-    document.getElementById("statPassRate").textContent = scored.length ? Math.round(passed.length / scored.length * 100) + "%" : "-";
-    document.getElementById("statAvg").textContent = scored.length ? (Math.round(avg*10)/10) : "-";
-
-    var body = document.getElementById("rosterBody");
-    body.innerHTML = "";
-    students.forEach(function(s, i){
-      var score = scoreOf(s);
-      var belt = beltByGrade[s.grade] || "";
-      var statusClass = !s.scored ? "pending" : (score >= 70 ? "pass" : "fail");
-      var statusLabel = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
-      var tr = document.createElement("tr");
-      var thumbHtml = s.photo
-        ? "<img class=\"roster-thumb\" src=\"" + s.photo + "\" alt=\"\" />"
-        : "<div class=\"roster-thumb placeholder\"></div>";
-      tr.innerHTML =
-        "<td>" + thumbHtml + "</td>" +
-        "<td><b>" + s.name + "</b></td>" +
-        "<td>" + s.grade + (belt ? " · " + belt : "") + "</td>" +
-        "<td>" + fmtDate(s.examDate) + "</td>" +
-        "<td class=\"num\">" + (s.scored ? score : "&mdash;") + "</td>" +
-        "<td>" + (s.scored ? (gradeLabel(score) || "미달") : "&mdash;") + "</td>" +
-        "<td><span class=\"mini-badge " + statusClass + "\">" + statusLabel + "</span></td>";
-      tr.addEventListener("click", function(){
-        currentIdx = i;
-        showTab("cert");
-        renderCert();
-      });
-      body.appendChild(tr);
-    });
-  }
-
-  // ---- tabs ----
-  function showTab(which){
-    var certBtn = document.getElementById("tabCertBtn");
-    var rosterBtn = document.getElementById("tabRosterBtn");
-    var certView = document.getElementById("viewCert");
-    var rosterView = document.getElementById("viewRoster");
-    if (which === "cert"){
-      certBtn.classList.add("active"); rosterBtn.classList.remove("active");
-      certView.hidden = false; rosterView.hidden = true;
-    } else {
-      rosterBtn.classList.add("active"); certBtn.classList.remove("active");
-      certView.hidden = true; rosterView.hidden = false;
-      renderRoster();
-    }
-  }
-  document.getElementById("tabCertBtn").addEventListener("click", function(){ showTab("cert"); });
-  document.getElementById("tabRosterBtn").addEventListener("click", function(){ showTab("roster"); });
-
-  // ---- controls ----
-  selectEl.addEventListener("change", function(){ currentIdx = parseInt(selectEl.value,10); editMode = false; renderCert(); });
-
-  document.getElementById("editToggleBtn").addEventListener("click", function(){
-    editMode = !editMode;
-    this.textContent = editMode ? "수정 완료" : "정보 수정";
-    renderCert();
-  });
-
-  document.getElementById("studentNameEdit").addEventListener("change", function(){
-    var val = this.value.trim();
-    if (!val) { this.value = students[currentIdx].name; return; }
-    students[currentIdx].name = val;
-    saveState();
-    fillSelect();
-    renderCert();
-    renderRoster();
-  });
-
-  document.getElementById("statusBadge").addEventListener("click", function(){
-    var s = students[currentIdx];
-    s.scored = !s.scored;
-    saveState();
-    renderCert();
-    renderRoster();
-  });
-
-  document.getElementById("finalCommentEdit").addEventListener("change", function(){
-    students[currentIdx].comment = this.value;
-    saveState();
-    renderCert();
-  });
-
-  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
-
-  // ---- photo upload ----
-  var photoFrame = document.getElementById("photoFrame");
-  var photoInput = document.getElementById("photoInput");
-  var photoRemoveBtn = document.getElementById("photoRemoveBtn");
-
-  photoFrame.addEventListener("click", function(){ photoInput.click(); });
-  photoFrame.addEventListener("keydown", function(e){
-    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); photoInput.click(); }
-  });
-  photoRemoveBtn.addEventListener("click", function(e){
-    e.stopPropagation();
-    students[currentIdx].photo = null;
-    saveState();
-    renderCert();
-    renderRoster();
-  });
-  photoInput.addEventListener("change", function(){
-    var file = photoInput.files && photoInput.files[0];
-    photoInput.value = "";
-    if (!file) return;
-    if (!file.type.startsWith("image/")){
-      alert("이미지 파일만 업로드할 수 있습니다.");
-      return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(){
-      var img = new Image();
-      img.onload = function(){
-        // downscale so the local-storage footprint stays small
-        var maxDim = 320;
-        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        var w = Math.max(1, Math.round(img.width * scale));
-        var h = Math.max(1, Math.round(img.height * scale));
-        var canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
-        var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        var prevPhoto = students[currentIdx].photo;
-        students[currentIdx].photo = dataUrl;
-        if (!saveState()){
-          students[currentIdx].photo = prevPhoto;
-          alert("사진 저장에 실패했습니다. 브라우저 저장 공간이 가득 찼을 수 있어요. 다른 사진으로 시도해 주세요.");
-        }
-        renderCert();
-        renderRoster();
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  var deleteArmed = false;
-  var deleteBtn = document.getElementById("deleteBtn");
-  deleteBtn.addEventListener("click", function(){
-    if (students.length <= 1) return;
-    if (!deleteArmed){
-      deleteArmed = true;
-      deleteBtn.textContent = "정말 삭제?";
-      deleteBtn.classList.add("danger");
-      setTimeout(function(){ deleteArmed = false; deleteBtn.textContent = "삭제"; deleteBtn.classList.remove("danger"); }, 3000);
-      return;
-    }
-    students.splice(currentIdx, 1);
-    currentIdx = 0;
-    deleteArmed = false;
-    deleteBtn.textContent = "삭제";
-    deleteBtn.classList.remove("danger");
-    saveState();
-    fillSelect();
-    renderCert();
-    renderRoster();
-  });
-
-  // ---- add-student modal ----
-  var modal = document.getElementById("modalBackdrop");
-  document.getElementById("addStudentBtn").addEventListener("click", function(){
-    ["mName","mBirth","mGrade","mParent1","mParent2","mExamDate","mComment"].forEach(function(id){
-      document.getElementById(id).value = "";
-    });
-    modal.hidden = false;
-    document.getElementById("mName").focus();
-  });
-  document.getElementById("mCancel").addEventListener("click", function(){ modal.hidden = true; });
-  modal.addEventListener("click", function(e){ if (e.target === modal) modal.hidden = true; });
-
-  document.getElementById("mSave").addEventListener("click", function(){
-    var name = document.getElementById("mName").value.trim();
-    if (!name){ document.getElementById("mName").focus(); return; }
-    var newStudent = {
-      name: name,
-      birth: document.getElementById("mBirth").value.trim(),
-      grade: document.getElementById("mGrade").value.trim() || "9급",
-      parent1: document.getElementById("mParent1").value.trim(),
-      parent2: document.getElementById("mParent2").value.trim(),
-      examDate: document.getElementById("mExamDate").value || new Date().toISOString().slice(0,10),
-      comment: document.getElementById("mComment").value.trim(),
-      scored: false,
-      photo: null,
-      items: zeroItems(),
-      hexagon: { 출석:0, 감사노트:0, 체력:0, 발차기:0, 겨루기:0, 품새:0 }
-    };
-    students.push(newStudent);
-    currentIdx = students.length - 1;
-    saveState();
-    fillSelect();
-    modal.hidden = true;
-    showTab("cert");
-    renderCert();
-    renderRoster();
-  });
-
-  // ---- JPG share-card capture ----
-  var SHARE_COLORS = {
-    bg:"#f4f1ea", surface:"#ffffff", surface2:"#ece7dc", ink:"#201d18", inkSoft:"#514c42",
-    muted:"#8b8477", line:"#ddd5c4", accent:"#a8742a", accentInk:"#6e4b19", accentSoft:"#efe0c3",
-    good:"#3c7a4f", goodSoft:"#e2ede4", bad:"#a53f3f", badSoft:"#f3e2e2", pending:"#7a6a3f", pendingSoft:"#efe9d8"
-  };
-
-  function loadImageEl(src){
-    return new Promise(function(resolve, reject){
-      var img = new Image();
-      img.onload = function(){ resolve(img); };
-      img.onerror = reject;
-      img.src = src;
-    });
-  }
-
-  function roundRectPath(ctx, x, y, w, h, r){
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.arcTo(x+w, y, x+w, y+h, r);
-    ctx.arcTo(x+w, y+h, x, y+h, r);
-    ctx.arcTo(x, y+h, x, y, r);
-    ctx.arcTo(x, y, x+w, y, r);
-    ctx.closePath();
-  }
-
-  function wrapLines(ctx, text, maxWidth){
-    var lines = [];
-    String(text).split("\n").forEach(function(paragraph){
-      if (paragraph === ""){ lines.push(""); return; }
-      var line = "";
-      for (var i=0; i<paragraph.length; i++){
-        var test = line + paragraph[i];
-        if (ctx.measureText(test).width > maxWidth && line.length > 0){
-          lines.push(line);
-          line = paragraph[i];
-        } else {
-          line = test;
-        }
-      }
-      if (line) lines.push(line);
-    });
-    return lines;
-  }
-
-  function buildCommentText(s, score){
-    if (!s.scored) return s.name + " 수련생은 아직 채점되지 않았습니다.";
-    var g = gradeLabel(score);
-    var verdict = score >= 70 ? "합격" : "불합격";
-    var text = s.name + " 수련생 최종점수 (" + score + " , " + (g || "-") + ") 승급심사 " + verdict + "입니다.";
-    if (s.comment) text += "\n" + s.comment;
-    return text;
-  }
-
-  function drawShareRadar(ctx, cx, cy, r, hex, C){
-    var order = HEX_LABELS, max = 10;
-    [0.25,0.5,0.75,1].forEach(function(f){
-      ctx.beginPath();
-      order.forEach(function(k,i){
-        var angle = -Math.PI/2 + i*(2*Math.PI/6);
-        var x = cx + r*f*Math.cos(angle), yy = cy + r*f*Math.sin(angle);
-        if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
-      });
-      ctx.closePath();
-      ctx.strokeStyle = C.line; ctx.lineWidth = 1.5; ctx.stroke();
-    });
-    ctx.font = "500 20px 'Noto Sans KR', sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    order.forEach(function(k,i){
-      var angle = -Math.PI/2 + i*(2*Math.PI/6);
-      var x2 = cx + r*Math.cos(angle), y2 = cy + r*Math.sin(angle);
-      ctx.strokeStyle = C.line; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x2,y2); ctx.stroke();
-      var lx = cx + (r+34)*Math.cos(angle), ly = cy + (r+34)*Math.sin(angle);
-      ctx.fillStyle = C.muted;
-      ctx.fillText(k, lx, ly);
-    });
-    ctx.beginPath();
-    order.forEach(function(k,i){
-      var angle = -Math.PI/2 + i*(2*Math.PI/6);
-      var val = Math.max(0, Math.min(max, hex[k]||0));
-      var rr = (val/max) * r;
-      var x = cx + rr*Math.cos(angle), yy = cy + rr*Math.sin(angle);
-      if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
-    });
-    ctx.closePath();
-    ctx.globalAlpha = 0.92; ctx.fillStyle = C.accentSoft; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.stroke();
-    order.forEach(function(k,i){
-      var angle = -Math.PI/2 + i*(2*Math.PI/6);
-      var val = Math.max(0, Math.min(max, hex[k]||0));
-      var rr = (val/max) * r;
-      var x = cx + rr*Math.cos(angle), yy = cy + rr*Math.sin(angle);
-      ctx.beginPath(); ctx.arc(x,yy,5,0,Math.PI*2); ctx.fillStyle = C.accentInk; ctx.fill();
-    });
-    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  }
-
-  function drawShareBeltCircle(ctx, cx, cy, r, belt, name, C){
-    if (belt === "품띠"){
-      ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,Math.PI/2); ctx.closePath();
-      ctx.fillStyle = "#b23a3a"; ctx.fill();
-      ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI/2,Math.PI*1.5); ctx.closePath();
-      ctx.fillStyle = "#1c1c1c"; ctx.fill();
-    } else {
-      var beltHex = belt ? beltColor[belt] : null;
-      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-      ctx.fillStyle = (beltHex && beltHex.indexOf("gradient") === -1) ? beltHex : C.surface2;
-      ctx.fill();
-    }
-    ctx.fillStyle = (!belt || belt === "흰띠") ? C.inkSoft : "#ffffff";
-    ctx.font = "700 64px 'Noto Serif KR', serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText((name || "?").charAt(0), cx, cy+4);
-    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  }
-
-  // Renders the full share card onto ctx and returns the total content height (drives the final canvas size).
-  function renderShareCard(ctx, s, W, photoImg){
-    var C = SHARE_COLORS;
-    var pad = 64;
-    var score = scoreOf(s);
-    var belt = beltByGrade[s.grade];
-
-    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, 3200);
-
-    var y = 80;
-    ctx.fillStyle = C.accentInk;
-    ctx.font = "600 20px 'IBM Plex Mono', monospace";
-    ctx.fillText("PROMOTION TEST RESULT", pad, y);
-    y += 46;
-
-    ctx.fillStyle = C.ink;
-    ctx.font = "700 46px 'Noto Serif KR', serif";
-    ctx.fillText("승급심사 결과증", pad, y);
-    y += 34;
-
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 60;
-
-    var circleR = 96;
-    var circleCX = pad + circleR;
-    var circleCY = y + circleR;
-    if (photoImg){
-      ctx.save();
-      ctx.beginPath(); ctx.arc(circleCX, circleCY, circleR, 0, Math.PI*2); ctx.closePath(); ctx.clip();
-      var scale = Math.max((circleR*2)/photoImg.width, (circleR*2)/photoImg.height);
-      var dw = photoImg.width*scale, dh = photoImg.height*scale;
-      ctx.drawImage(photoImg, circleCX-dw/2, circleCY-dh/2, dw, dh);
-      ctx.restore();
-    } else {
-      drawShareBeltCircle(ctx, circleCX, circleCY, circleR, belt, s.name, C);
-    }
-    ctx.strokeStyle = C.surface; ctx.lineWidth = 6;
-    ctx.beginPath(); ctx.arc(circleCX, circleCY, circleR, 0, Math.PI*2); ctx.stroke();
-
-    var infoX = pad + circleR*2 + 40;
-    var infoY = y + 36;
-    ctx.fillStyle = C.ink;
-    ctx.font = "700 44px 'Noto Serif KR', serif";
-    ctx.fillText(s.name, infoX, infoY);
-    infoY += 42;
-
-    ctx.font = "500 22px 'Noto Sans KR', sans-serif";
-    ctx.fillStyle = C.inkSoft;
-    ctx.fillText("나이 " + ageOf(s.birth) + "세    급수 " + s.grade + (belt ? " · " + belt : ""), infoX, infoY);
-    infoY += 34;
-    ctx.fillText("심사일 " + fmtDate(s.examDate), infoX, infoY);
-    infoY += 34;
-    if (s.parent1 || s.parent2){
-      ctx.fillText("부모님 " + [s.parent1, s.parent2].filter(Boolean).join(" · "), infoX, infoY);
-      infoY += 34;
-    }
-
-    var statusLabel = !s.scored ? "심사 전" : (score >= 70 ? "합격" : "불합격");
-    var statusColor = !s.scored ? C.pending : (score >= 70 ? C.good : C.bad);
-    var statusBg = !s.scored ? C.pendingSoft : (score >= 70 ? C.goodSoft : C.badSoft);
-    ctx.font = "700 22px 'Noto Sans KR', sans-serif";
-    var badgeW = ctx.measureText(statusLabel).width + 48;
-    roundRectPath(ctx, infoX, infoY+6, badgeW, 44, 22);
-    ctx.fillStyle = statusBg; ctx.fill();
-    ctx.fillStyle = statusColor; ctx.textBaseline = "middle";
-    ctx.fillText(statusLabel, infoX+24, infoY+6+22);
-    ctx.textBaseline = "alphabetic";
-
-    y = Math.max(circleCY + circleR, infoY + 70) + 30;
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 50;
-
-    ctx.fillStyle = C.accent; ctx.fillRect(pad, y-20, 6, 22);
-    ctx.fillStyle = C.ink; ctx.font = "700 26px 'Noto Serif KR', serif";
-    ctx.fillText("항목별 점수 (10점 만점)", pad+18, y);
-    y += 46;
-
-    var colGap = 24;
-    var colWidth = (W - pad*2 - colGap) / 2;
-    var rowH = 44;
-    var leftItems = ITEM_LABELS.slice(0,5);
-    var rightItems = ITEM_LABELS.slice(5,10);
-    function drawScoreRow(x, ry, w, label, value){
-      ctx.fillStyle = C.inkSoft; ctx.font = "500 21px 'Noto Sans KR', sans-serif"; ctx.textBaseline = "middle";
-      ctx.fillText(label, x, ry+14);
-      ctx.fillStyle = C.ink; ctx.font = "600 22px 'IBM Plex Mono', monospace"; ctx.textAlign = "right";
-      ctx.fillText((value==null ? "-" : value), x+w, ry+14);
-      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-      ctx.strokeStyle = C.line; ctx.setLineDash([3,3]); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x, ry+34); ctx.lineTo(x+w, ry+34); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    leftItems.forEach(function(k,i){ drawScoreRow(pad, y+i*rowH, colWidth, k, s.items[k]); });
-    rightItems.forEach(function(k,i){ drawScoreRow(pad+colWidth+colGap, y+i*rowH, colWidth, k, s.items[k]); });
-    y += 5*rowH + 20;
-
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 50;
-
-    ctx.fillStyle = C.accent; ctx.fillRect(pad, y-20, 6, 22);
-    ctx.fillStyle = C.ink; ctx.font = "700 26px 'Noto Serif KR', serif";
-    ctx.fillText("육각형 점수", pad+18, y);
-    y += 40;
-    var radarR = 160;
-    var radarCY = y + radarR + 20;
-    drawShareRadar(ctx, W/2, radarCY, radarR, s.hexagon, C);
-    y = radarCY + radarR + 60;
-
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-    y += 50;
-
-    // verdict panel
-    ctx.font = "500 24px 'Noto Sans KR', sans-serif";
-    var commentText = buildCommentText(s, score);
-    var wrapWidth = W - pad*2 - 80 - 20;
-    var lines = wrapLines(ctx, commentText, wrapWidth);
-    var lineHeight = 36;
-    var panelPadX = 40, panelPadY = 36;
-    var panelH = panelPadY + 60 + 40 + lines.length*lineHeight + panelPadY;
-    var panelX = pad, panelY = y, panelW = W - pad*2;
-    roundRectPath(ctx, panelX, panelY, panelW, panelH, 16);
-    ctx.fillStyle = C.surface2; ctx.fill();
-
-    var bigY = panelY + panelPadY + 50;
-    var scoreText = String(s.scored ? score : 0);
-    ctx.fillStyle = C.accentInk; ctx.font = "700 66px 'Noto Serif KR', serif";
-    ctx.fillText(scoreText, panelX+panelPadX, bigY);
-    var scoreTextW = ctx.measureText(scoreText).width;
-    ctx.font = "500 24px 'Noto Sans KR', sans-serif"; ctx.fillStyle = C.muted;
-    ctx.fillText(" / 100점", panelX+panelPadX+scoreTextW, bigY);
-
-    var gradeText = "등급 " + (s.scored ? (gradeLabel(score) || "미달") : "-");
-    ctx.font = "600 22px 'IBM Plex Mono', monospace";
-    var gradeW = ctx.measureText(gradeText).width + 32;
-    var chipX = panelX+panelPadX+scoreTextW+150;
-    roundRectPath(ctx, chipX, bigY-34, gradeW, 44, 8);
-    ctx.fillStyle = C.surface; ctx.fill();
-    ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = C.inkSoft; ctx.textBaseline = "middle";
-    ctx.fillText(gradeText, chipX+16, bigY-34+22);
-    ctx.textBaseline = "alphabetic";
-
-    var commentY = panelY + panelPadY + 50 + 46;
-    ctx.fillStyle = C.accent;
-    ctx.fillRect(panelX+panelPadX, commentY-26, 5, lines.length*lineHeight+6);
-    ctx.fillStyle = C.inkSoft;
-    ctx.font = "500 24px 'Noto Sans KR', sans-serif";
-    lines.forEach(function(line,i){ ctx.fillText(line, panelX+panelPadX+22, commentY+i*lineHeight); });
-
-    y = panelY + panelH + 50;
-
-    ctx.fillStyle = C.muted;
-    ctx.font = "500 18px 'IBM Plex Mono', monospace";
-    ctx.fillText("심사체점시스템 자동 생성 · " + fmtDate(new Date().toISOString().slice(0,10)), pad, y);
-    y += 40;
-
-    return y;
-  }
-
-  async function buildShareImageDataUrl(s){
-    if (window.document.fonts && document.fonts.ready){ try{ await document.fonts.ready; } catch(e){} }
-    var W = 1080;
-    var photoImg = null;
-    if (s.photo){ try{ photoImg = await loadImageEl(s.photo); } catch(e){ photoImg = null; } }
-
-    var scratch = document.createElement("canvas");
-    scratch.width = W; scratch.height = 3200;
-    var finalY = renderShareCard(scratch.getContext("2d"), s, W, photoImg);
-
-    var canvas = document.getElementById("shareCanvas");
-    canvas.width = W;
-    canvas.height = Math.ceil(finalY);
-    renderShareCard(canvas.getContext("2d"), s, W, photoImg);
-
-    return canvas.toDataURL("image/jpeg", 0.92);
-  }
-
-  var shareModal = document.getElementById("shareModalBackdrop");
-  var shareSpinner = document.getElementById("shareSpinner");
-  var sharePreviewImg = document.getElementById("sharePreviewImg");
-
-  document.getElementById("shareBtn").addEventListener("click", async function(){
-    var s = students[currentIdx];
-    sharePreviewImg.hidden = true;
-    sharePreviewImg.removeAttribute("src");
-    shareSpinner.hidden = false;
-    shareSpinner.textContent = "이미지 생성 중…";
-    shareModal.hidden = false;
-    try {
-      var dataUrl = await buildShareImageDataUrl(s);
-      sharePreviewImg.src = dataUrl;
-      sharePreviewImg.hidden = false;
-      shareSpinner.hidden = true;
-      shareModal.dataset.currentDataUrl = dataUrl;
-      shareModal.dataset.filename = (s.name || "student") + "_결과증.jpg";
-    } catch(e){
-      shareSpinner.textContent = "이미지 생성에 실패했습니다. 다시 시도해 주세요.";
-    }
-  });
-  document.getElementById("shareCloseBtn").addEventListener("click", function(){ shareModal.hidden = true; });
-  shareModal.addEventListener("click", function(e){ if (e.target === shareModal) shareModal.hidden = true; });
-
-  document.getElementById("shareOpenTabBtn").addEventListener("click", function(){
-    var dataUrl = shareModal.dataset.currentDataUrl;
-    if (dataUrl) window.open(dataUrl, "_blank");
-  });
-
-  document.getElementById("shareSendBtn").addEventListener("click", async function(){
-    var dataUrl = shareModal.dataset.currentDataUrl;
-    var filename = shareModal.dataset.filename || "result.jpg";
-    if (!dataUrl) return;
-    try {
-      var res = await fetch(dataUrl);
-      var blob = await res.blob();
-      var file = new File([blob], filename, { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share({ files: [file], title: "승급심사 결과증", text: "승급심사 결과증입니다." });
-        return;
-      }
-    } catch(e){ /* fall through */ }
-    window.open(dataUrl, "_blank");
-  });
-
-  // ---- init ----
-  var gradeList = document.getElementById("gradeList");
-  Object.keys(beltByGrade).forEach(function(g){
-    var opt = document.createElement("option");
-    opt.value = g;
-    gradeList.appendChild(opt);
-  });
-
-  fillSelect();
-  try {
-    var last = localStorage.getItem("lastStudentName");
-    if (last){
-      var found = students.findIndex(function(s){ return s.name === last; });
-      if (found >= 0) currentIdx = found;
-    }
-  } catch(e){}
-  renderCert();
-  renderRoster();
-
-  document.getElementById("todayMeta").textContent = "조회일 " + fmtDate(new Date().toISOString().slice(0,10));
-})();
+  // 건강이 바닥이면 수명 단축, 아주 좋으면 연장
+  if(G.s.h<=10 && G.age>5){ G.lifespan=Math.min(G.lifespan,G.age+Math.floor(rnd()*6)); G.cause=G.cause||"건강 악화로"; }
+  G.log.push([G.age,`${e.t(G).replace(/<[^>]+>/g,"")} → ${ch.l}`]);
+  const dead = G.age>=G.lifespan;
+  app.innerHTML=`
+    <div class="age">${STAGES[G.stageIdx].n} · ${G.age}세</div>
+    ${statsHTML()}
+    <div class="card"><div class="res">${resText}${fxText(ch.fx)}</div>
+      <button class="btn primary" id="cont">${dead?"…":"계속"}</button></div>`;
+  document.getElementById("cont").onclick=()=> dead?ending():nextEvent();
+}
+
+/* ---------- 결말 ---------- */
+function ending(){
+  const s=G.s, age=Math.min(G.lifespan,110), le=G.c[6];
+  const score=(s.h+s.w+s.j+s.r+s.e)/5;
+  let title;
+  if(age<5) title="너무 짧았던 시작";
+  else if(age<18) title="피어나지 못한 어린 생애";
+  else if(s.w>=75&&s.j>=60) title="풍요롭고 만족스러운 삶";
+  else if(s.r>=75&&s.j>=60) title="사람들에게 사랑받은 삶";
+  else if(s.e>=75) title="배움으로 세상을 넓힌 삶";
+  else if(s.j>=70) title="소박하지만 행복했던 삶";
+  else if(s.w<25&&s.h<35) title="고단했던 한평생";
+  else if(score>=60) title="무난히 잘 살아낸 삶";
+  else if(score>=45) title="평범한 사람의 하루하루";
+  else title="굴곡이 많았던 삶";
+  const cause=G.cause||(age>=le?"천수를 누리고":age<le-15?"이른 나이에":"세월이 흘러");
+  const diff=age-le;
+  const cmp=age<5?"":diff>=0?`${G.c[2]}의 기대수명(${le.toFixed(1)}세)보다 ${Math.round(diff)}년 더 살았습니다.`:`${G.c[2]}의 기대수명(${le.toFixed(1)}세)보다 ${Math.round(-diff)}년 일찍 떠났습니다.`;
+  const lines=G.log.map(([a,t])=>`<li><span>${a}세</span>${t}</li>`).join("");
+  app.innerHTML=`
+    <h1>인생의 끝</h1>
+    <div class="card">
+      <h2>결말</h2>
+      <div class="big">${title}</div>
+      <p style="color:var(--soft)">${G.c[2]}에서 태어난 ${G.sex==="남"?"남성":"여성"}이 ${cause} ${age}세에 생을 마쳤습니다. ${cmp}</p>
+    </div>
+    ${statsHTML()}
+    <div class="card"><h2>걸어온 길</h2><ul class="log">${lines}<li><span>${age}세</span>생을 마쳤다</li></ul></div>
+    <button class="btn primary" id="again">다시 태어나기</button>
+    <p class="note">같은 버튼으로 80억 명 중 또 다른 한 명이 됩니다.</p>`;
+  document.getElementById("again").onclick=()=>{G=newLife();renderBirth()};
+}
+
+renderStart();
 </script>
+</body>
+</html>
