@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이거 어디다 버려? - 분리배출 검색</title>
+<meta name="description" content="치킨 뼈, 종이컵, 깨진 유리... 헷갈리는 쓰레기를 검색하면 버리는 방법이 바로 나옵니다.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  :root{
+    --bg:#f4f1ea; --surface:#fff; --surface-2:#ece7dc; --ink:#201d18; --ink-soft:#514c42;
+    --muted:#8b8477; --line:#ddd5c4; --accent:#3c7a4f; --accent-soft:#e2ede4;
+    --shadow:0 1px 2px rgba(32,29,24,.06),0 8px 24px -12px rgba(32,29,24,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14120f; --surface:#1d1a15; --surface-2:#262119; --ink:#ede7da; --ink-soft:#c3bba9;
+      --muted:#8a8170; --line:#372f24; --accent:#7fbd93; --accent-soft:#1c2e21; --shadow:0 12px 28px -14px rgba(0,0,0,.6); }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 16px 80px}
+  h1{font-family:"Noto Serif KR",serif;font-size:clamp(24px,5vw,32px);margin:0 0 6px}
+  .sub{color:var(--ink-soft);margin:0 0 22px}
+  .search{width:100%;font-size:18px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+  .search:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px}
+  .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);padding:6px 12px;border-radius:999px;font-size:14px;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tag{font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+  .tag.gen{background:var(--surface-2);color:var(--ink-soft)}
+  .tag.spc{background:#f3e2e2;color:#a53f3f}
+  @media (prefers-color-scheme: dark){ .tag.spc{background:#331e1e;color:#d98080} }
+  .card p{margin:0;color:var(--ink-soft)}
+  .empty{text-align:center;color:var(--muted);padding:40px 0}
+  .note{margin-top:28px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>이거 어디다 버려?</h1>
+  <p class="sub">헷갈리는 쓰레기, 검색하면 바로 알려드려요.</p>
+  <input id="q" class="search" type="search" placeholder="예) 치킨 뼈, 종이컵, 깨진 유리" autocomplete="off" aria-label="품목 검색">
+  <div class="chips" id="chips"></div>
+  <div id="list"></div>
+  <p class="note">지자체마다 규정이 조금씩 다를 수 있어요. 정확한 기준은 거주지 구청·주민센터 안내를 확인해 주세요.</p>
+</div>
+<script>
+const ITEMS = [
+  // [이름, 분류, 방법, 검색어]
+  ["페트병(투명)","재활용","내용물을 비우고 라벨을 떼어 찌그러뜨린 뒤 뚜껑을 닫아 투명 페트병 전용 수거함에 버려요. 공동주택은 별도 배출하는 곳이 많아요.","생수병 음료수병 물병 pet"],
+  ["페트병 라벨·뚜껑","재활용","라벨은 비닐류, 뚜껑은 플라스틱류로 분리해요.","라벨 뚜껑 마개"],
+  ["종이컵","재활용","내용물을 비우고 헹군 뒤 종이컵 전용 수거함에 버려요. 전용함이 없으면 일반쓰레기로 배출하는 지역도 있어요.","커피컵 일회용컵"],
+  ["일회용 플라스틱컵·뚜껑","재활용","내용물을 비우고 헹궈서 플라스틱류로 버려요. 빨대·컵홀더는 따로 분리해요.","카페컵 아이스컵 뚜껑 빨대"],
+  ["배달용기","재활용","음식물을 씻어내고 비닐 뚜껑은 분리해 플라스틱류로 버려요. 양념이 지워지지 않으면 일반쓰레기예요.","도시락 포장용기 탕수육"],
+  ["스티로폼","재활용","내용물과 테이프·송장을 제거한 뒤 스티로폼류로 버려요. 음식물이 묻어 있으면 일반쓰레기예요.","완충재 포장재 아이스박스"],
+  ["우유팩·종이팩","재활용","헹궈서 펼치고 말린 뒤 종이팩 전용 수거함에 버려요. 일반 종이와 섞지 않아요.","멸균팩 두유팩 주스팩"],
+  ["택배상자","재활용","테이프와 송장 스티커를 떼고 납작하게 펴서 종이류로 버려요.","박스 골판지 종이박스"],
+  ["영수증","일반쓰레기","감열지라서 재활용이 안 돼요. 일반쓰레기로 버려요.","감열지 카드전표"],
+  ["캔(음료·통조림)","재활용","내용물을 비우고 헹군 뒤 캔류로 버려요. 부탄가스는 구멍을 뚫어 가스를 완전히 빼서 버려요.","알루미늄캔 깡통 참치캔 부탄가스"],
+  ["알루미늄 호일","지역 확인","깨끗하면 캔류, 음식물이 묻어 있으면 일반쓰레기로 보는 지역이 많아요.","은박지 포일"],
+  ["유리병","재활용","내용물을 비우고 뚜껑을 분리해 유리병류로 버려요. 색깔별 분리 지역이 있어요.","소주병 맥주병 잼병"],
+  ["깨진 유리","특수","신문지 등으로 두껍게 싸서 '깨진 유리' 표시 후 불연성 마대 또는 일반쓰레기로 버려요. 지역별로 달라요.","유리조각 거울 컵 깨짐"],
+  ["도자기·사기그릇","일반쓰레기","재활용이 안 돼요. 깨졌다면 신문지로 싸서 일반(또는 불연성)쓰레기로 버려요.","그릇 접시 머그컵 뚝배기"],
+  ["비닐(과자봉지·비닐봉투)","재활용","이물질을 털어내고 비닐류로 버려요. 씻어도 양념이 남으면 일반쓰레기예요.","과자봉지 라면봉지 지퍼백"],
+  ["컵라면 용기","재활용","국물을 버리고 헹궈서 플라스틱류로 버려요. 종이 재질은 씻어도 오염이 남으면 일반쓰레기예요.","용기면 사발면"],
+  ["치킨 뼈","일반쓰레기","동물 뼈는 사료화가 어려워 일반쓰레기로 버려요.","닭뼈 족발뼈 갈비뼈 뼈다귀 음식물"],
+  ["조개·굴 껍데기","일반쓰레기","딱딱한 껍데기는 음식물이 아니라 일반쓰레기예요.","홍합 전복 소라 꼬막"],
+  ["과일 씨·딱딱한 껍질","일반쓰레기","복숭아·감 씨, 파인애플·밤·호두 껍데기, 코코넛은 일반쓰레기예요.","씨앗 밤껍질 호두 견과류 파인애플"],
+  ["양파·마늘·옥수수 껍질","일반쓰레기","질기고 섬유질이 많아 음식물이 아니라 일반쓰레기예요.","대파뿌리 옥수수수염 옥수수대"],
+  ["달걀 껍데기","일반쓰레기","음식물이 아니라 일반쓰레기예요.","계란 껍질"],
+  ["찌개·국물","음식물","건더기는 음식물쓰레기로, 국물은 최대한 물기를 제거해서 버려요.","국 탕 물기"],
+  ["과일 껍질·채소 찌꺼기","음식물","물기를 빼고 음식물쓰레기로 버려요. 수박 껍질 등도 음식물이에요.","귤껍질 수박 바나나"],
+  ["찻잎·커피 찌꺼기","음식물","물기를 빼서 음식물쓰레기로 버려요. 티백은 종이·실을 떼고 내용물만 버려요.","커피박 티백 녹차"],
+  ["건전지·배터리","특수","주민센터·아파트 등의 폐건전지 수거함에 버려요. 일반쓰레기에 섞지 않아요.","배터리 보조배터리 버튼전지"],
+  ["형광등·LED 전구","특수","깨지지 않게 전용 수거함에 버려요. 전용함이 없으면 주민센터에 문의해요.","전구 램프 조명"],
+  ["폐의약품","특수","약국이나 보건소의 폐의약품 수거함에 버려요. 변기나 일반쓰레기에 버리지 않아요.","약 알약 물약 연고"],
+  ["헌 옷·신발","재활용","의류수거함에 깨끗이 담아서 넣어요. 젖었거나 심하게 오염된 옷은 일반쓰레기예요.","옷 의류 운동화 가방"],
+  ["이불·베개·인형","특수","대형폐기물이나 일반쓰레기 규정이 지역별로 달라요. 솜 이불은 대형폐기물인 곳이 많아요.","솜 침구 인형 쿠션"],
+  ["가구·가전 등 대형폐기물","특수","주민센터나 지자체 사이트에서 대형폐기물 신고 후 스티커를 붙여 내놔요. 가전은 무상 방문수거도 가능해요.","냉장고 침대 소파 책상 세탁기 tv"],
+  ["고무장갑·칫솔·수세미","일반쓰레기","여러 재질이 섞여 있어 재활용이 안 돼요. 일반쓰레기로 버려요.","고무장갑 칫솔 설거지 수세미 빗"],
+  ["휴지·물티슈·기저귀","일반쓰레기","물에 젖었거나 오염된 휴지류는 일반쓰레기예요. 물티슈는 변기에 버리지 않아요.","화장지 티슈 생리대 마스크"],
+  ["마스크","일반쓰레기","끈을 잘라서 일반쓰레기로 버려요.","kf94 일회용마스크"],
+  ["아이스팩","지역 확인","젤형은 일반쓰레기, 물형은 물을 하수구에 버리고 비닐은 비닐류로 버려요. 수거함이 있는 지역도 있어요.","냉매 보냉제"],
+  ["식용유·폐식용유","특수","밀폐 용기에 담아 주민센터나 폐식용유 수거함에 버려요. 싱크대에 붓지 않아요.","기름 튀김기름"],
+  ["스프레이·가스용기","특수","내용물을 모두 쓰고 구멍을 뚫어 가스를 뺀 뒤 캔류로 버려요.","에어로졸 살충제 헤어스프레이 부탄가스"],
+  ["책·종이","재활용","스프링·비닐 표지를 분리해 종이류로 버려요. 코팅지나 오염된 종이는 일반쓰레기예요.","도서 신문 노트 잡지 종이"],
+  ["플라스틱(장난감·바구니)","재활용","재활용 표시가 있는 단일 재질은 플라스틱류로 버려요. 건전지나 금속이 달린 건 분리해요.","장난감 바구니 빨래건조대"],
+  ["애완동물 배설물","일반쓰레기","봉투에 담아 일반쓰레기로 버려요. 음식물쓰레기가 아니에요.","강아지 고양이 모래 사료"],
+];
+const CATS = ["전체","재활용","일반쓰레기","음식물","특수","지역 확인"];
+let cat = "전체";
+const $q = document.getElementById("q"), $list = document.getElementById("list"), $chips = document.getElementById("chips");
+const cls = c => c==="특수" ? "spc" : (c==="일반쓰레기"||c==="지역 확인") ? "gen" : "";
+function esc(s){ return s.replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+function render(){
+  const q = $q.value.trim().toLowerCase().replace(/\s+/g,"");
+  const rows = ITEMS.filter(([n,c,m,k]) =>
+    (cat==="전체" || c===cat) && (!q || (n+k).toLowerCase().replace(/\s+/g,"").includes(q)));
+  $list.innerHTML = rows.length ? rows.map(([n,c,m]) =>
+    `<div class="card"><h2>${esc(n)}<span class="tag ${cls(c)}">${esc(c)}</span></h2><p>${esc(m)}</p></div>`).join("")
+    : `<div class="empty">검색 결과가 없어요.<br>다른 단어로 찾아보거나 주민센터에 문의해 주세요.</div>`;
+}
+$chips.innerHTML = CATS.map(c => `<button class="chip" aria-pressed="${c===cat}" data-c="${c}">${c}</button>`).join("");
+$chips.addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if(!b) return;
+  cat = b.dataset.c;
+  [...$chips.children].forEach(x => x.setAttribute("aria-pressed", x.dataset.c===cat));
+  render();
+});
+$q.addEventListener("input", render);
+render();
+</script>
+</body>
+</html>
