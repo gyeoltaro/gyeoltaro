@@ -8,10 +8,10 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="랜덤인생게임 · Random Life · ランダム人生 · 随机人生">
 <meta property="og:description" content="Who will you be out of 8 billion? 80억 명 중 당신은 누가 될까요? 80億人の中で、あなたは誰になる？ 80亿人里，你会成为谁？">
-<meta property="og:image" content="https://gyeoltaro.github.io/gyeoltaro/og.png">
-<meta property="og:url" content="https://gyeoltaro.github.io/gyeoltaro/">
+<meta property="og:image" content="https://gyeoltaro.github.io/randomlife/og.png">
+<meta property="og:url" content="https://gyeoltaro.github.io/randomlife/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://gyeoltaro.github.io/gyeoltaro/og.png">
+<meta name="twitter:image" content="https://gyeoltaro.github.io/randomlife/og.png">
 <style>
   :root{
     --bg:#f5f2ea; --surface:#fff; --ink:#1f1d19; --soft:#58534a; --muted:#8c8578;
@@ -654,7 +654,7 @@ function endInfo(){
   return {age,title,cmp,causeTxt:UI.causes[cause][LI]};
 }
 function shareURL(){
-  const base=location.origin&&location.origin!=="null"?location.origin+location.pathname:"https://gyeoltaro.github.io/gyeoltaro/";
+  const base=location.origin&&location.origin!=="null"?location.origin+location.pathname:"https://gyeoltaro.github.io/randomlife/";
   const p=new URLSearchParams({c:G.c[0],s:G.sex,a:G.ended.age,k:G.ended.k,l:LANG});
   if(G.daily) p.set("d",G.date);
   return base+"?"+p.toString();
@@ -732,7 +732,7 @@ function drawCard(info){
   ctx.fillStyle="#8c8578";ctx.font=`400 30px ${FF}`;
   ctx.fillText(ui("card_foot",{n:G.locked.length,age:info.age}),96,H-190);
   ctx.fillText(UI.card_sub[LI],96,H-140);
-  ctx.fillText((location.host||"gyeoltaro.github.io/gyeoltaro"),96,H-96);
+  ctx.fillText((location.host||"gyeoltaro.github.io/randomlife"),96,H-96);
 }
 function saveCard(){
   const cv=document.getElementById("card");
