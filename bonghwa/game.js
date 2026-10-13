@@ -9,6 +9,10 @@ const fmt = n => Math.floor(Math.max(0, n)).toLocaleString('ko-KR');
 const pct = v => Math.round(v * 100) + '%';
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return w + (c >= 0 && c < 11172 && c % 28 ? a : b); };
 const INV_MAX = 24, TOWER_R = 16;
+// Copies of the same item stack in one bag slot (×2, ×3 …); the bag limit counts slots, not copies.
+const slotsUsed = () => new Set(R.items.map(i => i.id)).size;
+const owned = id => R.items.reduce((n, i) => n + (i.id === id), 0);
+const bagFullFor = id => slotsUsed() >= INV_MAX && !owned(id);
 
 // ───────────────────────── profile (persistent) ─────────────────────────
 const SAVE_KEY = 'bonghwa-v1';
@@ -224,7 +228,7 @@ function buy(slot) {
   if (!R || R.state !== 'run' || R.gift) return;
   const s = R.shop[slot]; if (!s || s.sold) return;
   const price = Math.round(priceOf(s.id) * (R.halfOff ? 0.5 : 1));
-  if (R.items.length >= INV_MAX) { toast('가방이 가득 찼습니다. 물건을 하나 되파세요'); Sfx.play('deny', 200); return; }
+  if (bagFullFor(s.id)) { toast('가방이 가득 찼습니다. 물건을 하나 되파세요'); Sfx.play('deny', 200); return; }
   if (R.gold < price) { Sfx.play('deny', 200); flashGold(); return; }
   const ico = $(`#shop .card[data-slot="${slot}"] .ico`), from = ico ? rectIn(ico) : null;
   R.gold -= price; R.halfOff = false; s.sold = true;
@@ -234,7 +238,7 @@ function buy(slot) {
 }
 // The bought item's icon arcs from its stall card into the bag slot it lands in.
 function flyToBag(from, it) {
-  const slot = $(`#inv [data-uid="${it.uid}"]`), to = rectIn(slot || $('#invCount'));
+  const slot = $(`#inv .slot[data-item="${it.id}"]`), to = rectIn(slot || $('#invCount'));
   const img = document.createElement('img'); img.className = 'flyer'; img.src = iconFor(ITEM[it.id]); img.alt = '';
   img.style.left = from.x + 'px'; img.style.top = from.y + 'px'; img.style.width = from.w + 'px'; img.style.height = from.h + 'px';
   screenEl.append(img);
@@ -539,7 +543,7 @@ function takeGift(i) {
   else if (g.id === 'chest') {
     const tier = giftTier(r), rng = rngFor('chest', r), c = ITEMS.filter(it => it.tier === tier && it.cat !== 'thorn');
     const id = c[(rng() * c.length) | 0].id;
-    if (R.items.length < INV_MAX) { addItem(id); toast(`보물 상자에서 ${josa(ITEM[id].name, '이', '가')} 나왔습니다`); } else { R.gold += priceOf(id); toast('가방이 가득 차서 값으로 받았습니다'); }
+    if (!bagFullFor(id)) { addItem(id); toast(`보물 상자에서 ${josa(ITEM[id].name, '이', '가')} 나왔습니다`); } else { R.gold += priceOf(id); toast('가방이 가득 차서 값으로 받았습니다'); }
   } else if (g.id === 'gamtu') { R.bonusDmg += 0.1; refreshStats(); }
   R.gift = null; closeModal(); renderShop(); renderInv(); renderRes();
 }
@@ -843,8 +847,15 @@ function frame(now) {
 const screenEl = $('#screen');
 // The screen is 720 tall and between 1280 and 1600 wide: on a wide phone the two wings grow instead of leaving black bars.
 let SW = 0;
+// On a phone held upright the player is asked once; "가로로 보기" tries fullscreen + orientation lock and,
+// where the browser refuses (iOS, embedded viewers), turns the whole stage 90° with CSS instead.
+let rotateChoice = null; // null: not asked yet, 'land': show sideways, 'port': keep upright
+const stageEl = $('#stage');
 function fit() {
-  const vw = window.innerWidth, vh = window.innerHeight, w = 2 * Math.round(clamp(720 * vw / Math.max(1, vh), 1280, 1600) / 2);
+  const portrait = window.innerHeight > window.innerWidth, touch = (navigator.maxTouchPoints || 0) > 0;
+  const turned = rotateChoice === 'land' && portrait;
+  stageEl.style.cssText = turned ? `inset:auto;left:0;top:0;width:${window.innerHeight}px;height:${window.innerWidth}px;transform-origin:0 0;transform:translateX(${window.innerWidth}px) rotate(90deg)` : '';
+  const vw = turned ? window.innerHeight : window.innerWidth, vh = turned ? window.innerWidth : window.innerHeight, w = 2 * Math.round(clamp(720 * vw / Math.max(1, vh), 1280, 1600) / 2);
   if (w !== SW) {
     SW = w; screenEl.style.width = SW + 'px'; screenEl.style.setProperty('--wing', (SW - 800) / 2 + 'px'); screenEl.classList.toggle('wide', SW >= 1440);
     ov.width = SW / 2; og.imageSmoothingEnabled = false; ov.style.width = SW + 'px'; ov.style.height = '720px';
@@ -854,13 +865,21 @@ function fit() {
   const k = Math.min(vw / SW, vh / 720);
   if ('zoom' in screenEl.style && CSS.supports('zoom', '1')) screenEl.style.zoom = k;
   else { screenEl.style.transform = `scale(${k})`; screenEl.style.transformOrigin = '0 0'; screenEl.style.position = 'absolute'; screenEl.style.left = (vw - SW * k) / 2 + 'px'; screenEl.style.top = (vh - 720 * k) / 2 + 'px'; }
-  const rot = $('#rotate'), touch = (navigator.maxTouchPoints || 0) > 0;
-  rot.hidden = !(touch && window.innerHeight > window.innerWidth && window.innerWidth < 900 && !rotateSkipped);
+  $('#rotate').hidden = !(touch && portrait && Math.min(window.innerWidth, window.innerHeight) < 900 && rotateChoice === null);
 }
-let rotateSkipped = false;
+async function goLandscape() {
+  rotateChoice = 'land';
+  try {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+    if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
+  } catch (e) { /* refused: the CSS turn in fit() takes over */ }
+  fit(); setTimeout(fit, 300);
+}
 window.addEventListener('resize', fit);
-const scaleK = () => screenEl.getBoundingClientRect().width / SW;
-const rectIn = el => { const k = scaleK(), sr = screenEl.getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k }; };
+if (screen.orientation) screen.orientation.addEventListener('change', () => setTimeout(fit, 50));
+// Element box in screen layout pixels, walked through offsets so zoom and the sideways turn don't skew it.
+const rectIn = el => { let x = 0, y = 0, n = el; while (n && n !== screenEl) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; } return { x, y, w: el.offsetWidth, h: el.offsetHeight }; };
 
 let toastTimer = 0;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
@@ -916,7 +935,7 @@ function renderRes() {
   const rr = $('#reroll'), free = R.freeRerolls > 0, c = rerollCost();
   rr.innerHTML = `새로고침 [R] <span class="${free ? 'free' : R.gold >= c ? 'gold' : 'bad'}">${free ? `무료 ${R.freeRerolls}회` : `${fmt(c)}냥`}</span>`;
   for (const card of $$('#shop .card')) { const s = R.shop[+card.dataset.slot]; if (!s || s.sold) continue; const p = Math.round(priceOf(s.id) * (R.halfOff ? 0.5 : 1)); card.classList.toggle('poor', R.gold < p); }
-  $('#invCount').textContent = `가방 ${R.items.length} / ${INV_MAX}`;
+  $('#invCount').textContent = `${slotsUsed()} / ${INV_MAX}칸`;
 }
 function itemTag(d) {
   if (d.cat === 'weapon') return `<span style="color:${TYPES[d.type].color}">${TYPES[d.type].name}</span>${d.elem ? ` · <span style="color:${ELEMS[d.elem].color}">${ELEMS[d.elem].name}</span>` : ''}`;
@@ -932,7 +951,7 @@ function renderShop() {
     if (s.sold) { b.classList.add('sold'); b.disabled = true; b.innerHTML = `<span class="soldmark">팔림</span><span class="key">${i + 1}</span>`; box.append(b); return; }
     const d = ITEM[s.id], price = Math.round(priceOf(s.id) * (R.halfOff ? 0.5 : 1));
     b.style.setProperty('--tier', TIERS[d.tier].color);
-    b.innerHTML = `<img class="ico" alt="" src="${iconFor(d)}"><span class="nm">${d.name}</span><span class="sub"><span class="pr">${fmt(price)}냥</span><span class="tg">${itemTag(d)}</span></span><span class="key">${i + 1}</span>`;
+    b.innerHTML = `<img class="ico" alt="" src="${iconFor(d)}"><span class="nm">${d.name}</span><span class="sub"><span class="pr">${fmt(price)}냥</span><span class="tg">${itemTag(d)}</span></span>${owned(s.id) ? `<span class="own">×${owned(s.id)}→${owned(s.id) + 1}</span>` : ''}<span class="key">${i + 1}</span>`;
     b.dataset.item = s.id; box.append(b);
   });
   renderRes();
@@ -943,14 +962,28 @@ function renderInv() {
   const tabs = $('#invTabs');
   tabs.innerHTML = INV_TABS.map(([k, n]) => { const c = R.items.filter(it => invMatch(ITEM[it.id], k)).length; return `<button data-act="inv" data-id="${k}" class="${k === invFilter ? 'on' : ''}">${n}${k !== 'all' && c ? `<sup>${c}</sup>` : ''}</button>`; }).join('');
   const grid = $('#inv'); grid.innerHTML = '';
-  const items = R.items.filter(it => invMatch(ITEM[it.id], invFilter));
+  const groups = new Map();
+  for (const it of R.items) if (invMatch(ITEM[it.id], invFilter)) { if (!groups.has(it.id)) groups.set(it.id, []); groups.get(it.id).push(it); }
+  const list = [...groups.values()];
   for (let i = 0; i < INV_MAX; i++) {
     const cell = document.createElement('div'); cell.className = 'slot';
-    const it = items[i];
-    if (it) { const d = ITEM[it.id]; cell.classList.add('full'); cell.style.setProperty('--tier', TIERS[d.tier].color); cell.dataset.act = 'item'; cell.dataset.uid = it.uid; cell.dataset.item = it.id; cell.tabIndex = 0; if (selected === it.uid) cell.classList.add('sel'); cell.innerHTML = `<img alt="${d.name}" src="${iconFor(d)}">`; }
+    const grp = list[i];
+    if (grp) {
+      const it = grp[grp.length - 1], d = ITEM[it.id];
+      cell.classList.add('full'); cell.style.setProperty('--tier', TIERS[d.tier].color); cell.dataset.act = 'item'; cell.dataset.uid = it.uid; cell.dataset.item = it.id; cell.tabIndex = 0;
+      if (selected === it.id) cell.classList.add('sel');
+      cell.innerHTML = `<img alt="${d.name}" src="${iconFor(d)}">${grp.length > 1 ? `<b class="cnt">×${grp.length}</b>` : ''}`;
+    }
     grid.append(cell);
   }
   renderRes();
+}
+// Bag slot tooltip with a sell button; a stack sells one copy at a time and stays open.
+function openItemTip(id) {
+  const grp = R.items.filter(x => x.id === id); if (!grp.length) return;
+  const it = grp[grp.length - 1], n = grp.length; selected = id; renderInv();
+  const cell = $(`#inv .slot[data-item="${id}"]`) || $('#invCount');
+  showTip(cell, ITEM[id], `${n > 1 ? `<p class="gold">보유 ×${n} · 한 개씩 되팝니다</p>` : ''}<div class="actions"><button class="btn danger" data-act="sell" data-id="${it.uid}">되팔기 +${fmt(priceOf(id) * (BASE.sellRate + perkL('sell') * 0.1))}냥</button><button class="btn" data-act="untip">닫기</button></div>`);
 }
 function invMatch(d, k) { if (k === 'all') return true; if (k === 'thorn') return d.cat === 'thorn'; if (k === 'etc') return d.cat !== 'weapon' && d.cat !== 'thorn'; return d.cat === 'weapon' && d.type === k; }
 
@@ -971,9 +1004,9 @@ function showTip(el, d, extra = '') {
   const tier = TIERS[d.tier];
   tip.innerHTML = `<div class="t-h"><img src="${iconFor(d)}" alt=""><div><div class="t-nm" style="color:${tier.color}">${d.name}</div><div class="t-tg">${tier.name} · ${itemTag(d)}</div></div></div>${itemStats(d).map(s => `<p>${s}</p>`).join('')}<p class="t-d">${d.desc || ''}</p>${extra}`;
   tip.style.setProperty('--tt', tier.color); tip.hidden = false;
-  const k = scaleK(), sr = screenEl.getBoundingClientRect(), r = el.getBoundingClientRect();
-  let x = (r.left - sr.left) / k, y = (r.top - sr.top) / k; const tw = 330, th = tip.offsetHeight;
-  x = x - tw - 10; if (x < 8) x = (r.right - sr.left) / k + 10; x = Math.min(x, SW - tw - 8); y = clamp(y, 8, 720 - th - 8);
+  const r = rectIn(el);
+  let x = r.x, y = r.y; const tw = 330, th = tip.offsetHeight;
+  x = x - tw - 10; if (x < 8) x = r.x + r.w + 10; x = Math.min(x, SW - tw - 8); y = clamp(y, 8, 720 - th - 8);
   tip.style.left = x + 'px'; tip.style.top = y + 'px';
 }
 function hideTip() { tip.hidden = true; }
@@ -1001,7 +1034,9 @@ function renderSets() {
   $('#fpanel').innerHTML = h + '</div>';
 }
 function renderMeter() {
-  const rows = R.weapons.map(w => ({ n: ITEM[w.id].name, d: w.dealt, dps: w.dealt / Math.max(1, R.time - w.since), c: TYPES[ITEM[w.id].type].color }));
+  const byId = new Map();
+  for (const w of R.weapons) { const r = byId.get(w.id) || { n: ITEM[w.id].name, k: 0, d: 0, dps: 0, c: TYPES[ITEM[w.id].type].color }; r.k++; r.d += w.dealt; r.dps += w.dealt / Math.max(1, R.time - w.since); byId.set(w.id, r); }
+  const rows = [...byId.values()].map(r => (r.k > 1 ? Object.assign(r, { n: `${r.n} ×${r.k}` }) : r));
   if (R.thornDealt > 0) rows.push({ n: '가시·천벌', d: R.thornDealt, dps: R.thornDealt / Math.max(1, R.time), c: '#c9ced8' });
   rows.sort((a, b) => b.d - a.d); const top = rows[0] ? rows[0].d : 1;
   $('#fpanel').innerHTML = `<h3>딜미터 <span class="dim">[D]</span></h3>` + (rows.length ? rows.slice(0, 12).map(r => `<div class="mrow"><span class="mn" style="color:${r.c}">${r.n}</span><span class="mbar"><i style="width:${(r.d / top * 100).toFixed(1)}%;background:${r.c}"></i></span><span class="mv">${shortNum(r.d)}<small> · ${shortNum(r.dps)}/초</small></span></div>`).join('') : '<p class="dim">아직 무기가 없습니다</p>');
@@ -1026,7 +1061,7 @@ function setPaused(v) {
 }
 function showResult(res) {
   const won = R.state === 'won', d = R.diff, cleared = roundsCleared(), canOnline = R.ranked && !!Cloud.db;
-  openModal(`<div class="eyebrow ${won ? 'gold' : 'bad'}">${d.name}${R.ranked ? ` · 주간 랭킹전 ${weekId()}` : ''}</div><h2>${won ? '봉화를 끝까지 지켰습니다' : `${R.round} 라운드에서 봉화가 꺼졌습니다`}</h2>
+  openModal(`<div class="eyebrow ${won ? 'gold' : 'bad'}">${d.name}${R.ranked ? ` · 주간 랭킹전 ${weekId()}` : ''}</div><h2>${won ? '봉화를 끝까지 지켰습니다' : R.round === 0 ? '출정 전에 물러났습니다' : `${R.round} 라운드에서 봉화가 꺼졌습니다`}</h2>
     <dl class="facts"><dt>버틴 라운드</dt><dd>${cleared} / ${ROUNDS}${won ? ' + 흑룡' : ''}</dd><dt>처치</dt><dd>${fmt(R.kills)}</dd><dt>시간</dt><dd>${Math.floor(R.time / 60)}분 ${Math.floor(R.time % 60)}초</dd><dt>기억 조각</dt><dd class="gold">+${res.shards}</dd>${res.rec ? `<dt>랭킹 점수</dt><dd class="gold big">${fmt(res.rec.score)}</dd>` : ''}</dl>
     ${won && d.id === 'hard' && P.wins.hard === 1 ? '<p class="gold">악몽 I이 열렸습니다</p>' : ''}${won && d.id === 'nm1' && P.wins.nm1 === 1 ? '<p class="gold">악몽 II가 열렸습니다</p>' : ''}${won && d.id === 'nm2' && P.wins.nm2 === 1 ? '<p class="gold">악몽 III이 열렸습니다</p>' : ''}
     ${canOnline ? `<div class="submit"><input id="nickIn" maxlength="12" placeholder="닉네임" aria-label="닉네임" autocomplete="off"><button class="btn primary" data-act="submit">온라인 랭킹 등록</button></div><p class="dim small" id="submitNote">이 기기 기록에는 자동으로 남겼습니다. 온라인에는 한 사람당 이번 주 최고 기록 하나가 올라갑니다.</p>` : R.ranked ? '<p class="dim small">이 기기 랭킹에 기록했습니다.</p>' : ''}
@@ -1171,13 +1206,11 @@ document.addEventListener('click', ev => {
       armedSlot = -1; hideTip(); buy(slot); break;
     }
     case 'item': {
-      const uid = +el.dataset.uid, it = R.items.find(x => x.uid === uid); if (!it) return;
-      if (selected === uid) { selected = null; hideTip(); renderInv(); return; }
-      selected = uid; renderInv(); const cell = $(`#inv [data-uid="${uid}"]`);
-      showTip(cell || el, ITEM[it.id], `<div class="actions"><button class="btn danger" data-act="sell" data-id="${uid}">되팔기 +${fmt(priceOf(it.id) * (BASE.sellRate + perkL('sell') * 0.1))}냥</button><button class="btn" data-act="untip">닫기</button></div>`);
-      break;
+      const it = R.items.find(x => x.uid === +el.dataset.uid); if (!it) return;
+      if (selected === it.id) { selected = null; hideTip(); renderInv(); return; }
+      openItemTip(it.id); break;
     }
-    case 'sell': sellItem(+id); break;
+    case 'sell': { const it = R.items.find(x => x.uid === +id); if (!it) break; sellItem(+id); if (owned(it.id)) openItemTip(it.id); break; }
     case 'untip': selected = null; hideTip(); renderInv(); break;
     case 'inv': invFilter = id; renderInv(); break;
     case 'reroll': reroll(); break;
@@ -1207,7 +1240,8 @@ document.addEventListener('click', ev => {
     case 'hallView': hallView = id; if (menuView === 'rank') renderRankMenu(); else renderHall(); break;
     case 'sound': P.sound = !P.sound; persist(); renderSettings(); break;
     case 'reset': if (Date.now() - resetArmed > 4000) { resetArmed = Date.now(); el.textContent = '한 번 더 누르면 모두 지워집니다'; } else { resetArmed = 0; const keep = { sound: P.sound, nick: P.nick }; P = Object.assign(newProfile(), keep); persist(); toast('모든 진행을 지웠습니다'); renderSettings(); } break;
-    case 'rotate-skip': rotateSkipped = true; fit(); break;
+    case 'rotate-skip': rotateChoice = 'port'; fit(); break;
+    case 'rotate-go': goLandscape(); break;
   }
 });
 window.addEventListener('keydown', ev => {
