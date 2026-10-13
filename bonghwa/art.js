@@ -321,6 +321,9 @@ const ICONS = {
   wall: [
     '............', 'kkkk.kkkk.kk', 'kVVk.kVVk.kV', 'kkkkkkkkkkkk', 'kVVVkVVVVkVk', 'kVVVkVVVVkVk',
     'kkkkkkkkkkkk', 'kVkVVVVkVVVk', 'kVkVVVVkVVVk', 'kkkkkkkkkkkk', 'kVVVkVVVVkVk', 'kkkkkkkkkkkk'],
+  chest: [
+    '............', '..kkkkkkkk..', '.kNNNNNNNNk.', 'kNnnnnnnnnNk', 'kkkkkkkkkkkk', 'kNnnnkyknnNk',
+    'kNnnnkykknNk', 'kNnnnnkknnNk', 'kNnnnnnnnnNk', 'kNNNNNNNNNNk', 'kkkkkkkkkkkk', '............'],
   thorn: [
     '.....k......', '....kGk.....', '..k.kGk.k...', '..kkkGkkk...', '...kGGGk....', 'k..kGGGk..k.',
     'kkkGGGGGkkk.', '..kGGGGGk...', '.kGGGGGGGk..', 'kGGGkkkGGGk.', 'kkk.....kkk.', '............'],
@@ -365,11 +368,12 @@ function bakeSprites() {
     SPRITES[key] = {
       w: imgs[0].width, h: imgs[0].height, frames: imgs, flip: imgs.map(flipped),
       white: imgs.map(i => silhouette(i, '#ffffff')), whiteFlip: imgs.map(i => silhouette(flipped(i), '#ffffff')),
-      ice: silhouette(imgs[0], '#bfeaff'),
+      ice: silhouette(imgs[0], '#bfeaff'), eyes: (EYES[key] || []).map(([x, y]) => [x * scale, y * scale]), scale,
     };
   };
   for (const k in SPR) make(k, SPR[k], {}, SPR_SCALE[k] || 1);
   for (const k in SPR_ALIAS) make(k, SPR[SPR_ALIAS[k].base], SPR_ALIAS[k].pal, SPR_SCALE[k] || 1);
+  bakeInk();
 }
 const ICON_URL = {};
 function iconUrl(name, typeColor = '#e6e6e6', elemColor = '#ffffff') {
@@ -414,84 +418,203 @@ function pdigits(g, str, x, y, c, scale = 1) {
 function shortNum(n) { n = Math.round(n); if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace('.0', '') + 'm'; if (n >= 1e4) return Math.round(n / 1e3) + 'k'; return String(n); }
 
 // ───────── battlefield ─────────
+// The field is painted once per theme. Night is not a filter on top: `darkPass` carves light out of a darkness
+// layer every frame, so the beacon, stone lanterns, cottage windows, shots and explosions all light the ground.
 const FW = 400, FH = 360, CX = 200, CY = 184, PLAZA_R = 62;
 const THEMES = {
-  field:  { grass: ['#3f6b35', '#4a7a3c', '#365d2e', '#55873f'], flower: ['#f0d36a', '#e98fb8', '#f4f1e7'], path: ['#7d6a4a', '#8a7552', '#6f5d40'], stone: ['#7d8290', '#8a8f9c', '#6c717e'], rim: '#4c505c', tree: ['#2d5a30', '#3c7040', '#244a28'], trunk: '#5a3d26', fog: null },
-  autumn: { grass: ['#7a6a33', '#8a7838', '#6a5b2c', '#94803d'], flower: ['#e0672f', '#f0b24a', '#c94a2c'], path: ['#7a5f42', '#86694a', '#6b523a'], stone: ['#857b70', '#928777', '#746a60'], rim: '#4f463e', tree: ['#b5532c', '#d27a33', '#8e3b22'], trunk: '#4e3420', fog: null },
-  night:  { grass: ['#2c2740', '#332d4a', '#262236', '#3a3352'], flower: ['#8a5ad8', '#5ab0d8', '#c84a6a'], path: ['#4a3f55', '#54485f', '#40364a'], stone: ['#5a5868', '#666474', '#4e4c5c'], rim: '#2e2c38', tree: ['#3a2f4a', '#4a3a5c', '#2c2238'], trunk: '#2a2030', fog: 'rgba(90,60,130,0.10)' },
+  field:  { grass: ['#2c5233', '#36633a', '#417443', '#55894b'], flower: ['#f0d36a', '#e98fb8', '#f4f1e7'], path: ['#6a5a40', '#7a684a', '#887555'], stone: ['#7d8290', '#8f94a0', '#6a6f7c'], rim: '#474b57', tree: ['#1f4528', '#2c5c34', '#3b7343'], trunk: '#4a3322', amb: '10,14,46', dark: 0.6, edge: 0.32, mote: 'firefly' },
+  autumn: { grass: ['#5e4f28', '#6e5e2f', '#7f6c35', '#95803f'], flower: ['#e0672f', '#f0b24a', '#c94a2c'], path: ['#5f4a34', '#6e563c', '#7d6446'], stone: ['#857b70', '#968a7c', '#6f665c'], rim: '#4a423a', tree: ['#8a3a20', '#b5532c', '#d27a33'], trunk: '#432c1c', amb: '26,12,34', dark: 0.64, edge: 0.3, mote: 'leaf' },
+  night:  { grass: ['#211d33', '#29243e', '#322c4a', '#3d3658'], flower: ['#8a5ad8', '#5ab0d8', '#c84a6a'], path: ['#3c3346', '#463c52', '#51465e'], stone: ['#5a5868', '#6a6878', '#4c4a5a'], rim: '#2a2834', tree: ['#241c32', '#30263f', '#3d3150'], trunk: '#221a2a', amb: '8,4,22', dark: 0.7, edge: 0.24, mote: 'wisp', dead: true },
 };
+const hexRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+// Smooth value noise, used for grass patches and worn road edges.
+function vnoise(rnd, cell) {
+  const gw = 64, grid = Array.from({ length: gw * gw }, rnd), s = t => t * t * (3 - 2 * t);
+  return (x, y) => {
+    const gx = x / cell + 1, gy = y / cell + 1, x0 = Math.floor(gx), y0 = Math.floor(gy), u = s(gx - x0), v = s(gy - y0);
+    const at = (i, j) => grid[((j % gw) * gw + (i % gw)) | 0];
+    const a = at(x0, y0), b = at(x0 + 1, y0), c = at(x0, y0 + 1), d = at(x0 + 1, y0 + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+}
+function pell(g, cx, cy, rx, ry, c) {
+  g.fillStyle = c; cx = Math.round(cx); cy = Math.round(cy);
+  for (let dy = -ry; dy <= ry; dy++) { const dx = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry + 0.01)))); if (dx > 0) g.fillRect(cx - dx, cy + dy, dx * 2, 1); }
+}
+const HOUSES = [[58, 64], [346, 70], [62, 304], [338, 300]];
+const LANTERNS = [[CX - 22, CY - 78], [CX + 22, CY - 78], [CX - 22, CY + 96], [CX + 22, CY + 96], [CX - 92, CY - 20], [CX + 92, CY + 26]];
+const TORCHES = [[CX - 44, CY - 42], [CX + 43, CY - 42], [CX - 44, CY + 46], [CX + 43, CY + 46]];
 function paintField(theme) {
   const T = THEMES[theme], cv = document.createElement('canvas'); cv.width = FW; cv.height = FH;
-  const g = cv.getContext('2d'), rnd = mulberry32(theme.length * 9173 + 41);
-  g.fillStyle = T.grass[0]; g.fillRect(0, 0, FW, FH);
-  for (let i = 0; i < 5200; i++) pr(g, rnd() * FW, rnd() * FH, 1, 1, T.grass[1 + ((rnd() * 3) | 0)]);
-  // four dirt roads into the plaza
-  const road = (x, y, w, h) => { for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) if (rnd() < 0.92) pr(g, xx, yy, 1, 1, T.path[(rnd() * 3) | 0]); };
-  road(CX - 13, 0, 26, CY); road(CX - 13, CY, 26, FH - CY); road(0, CY - 13, CX, 26); road(CX, CY - 13, FW - CX, 26);
-  for (let i = 0; i < 260; i++) { const a = rnd() * Math.PI * 2, d = 80 + rnd() * 180; const x = CX + Math.cos(a) * d, y = CY + Math.sin(a) * d * 0.95; pr(g, x, y, 1, 1, T.flower[(rnd() * 3) | 0]); }
-  for (let i = 0; i < 160; i++) { const x = rnd() * FW, y = rnd() * FH; if (Math.hypot(x - CX, y - CY) < PLAZA_R + 8) continue; pr(g, x, y, 1, 2, T.grass[3]); pr(g, x + 1, y + 1, 1, 1, T.grass[3]); pr(g, x - 1, y + 1, 1, 1, T.grass[3]); }
-  // stone plaza
-  pcirc(g, CX, CY, PLAZA_R + 3, T.rim); pcirc(g, CX, CY, PLAZA_R, T.stone[0]);
-  for (let y = CY - PLAZA_R; y <= CY + PLAZA_R; y++) for (let x = CX - PLAZA_R; x <= CX + PLAZA_R; x++) {
-    if (Math.hypot(x - CX, y - CY) > PLAZA_R - 1) continue;
-    const gx = (x - CX + 200) % 12, gy = (y - CY + 200) % 10;
-    if (gx === 0 || gy === 0) pr(g, x, y, 1, 1, T.stone[2]); else if (rnd() < 0.08) pr(g, x, y, 1, 1, T.stone[1]);
+  const g = cv.getContext('2d'), rnd = mulberry32(theme.length * 9173 + 41), lights = [];
+  const n1 = vnoise(rnd, 46), n2 = vnoise(rnd, 13), n3 = vnoise(rnd, 7);
+  const grass = T.grass.map(hexRgb), path = T.path.map(hexRgb), stone = T.stone.map(hexRgb), rim = hexRgb(T.rim);
+  const img = g.createImageData(FW, FH), px = img.data;
+  for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) {
+    const i = (y * FW + x) * 4, dx = x - CX, dy = y - CY, d = Math.hypot(dx, dy);
+    let c;
+    const wob = (n2(x, y) - 0.5) * 6, road = Math.abs(dx) < 12 + wob || Math.abs(dy) < 12 + wob;
+    if (d <= PLAZA_R) {
+      // radial paving: rings of cut stone around the beacon
+      const ring = Math.floor(d / 11), segs = Math.max(6, Math.floor((2 * Math.PI * (ring * 11 + 5)) / 13)), a = (Math.atan2(dy, dx) + Math.PI) / (2 * Math.PI) * segs + ring * 0.5;
+      const mortar = d % 11 < 1 || Math.abs(a - Math.round(a)) * (ring * 11 + 5) * 2 * Math.PI / segs < 0.7;
+      const sh = n3(x, y) + rnd() * 0.25;
+      c = mortar ? stone[2] : sh > 0.85 ? stone[1] : stone[0];
+      if (!mortar && (dx + dy) / Math.max(1, d) < -0.6 && d % 11 < 2.2) c = stone[1];
+    } else if (d <= PLAZA_R + 3) c = (Math.floor(Math.atan2(dy, dx) * 24) % 2) ? rim : stone[2];
+    else if (road) {
+      const edge = Math.min(Math.abs(Math.abs(dx) - (12 + wob)), Math.abs(Math.abs(dy) - (12 + wob)));
+      const rut = (Math.abs(dx) < 12 && (Math.abs(Math.abs(dx) - 6) < 1)) || (Math.abs(dy) < 12 && Math.abs(Math.abs(dy) - 6) < 1);
+      const sh = n3(x, y) + rnd() * 0.3;
+      c = edge < 1.5 ? path[0] : rut && rnd() < 0.7 ? path[0] : sh > 0.95 ? path[2] : path[1];
+    } else {
+      const v = n1(x, y) * 0.62 + n2(x, y) * 0.38 + (rnd() - 0.5) * 0.16;
+      c = v < 0.36 ? grass[0] : v < 0.52 ? grass[1] : v < 0.68 ? grass[2] : grass[3];
+    }
+    px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2]; px[i + 3] = 255;
   }
-  pring(g, CX, CY, PLAZA_R + 1, T.stone[2]);
-  // trees around the edge, keeping the roads clear
+  g.putImageData(img, 0, 0);
+  pring(g, CX, CY, PLAZA_R + 4, 'rgba(0,0,0,0.25)');
+  // ground clutter
+  const clear = (x, y, m = 0) => Math.hypot(x - CX, y - CY) < PLAZA_R + 8 + m || Math.abs(x - CX) < 18 + m || Math.abs(y - CY) < 18 + m || HOUSES.some(([hx, hy]) => Math.hypot(x - hx, y - hy + 8) < 24 + m);
+  for (let i = 0; i < 300; i++) { const a = rnd() * Math.PI * 2, d = 76 + rnd() * 180, x = CX + Math.cos(a) * d, y = CY + Math.sin(a) * d * 0.95; if (!clear(x, y)) pr(g, x, y, 1, 1, T.flower[(rnd() * 3) | 0]); }
+  for (let i = 0; i < 220; i++) { const x = rnd() * FW, y = rnd() * FH; if (clear(x, y)) continue; const c = T.grass[3]; pr(g, x, y, 1, 2, c); pr(g, x + 1, y + 1, 1, 1, c); pr(g, x - 1, y + 1, 1, 1, c); }
+  for (let i = 0; i < 26; i++) { const x = rnd() * FW, y = rnd() * FH; if (clear(x, y, 4)) continue; pell(g, x + 1, y + 2, 3, 1, 'rgba(0,0,0,0.3)'); pell(g, x, y, 3, 2, T.stone[2]); pr(g, x - 1, y - 1, 2, 1, T.stone[1]); }
+  // cottages and lanterns: their windows and paper shades are light sources at night
+  for (const [hx, hy] of HOUSES) lights.push(drawHouse(g, hx, hy, rnd, T));
+  for (const [lx, ly] of LANTERNS) lights.push(drawLantern(g, lx, ly));
+  // trees around the edge, keeping roads and yards clear
   const trees = [];
-  for (let i = 0; i < 400 && trees.length < 46; i++) {
-    const x = 6 + rnd() * (FW - 12), y = 8 + rnd() * (FH - 10);
-    const edge = Math.min(x, FW - x, y, FH - y);
-    if (edge > 54 || Math.abs(x - CX) < 24 || Math.abs(y - CY) < 24) continue;
-    if (trees.some(t => Math.hypot(t.x - x, t.y - y) < 16)) continue;
+  for (let i = 0; i < 600 && trees.length < 44; i++) {
+    const x = 6 + rnd() * (FW - 12), y = 10 + rnd() * (FH - 10), edge = Math.min(x, FW - x, y, FH - y);
+    if (edge > 56 || clear(x, y, 6)) continue;
+    if (trees.some(t => Math.hypot(t.x - x, t.y - y) < 15)) continue;
     trees.push({ x, y });
   }
   trees.sort((a, b) => a.y - b.y);
-  for (const t of trees) drawTree(g, t.x, t.y, T, rnd, theme === 'night');
-  if (T.fog) { g.fillStyle = T.fog; g.fillRect(0, 0, FW, FH); }
-  return cv;
+  for (const t of trees) drawTree(g, t.x, t.y, T, rnd);
+  return { cv, lights };
 }
-function drawTree(g, x, y, T, rnd, dead) {
+function drawTree(g, x, y, T, rnd) {
   x = Math.round(x); y = Math.round(y);
-  pr(g, x - 6, y + 4, 13, 3, 'rgba(0,0,0,0.25)');
-  pr(g, x - 1, y - 2, 3, 7, PAL.k); pr(g, x, y - 2, 1, 6, T.trunk);
-  if (dead) { pline(g, x, y - 2, x - 5, y - 10, T.trunk); pline(g, x, y - 4, x + 5, y - 11, T.trunk); pline(g, x - 3, y - 7, x - 7, y - 8, T.trunk); return; }
-  pcirc(g, x, y - 9, 8, PAL.k); pcirc(g, x, y - 9, 7, T.tree[0]); pcirc(g, x - 2, y - 11, 4, T.tree[1]);
-  for (let i = 0; i < 6; i++) pr(g, x - 5 + rnd() * 10, y - 14 + rnd() * 9, 1, 1, T.tree[2]);
+  pell(g, x + 3, y + 3, 8, 2, 'rgba(0,0,0,0.32)');
+  pr(g, x - 1, y - 3, 3, 7, PAL.k); pr(g, x, y - 3, 1, 6, T.trunk);
+  if (T.dead) { pline(g, x, y - 2, x - 5, y - 11, T.trunk); pline(g, x, y - 4, x + 6, y - 12, T.trunk); pline(g, x - 3, y - 8, x - 8, y - 9, T.trunk); pline(g, x + 3, y - 8, x + 3, y - 14, T.trunk); return; }
+  // layered pine canopy (소나무): dark outline, three tiers, lit from the upper left
+  pell(g, x, y - 8, 8, 5, PAL.k); pell(g, x - 1, y - 13, 7, 4, PAL.k);
+  pell(g, x, y - 8, 7, 4, T.tree[0]); pell(g, x - 1, y - 13, 6, 3, T.tree[1]); pell(g, x - 2, y - 15, 3, 2, T.tree[2]);
+  for (let i = 0; i < 7; i++) pr(g, x - 6 + rnd() * 11, y - 16 + rnd() * 11, 1, 1, i % 2 ? T.tree[2] : T.tree[0]);
 }
-// The beacon tower: stone base, wooden lookout and a fire basket, drawn at the field centre.
+function drawHouse(g, x, y, rnd, T) {
+  // 초가집: plaster walls with timber posts, a rounded thatch roof, one lit window
+  pell(g, x + 4, y + 2, 16, 3, 'rgba(0,0,0,0.33)');
+  pr(g, x - 13, y - 12, 26, 13, PAL.k);
+  pr(g, x - 12, y - 11, 24, 11, '#cdbb92'); pr(g, x - 12, y - 2, 24, 2, '#7d7568');
+  for (const px of [-12, -4, 4, 11]) pr(g, x + px, y - 11, 1, 10, '#5a3c26');
+  pr(g, x - 9, y - 9, 4, 8, '#3a2a1c'); pr(g, x - 9, y - 9, 4, 1, '#5a3c26');
+  pr(g, x + 5, y - 9, 5, 4, PAL.k); pr(g, x + 6, y - 8, 3, 2, '#ffd982');
+  for (let r = 0; r <= 11; r++) {
+    const w = Math.round(17 * Math.sqrt(Math.max(0, 1 - ((11 - r) / 11.5) ** 2))), yy = y - 23 + r;
+    pr(g, x - w - 1, yy, w * 2 + 2, 1, PAL.k);
+    if (w > 0) pr(g, x - w, yy, w * 2, 1, r < 3 ? '#d9b46c' : '#b8924e');
+  }
+  for (let i = 0; i < 40; i++) { const r = 2 + rnd() * 9, w = 16 * Math.sqrt(1 - ((11 - r) / 11.5) ** 2); pr(g, x - w + rnd() * w * 2, y - 23 + r, 1, 2, '#8e6a34'); }
+  pr(g, x - 18, y - 12, 36, 1, '#6a4c26');
+  return { x: x + 7, y: y - 7, r: 26, i: 0.85, c: '255,190,110', ca: 0.22 };
+}
+function drawLantern(g, x, y) {
+  // 청사초롱 on a wooden post: red silk top, blue skirt
+  pr(g, x, y - 16, 1, 17, '#3a2a1c'); pr(g, x - 3, y - 16, 4, 1, '#3a2a1c');
+  pr(g, x - 5, y - 15, 5, 7, PAL.k); pr(g, x - 4, y - 14, 3, 3, '#e04a32'); pr(g, x - 4, y - 11, 3, 2, '#3c5ac0'); pr(g, x - 3, y - 14, 1, 2, '#ffd2a0');
+  return { x: x - 3, y: y - 12, r: 24, i: 0.8, c: '255,120,80', ca: 0.2 };
+}
+// The beacon: a Joseon 봉수대 — a stone platform with five chimneys (연조). Each lit chimney is 20% of the beacon's health,
+// so the fires going out one by one is the health bar.
+const STACK_X = [-16, -8, 0, 8, 16], STACK_H = [14, 18, 22, 18, 14], STACK_ORDER = [2, 1, 3, 0, 4];
+const litStacks = hpRatio => (hpRatio <= 0 ? 0 : Math.max(1, Math.ceil(hpRatio * 5 - 1e-6)));
+function towerFires(hpRatio) {
+  const base = CY + 10, n = litStacks(hpRatio);
+  return STACK_X.map((sx, i) => ({ x: CX + sx, y: base - 18 - STACK_H[i], lit: STACK_ORDER.indexOf(i) < n, main: i === 2 }));
+}
+function drawFlame(g, x, y, t, k) {
+  const f = Math.floor(t * 12) % 4, h = Math.round((7 + (f % 2) + (f === 2 ? 2 : 0)) * k);
+  for (let i = 0; i < h; i++) {
+    const q = i / h, w = Math.max(1, Math.round((6 - q * 6) * k * 0.9) + ((i + f) % 2)), sway = Math.round(Math.sin(t * 7 + i * 0.7) * q * 1.6);
+    pr(g, x - (w >> 1) + sway, y - i, w, 1, q < 0.25 ? '#d8452a' : q < 0.5 ? '#ee8a2c' : q < 0.78 ? '#f3c94a' : '#fff2a8');
+  }
+  pr(g, x - 1, y - 1, 2, 1, '#fff7d0');
+}
 function drawTower(g, t, hpRatio, theme) {
   const x = CX, base = CY + 10;
-  pr(g, x - 20, base - 2, 41, 6, 'rgba(0,0,0,0.3)');
-  // stone base
-  for (let i = 0; i < 26; i++) { const w = 30 - Math.floor(i / 4); pr(g, x - (w >> 1) - 1, base - i - 1, w + 2, 1, PAL.k); pr(g, x - (w >> 1), base - i - 1, w, 1, i % 6 === 5 ? '#6c665c' : '#8f887b'); }
-  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) pr(g, x - 13 + c * 7 + (r % 2) * 3, base - 4 - r * 6, 1, 4, '#6c665c');
-  pr(g, x - 4, base - 10, 8, 10, PAL.k); pr(g, x - 3, base - 9, 6, 9, '#4a3020'); pr(g, x - 3, base - 9, 6, 1, '#6a4a30');
-  // wooden lookout
-  pr(g, x - 13, base - 29, 26, 4, PAL.k); pr(g, x - 12, base - 28, 24, 2, '#8a5a34');
-  for (const px of [-11, -4, 3, 10]) { pr(g, x + px, base - 40, 2, 12, PAL.k); pr(g, x + px, base - 39, 1, 10, '#a06a3c'); }
-  pr(g, x - 13, base - 42, 26, 3, PAL.k); pr(g, x - 12, base - 41, 24, 1, '#8a5a34');
-  // fire basket
-  pr(g, x - 6, base - 47, 12, 6, PAL.k); pr(g, x - 5, base - 46, 10, 4, '#3a3a44');
-  const lit = hpRatio > 0;
-  if (lit) {
-    const f = Math.floor(t * 10) % 3, hgt = 7 + f + Math.round(hpRatio * 3);
-    for (let i = 0; i < hgt; i++) { const w = Math.max(1, 8 - Math.floor(i * 8 / hgt) + ((i + f) % 2)); pr(g, x - (w >> 1), base - 48 - i, w, 1, i < hgt * 0.35 ? '#ee8a2c' : i < hgt * 0.7 ? '#f3c94a' : '#fff2a8'); }
-    for (let i = 0; i < 3; i++) { const p = (t * 0.8 + i / 3) % 1; pr(g, x - 3 + i * 3 + Math.sin(t * 3 + i) * 2, base - 52 - p * 20, 1, 1, p < 0.5 ? '#f3c94a' : '#8b919e'); }
+  pell(g, x + 3, base + 1, 28, 5, 'rgba(0,0,0,0.38)');
+  // platform: top face and brick front
+  pr(g, x - 25, base - 22, 51, 23, PAL.k);
+  pr(g, x - 24, base - 21, 49, 7, '#b0a794'); pr(g, x - 24, base - 21, 49, 1, '#cfc6b0');
+  pr(g, x - 24, base - 14, 49, 14, '#8a8273');
+  for (let r = 0; r < 3; r++) { const yy = base - 14 + r * 5; pr(g, x - 24, yy, 49, 1, '#5d574c'); for (let c = 0; c < 7; c++) pr(g, x - 24 + c * 8 + (r % 2) * 4, yy, 1, 5, '#5d574c'); }
+  pr(g, x - 24, base - 14, 2, 14, '#a39a89'); pr(g, x + 23, base - 14, 2, 14, '#6a6356');
+  pr(g, x - 5, base - 5, 10, 5, PAL.k); pr(g, x - 4, base - 4, 8, 2, '#a39a89'); pr(g, x - 4, base - 2, 8, 2, '#8a8273');
+  // five chimneys, outer ones go dark first
+  const n = litStacks(hpRatio);
+  for (let i = 0; i < 5; i++) {
+    const sx = x + STACK_X[i], h = STACK_H[i], top = base - 18 - h;
+    pr(g, sx - 4, top, 8, h + 2, PAL.k);
+    pr(g, sx - 3, top + 1, 6, h, '#9a917f'); pr(g, sx - 3, top + 1, 2, h, '#bdb39e'); pr(g, sx + 2, top + 1, 1, h, '#6f685b');
+    for (let yy = top + 5; yy < base - 18; yy += 5) pr(g, sx - 3, yy, 6, 1, '#6f685b');
+    pr(g, sx - 4, top - 1, 8, 2, PAL.k); pr(g, sx - 3, top - 1, 6, 1, '#d6ccb4');
+    if (STACK_ORDER.indexOf(i) < n) drawFlame(g, sx, top - 1, t + i * 0.37, i === 2 ? 1.35 : 1);
+    else { pr(g, sx - 2, top - 1, 4, 1, '#2a1a14'); if (Math.floor(t * 3 + i) % 3 === 0) pr(g, sx, top - 1, 1, 1, '#a8402a'); }
   }
-  // banner
-  pr(g, x + 14, base - 58, 1, 30, PAL.k);
+  // signal banner
+  pr(g, x + 27, base - 50, 1, 34, PAL.k);
   const wave = Math.floor(t * 4) % 2;
-  pr(g, x + 15, base - 58, 8, 6 + wave, '#cf4a35'); pr(g, x + 15, base - 58, 8, 1, '#8c2b22');
-  if (theme === 'night') pr(g, x - 16, base - 50, 32, 50, 'rgba(255,200,120,0.03)');
+  pr(g, x + 28, base - 50, 9, 7 + wave, '#cf4a35'); pr(g, x + 28, base - 50, 9, 1, '#8c2b22'); pr(g, x + 31, base - 47, 3, 2, '#f3c94a');
 }
+// 석등: stone lanterns at the plaza corners
 function drawTorch(g, x, y, t) {
-  pr(g, x, y - 6, 2, 7, PAL.k); pr(g, x, y - 5, 1, 5, '#6a4a30');
-  const f = Math.floor(t * 8 + x) % 2;
-  pr(g, x - 1, y - 9 - f, 4, 3 + f, '#ee8a2c'); pr(g, x, y - 10 - f, 2, 2, '#fff2a8');
+  pr(g, x - 3, y - 1, 7, 2, '#5d574c'); pr(g, x - 1, y - 7, 3, 6, PAL.k); pr(g, x, y - 7, 1, 6, '#9a917f');
+  pr(g, x - 3, y - 12, 7, 5, PAL.k); pr(g, x - 2, y - 11, 5, 3, '#8a8273');
+  const f = Math.floor(t * 8 + x) % 3; pr(g, x - 1, y - 11, 3, 2, f ? '#f3c94a' : '#ee8a2c'); pr(g, x, y - 11, 1, 1, '#fff2a8');
+  pr(g, x - 4, y - 14, 9, 2, PAL.k); pr(g, x - 3, y - 14, 7, 1, '#b0a794'); pr(g, x, y - 16, 1, 2, PAL.k);
 }
-const TORCHES = [[CX - 44, CY - 42], [CX + 43, CY - 42], [CX - 44, CY + 46], [CX + 43, CY + 46]];
 
+// Darkness with light carved out of it, then a warm additive glow on top. `lights` are {x, y, r, i, c?, ca?}.
+const DARK = {};
+function darkPass(g, w, h, amb, alpha, edge, lights, cx, cy) {
+  const P = 10, key = w + 'x' + h; let L = DARK[key];
+  if (!L) { L = DARK[key] = document.createElement('canvas'); L.width = w + P * 2; L.height = h + P * 2; }
+  const l = L.getContext('2d');
+  l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, L.width, L.height);
+  l.fillStyle = `rgba(${amb},${alpha})`; l.fillRect(0, 0, L.width, L.height);
+  if (edge) { const vg = l.createRadialGradient(cx + P, cy + P, h * 0.3, cx + P, cy + P, Math.max(w, h) * 0.78); vg.addColorStop(0, `rgba(${amb},0)`); vg.addColorStop(1, `rgba(${amb},${edge})`); l.fillStyle = vg; l.fillRect(0, 0, L.width, L.height); }
+  l.globalCompositeOperation = 'destination-out';
+  for (const s of lights) {
+    if (s.r < 1) continue;
+    const gr = l.createRadialGradient(s.x + P, s.y + P, 0, s.x + P, s.y + P, s.r);
+    gr.addColorStop(0, `rgba(0,0,0,${s.i})`); gr.addColorStop(0.45, `rgba(0,0,0,${s.i * 0.7})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    l.fillStyle = gr; l.fillRect(s.x + P - s.r, s.y + P - s.r, s.r * 2, s.r * 2);
+  }
+  g.drawImage(L, -P, -P);
+  g.globalCompositeOperation = 'lighter';
+  for (const s of lights) {
+    if (!s.c) continue; const r = s.r * 0.75;
+    const gr = g.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
+    gr.addColorStop(0, `rgba(${s.c},${s.ca || 0.16})`); gr.addColorStop(1, `rgba(${s.c},0)`);
+    g.fillStyle = gr; g.fillRect(s.x - r, s.y - r, r * 2, r * 2);
+  }
+  g.globalCompositeOperation = 'source-over';
+}
+// Where each sprite's eyes are, so foes in the dark show glinting eyes before their bodies.
+const EYES = { grunt: [[4, 4], [7, 4]], chief: [[4, 4], [7, 4]], runner: [[3, 4], [6, 4]], bandit: [[5, 4], [6, 4]], guard: [[4, 4], [7, 4]], gangsi: [[5, 4], [6, 4]], hareubang: [[4, 5], [7, 5]], giant: [[6, 3], [9, 3]], wolf: [[1, 3]], treasure: [[4, 4], [7, 4]], bulga: [[2, 5]], gumiho: [[2, 5]], dragon: [[10, 4], [15, 4]] };
+// Ink splats left where a foe falls.
+const INK = [];
+function bakeInk() {
+  for (let k = 0; k < 4; k++) {
+    const c = document.createElement('canvas'); c.width = 16; c.height = 12; const g = c.getContext('2d'), rnd = mulberry32(77 + k);
+    pell(g, 8, 6, 4 + (k % 2), 2, '#140e18');
+    for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, d = 3 + rnd() * 4; pr(g, 8 + Math.cos(a) * d * 1.4, 6 + Math.sin(a) * d * 0.7, rnd() < 0.5 ? 2 : 1, 1, '#140e18'); }
+    INK.push(c);
+  }
+}
 function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
