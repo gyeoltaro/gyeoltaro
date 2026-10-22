@@ -1,0 +1,10 @@
+{
+  "name": "taekwondo-dojang",
+  "version": "0.1.0",
+  "private": true,
+  "description": "태권도장 통합 관리: 출석체크, 회비장부, 체력측정, 어머님 알림장, 참가신청서, 승급심사 결과증",
+  "scripts": {
+    "start": "npx http-server www -p 8080 -c-1",
+    "build": "node tools/build.mjs"
+  }
+}

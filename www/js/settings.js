@@ -1,0 +1,193 @@
+/* 설정: 도장 정보, 반, 체력측정 항목, 비밀번호, 백업·초기화 */
+(function () {
+  'use strict';
+  var esc = U.esc;
+
+  function section(title, sub, body) {
+    return '<section class="section"><div class="section-head"><h2>' + esc(title) + '</h2>' + (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') + '</div>' +
+      '<div class="card pad stack">' + body + '</div></section>';
+  }
+
+  function renameClass(oldName, newName) {
+    var st = DB.state;
+    st.students.forEach(function (s) { if (s.className === oldName) s.className = newName; });
+    st.notices.concat(st.events).forEach(function (n) {
+      var c = n.target && n.target.classes;
+      if (c) for (var i = 0; i < c.length; i++) if (c[i] === oldName) c[i] = newName;
+    });
+  }
+
+  Views.admin.settings = {
+    render: function (el) {
+      var st = DB.settings();
+      var size = DB.estimateSize();
+      var where = { idb: '이 기기 (IndexedDB)', local: '이 기기 (브라우저 저장소)', memory: '임시 메모리 (창을 닫으면 사라짐)' }[DB.backend];
+      var h = '<header class="page-head"><div><span class="eyebrow">' + esc(st.dojangName) + '</span><h1>설정</h1></div></header>';
+
+      h += section('도장 정보', '', '<div class="form-grid">' +
+        '<div class="field"><label for="sName">도장 이름</label><input class="input" id="sName" value="' + esc(st.dojangName) + '"></div>' +
+        '<div class="field"><label for="sFee">기본 월 회비 (원)</label><input class="input num" id="sFee" inputmode="numeric" value="' + esc(st.monthlyFee) + '"></div>' +
+        '<div class="field full"><label for="sAccount">회비 입금 계좌</label><input class="input" id="sAccount" value="' + esc(st.account) + '" placeholder="예: 국민은행 123456-01-123456 (예금주 홍길동)"><span class="hint">학부모 화면의 회비·참가비 안내에 함께 보여요.</span></div>' +
+        '</div><div><button class="btn primary" type="button" data-act="save-info">저장</button></div>');
+
+      h += section('반 (수련 시간)', '원생 등록과 출석부에서 쓰는 반 이름이에요', '<div class="stack sm">' + st.classes.map(function (c, i) {
+        var n = DB.state.students.filter(function (s) { return s.className === c && s.status !== 'left'; }).length;
+        return '<div class="hstack" style="flex-wrap:nowrap"><input class="input" data-cls="' + i + '" value="' + esc(c) + '" aria-label="반 이름"><span class="small muted nowrap num">' + n + '명</span>' +
+          '<button class="icon-btn" type="button" data-act="del-class" data-i="' + i + '" aria-label="' + esc(c) + ' 삭제">' + UI.icon('trash') + '</button></div>';
+      }).join('') + '</div><div class="hstack"><button class="btn" type="button" data-act="add-class">' + UI.icon('plus') + '반 추가</button><button class="btn primary" type="button" data-act="save-classes">반 이름 저장</button></div>');
+
+      h += section('체력측정 항목', '항목을 바꿔도 지난 기록은 남아 있어요', '<div class="table-wrap"><table class="t"><thead><tr><th>항목 이름</th><th>그래프 이름</th><th>단위</th><th>좋은 기록</th><th></th></tr></thead><tbody>' +
+        st.fitnessItems.map(function (it, i) {
+          return '<tr><td><input class="input sm" data-fi="' + i + '" data-f="label" value="' + esc(it.label) + '" style="min-width:150px"></td>' +
+            '<td><input class="input sm" data-fi="' + i + '" data-f="short" value="' + esc(it.short || '') + '" style="width:96px"></td>' +
+            '<td><input class="input sm" data-fi="' + i + '" data-f="unit" value="' + esc(it.unit) + '" style="width:64px"></td>' +
+            '<td><select class="input sm" data-fi="' + i + '" data-f="better">' + UI.options([{ value: 'high', label: '높을수록' }, { value: 'low', label: '짧을수록' }], it.better) + '</select></td>' +
+            '<td><button class="icon-btn" type="button" data-act="del-item" data-i="' + i + '" aria-label="' + esc(it.label) + ' 삭제">' + UI.icon('trash') + '</button></td></tr>';
+        }).join('') + '</tbody></table></div><div class="hstack"><button class="btn" type="button" data-act="add-item">' + UI.icon('plus') + '항목 추가</button><button class="btn primary" type="button" data-act="save-items">항목 저장</button></div>');
+
+      h += section('관리자 비밀번호', '관리자 화면에 들어오거나 출석 화면을 끌 때 써요', '<div class="form-grid">' +
+        '<div class="field"><label for="pCur">지금 비밀번호</label><input class="input mono" id="pCur" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div><div></div>' +
+        '<div class="field"><label for="pNew">새 비밀번호 (숫자 4자리)</label><input class="input mono" id="pNew" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>' +
+        '<div class="field"><label for="pNew2">한 번 더</label><input class="input mono" id="pNew2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>' +
+        '</div><div><button class="btn primary" type="button" data-act="save-pin">비밀번호 바꾸기</button></div>');
+
+      h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>');
+
+      h += section('데이터', '저장 위치: ' + where + ' · 약 ' + (size / 1024 / 1024).toFixed(2) + 'MB',
+        '<p class="soft">1단계에서는 모든 정보가 <b>이 기기에만</b> 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 꼭 백업 파일을 만들어 두세요.</p>' +
+        '<div class="hstack"><button class="btn" type="button" data-act="backup">' + UI.icon('download') + '백업 파일 만들기</button>' +
+        '<button class="btn" type="button" data-act="restore">' + UI.icon('upload') + '백업 불러오기</button><input type="file" accept=".json,application/json" hidden id="restoreFile"></div>' +
+        '<hr class="form-sep">' +
+        (DB.state.demo ? '<p class="soft">지금은 체험용 샘플 데이터예요. 실제 원생을 등록하기 전에 샘플을 지워 주세요. 도장 이름·반·비밀번호 설정은 그대로 남아요.</p>' : '') +
+        '<div class="hstack">' + (DB.state.demo ? '<button class="btn primary" type="button" data-act="clear-demo">샘플 지우고 새로 시작</button>' : '') +
+        '<button class="btn" type="button" data-act="reseed">샘플 데이터 다시 넣기</button>' +
+        (DB.state.demo ? '' : '<button class="btn danger" type="button" data-act="wipe">모든 데이터 지우기</button>') + '</div>');
+
+      h += section('앱 정보', '1단계 · HTML 미리보기', '<ul class="soft" style="margin:0;padding-left:18px;line-height:1.9">' +
+        '<li>지금: 출석 키오스크, 원생, 출석부, 회비장부, 체력측정, 알림장, 참가신청서, 승급심사 결과증</li>' +
+        '<li>2단계: 서버 연결로 관장님·학부모님 휴대폰 사이 데이터 공유, 앱 푸시 알림(등원·알림장·신청 마감)</li>' +
+        '<li>3단계: 안드로이드 앱(APK)으로 포장해서 공기계와 학부모님 휴대폰에 설치</li></ul>');
+
+      el.innerHTML = h;
+
+      el.querySelector('#sSound').onchange = function (e) { st.kioskSound = e.target.checked; DB.save(); UI.toast(e.target.checked ? '출석 소리를 켰어요' : '출석 소리를 껐어요'); };
+      var restoreFile = el.querySelector('#restoreFile');
+      restoreFile.onchange = function () {
+        var f = restoreFile.files && restoreFile.files[0];
+        restoreFile.value = '';
+        if (!f) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          UI.confirm({ title: '백업 불러오기', message: '"' + f.name + '" 파일로 지금 데이터를 모두 바꿀까요?\n지금 데이터는 사라져요.', ok: '불러오기', danger: true }).then(function (ok) {
+            if (!ok) return;
+            try { DB.importJSON(reader.result); UI.toast('백업을 불러왔어요'); App.nav('home'); }
+            catch (e) { UI.toast('불러오지 못했어요: ' + e.message); }
+          });
+        };
+        reader.readAsText(f);
+      };
+
+      UI.bind(el, {
+        'save-info': function () {
+          var name = el.querySelector('#sName').value.trim();
+          if (!name) { UI.toast('도장 이름을 입력해 주세요'); return; }
+          st.dojangName = name;
+          st.monthlyFee = +U.digits(el.querySelector('#sFee').value) || 0;
+          st.account = el.querySelector('#sAccount').value.trim();
+          DB.save();
+          App.updateShell();
+          UI.toast('도장 정보를 저장했어요');
+        },
+        'add-class': function () {
+          var n = st.classes.length + 1;
+          st.classes.push(n + '부');
+          DB.save();
+          App.refresh();
+        },
+        'save-classes': function () {
+          var inputs = el.querySelectorAll('[data-cls]'), names = [];
+          [].forEach.call(inputs, function (inp) { names.push(inp.value.trim()); });
+          if (names.some(function (x) { return !x; })) { UI.toast('비어 있는 반 이름이 있어요'); return; }
+          if (names.some(function (x, i) { return names.indexOf(x) !== i; })) { UI.toast('같은 이름의 반이 있어요'); return; }
+          st.classes.forEach(function (old, i) { if (old !== names[i]) renameClass(old, names[i]); });
+          st.classes = names;
+          DB.save();
+          App.refresh();
+          UI.toast('반 이름을 저장했어요');
+        },
+        'del-class': function (b) {
+          var i = +b.getAttribute('data-i'), c = st.classes[i];
+          var n = DB.state.students.filter(function (s) { return s.className === c && s.status !== 'left'; }).length;
+          if (n) { UI.toast(c + '에 원생 ' + n + '명이 있어요. 먼저 원생의 반을 바꿔 주세요.'); return; }
+          st.classes.splice(i, 1);
+          DB.save();
+          App.refresh();
+        },
+        'add-item': function () {
+          st.fitnessItems.push({ key: 'i' + U.uid(), label: '새 항목', short: '', unit: '회', better: 'high' });
+          DB.save();
+          App.refresh();
+        },
+        'save-items': function () {
+          [].forEach.call(el.querySelectorAll('[data-fi]'), function (inp) {
+            var it = st.fitnessItems[+inp.getAttribute('data-fi')];
+            if (it) it[inp.getAttribute('data-f')] = inp.value.trim();
+          });
+          st.fitnessItems.forEach(function (it) { if (!it.label) it.label = '이름 없는 항목'; });
+          DB.save();
+          App.refresh();
+          UI.toast('체력측정 항목을 저장했어요');
+        },
+        'del-item': function (b) {
+          var i = +b.getAttribute('data-i'), it = st.fitnessItems[i];
+          UI.confirm({ title: '항목 삭제', message: '"' + it.label + '" 항목을 지울까요?\n이미 입력한 기록은 저장소에 남지만 화면에는 보이지 않아요.', ok: '삭제', danger: true }).then(function (ok) {
+            if (!ok) return;
+            st.fitnessItems.splice(i, 1);
+            DB.save();
+            App.refresh();
+          });
+        },
+        'save-pin': function () {
+          var cur = el.querySelector('#pCur').value, nw = el.querySelector('#pNew').value, nw2 = el.querySelector('#pNew2').value;
+          if (cur !== st.adminPin) { UI.toast('지금 비밀번호가 맞지 않아요'); return; }
+          if (!/^\d{4}$/.test(nw)) { UI.toast('새 비밀번호는 숫자 4자리로 정해 주세요'); return; }
+          if (nw !== nw2) { UI.toast('새 비밀번호가 서로 달라요'); return; }
+          st.adminPin = nw;
+          DB.save();
+          ['#pCur', '#pNew', '#pNew2'].forEach(function (id) { el.querySelector(id).value = ''; });
+          UI.toast('관리자 비밀번호를 바꿨어요');
+        },
+        backup: function () {
+          var json = DB.exportJSON(), name = '태권도관리_백업_' + U.today() + '.json';
+          var ok = U.download(name, json, 'application/json');
+          UI.toast(ok ? name + ' 저장을 시작했어요' : '이 화면에서는 파일을 저장할 수 없어요');
+        },
+        restore: function () { restoreFile.click(); },
+        'clear-demo': function () {
+          UI.confirm({ title: '샘플 지우기', message: '샘플 원생 100명과 출석·회비·알림장 기록을 모두 지우고 빈 상태로 시작할까요?', ok: '지우고 시작', danger: true }).then(function (ok) {
+            if (!ok) return;
+            DB.reset(false);
+            UI.toast('샘플을 지웠어요. 원생 등록부터 시작하세요.');
+            App.nav('students');
+          });
+        },
+        reseed: function () {
+          UI.confirm({ title: '샘플 데이터 넣기', message: '지금 데이터를 모두 지우고 체험용 샘플(원생 100명)로 바꿀까요?\n설정(도장 이름·비밀번호)도 처음 값으로 돌아가요.', ok: '샘플로 바꾸기', danger: true }).then(function (ok) {
+            if (!ok) return;
+            DB.reset(true);
+            UI.toast('샘플 데이터를 넣었어요');
+            App.nav('home');
+          });
+        },
+        wipe: function () {
+          UI.confirm({ title: '모든 데이터 지우기', message: '원생, 출석, 회비, 체력측정, 알림장, 참가신청, 승급심사 기록을 모두 지울까요?\n되돌릴 수 없어요. 먼저 백업 파일을 만들어 두세요.', ok: '모두 지우기', danger: true }).then(function (ok) {
+            if (!ok) return;
+            DB.reset(false);
+            UI.toast('모든 데이터를 지웠어요');
+            App.nav('home');
+          });
+        }
+      });
+    }
+  };
+})();
