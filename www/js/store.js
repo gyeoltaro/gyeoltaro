@@ -225,6 +225,15 @@
       }).then(function (data) {
         data = data || lsGet(DATA_KEY);
         DB.localSnapshot = data && data.version ? upgrade(data) : null;
+        if (!DB.localSnapshot) {
+          // 예전 '승급심사 결과증' 페이지를 이 주소에서 썼다면 그 자료도 처음 설정에서 올릴 수 있게 합니다
+          var legacy = lsGet(LEGACY_KEY);
+          if (Array.isArray(legacy) && legacy.length) {
+            var st = blank();
+            importLegacy(st, legacy);
+            DB.localSnapshot = st;
+          }
+        }
         state = blank();
         return Cloud.init();
       }).catch(function (e) {
