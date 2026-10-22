@@ -11,7 +11,7 @@
 
   var Cloud = window.Cloud = {
     enabled: !!window.FIREBASE_CONFIG,
-    role: null,          // 'none' | 'unverified' | 'not-admin' | 'admin' | 'parent' | 'offline'
+    role: null,          // 'none' | 'unverified' | 'not-admin' | 'no-db' | 'admin' | 'parent' | 'offline'
     user: null,
     parentDoc: null,
     hasData: false,
@@ -64,6 +64,7 @@
       'auth/admin-restricted-operation': 'Firebase 콘솔에서 익명 로그인이 아직 켜져 있지 않아요',
       'permission-denied': '권한이 없어요', 'unavailable': '서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요'
     };
+    if (/api-key-not-valid/.test(c)) return '서버 설정값(API 키)이 맞지 않아요. 설정에서 서버 연결을 다시 해 주세요';
     return map[c] || (e && e.message) || '알 수 없는 오류가 났어요';
   }
 
@@ -117,6 +118,8 @@
       return remember();
     }, function (e) {
       if (e && e.code === 'permission-denied') { Cloud.role = 'not-admin'; return Cloud.role; }
+      // Firebase 프로젝트에 Firestore 데이터베이스를 아직 만들지 않았을 때
+      if (e && (e.code === 'not-found' || e.code === 'failed-precondition')) { Cloud.role = 'no-db'; return Cloud.role; }
       return offlineFallback(e);
     });
   }
@@ -595,6 +598,67 @@
     });
   };
 
+  // ---------- 서버 연결 (도장마다 자기 Firebase) ----------
+  Cloud.appUrl = function () { return window.APP_URL || (location.origin + location.pathname.replace(/index\.html$/, '')); };
+  // 이 도장 서버로 여는 링크. 학부모 초대 코드를 붙이면 열자마자 코드가 채워져요
+  Cloud.link = function (code) {
+    var p = Server.param(window.FIREBASE_CONFIG), q = [];
+    if (p) q.push('s=' + p);
+    if (code) q.push('c=' + code);
+    return Cloud.appUrl() + (q.length ? '?' + q.join('&') : '');
+  };
+  Cloud.projectId = function () { return (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId) || ''; };
+  // 이 기기에서 서버 연결을 풀고(로그인·기기에 남은 사본까지 지움) 처음 화면으로.
+  // next 를 주면 그 서버로 바꿔 연결해요(code 는 함께 받은 학부모 초대 코드)
+  Cloud.disconnect = function (next, code) {
+    stop();
+    var u = auth && auth.currentUser;
+    var leave = u && u.isAnonymous ? db.doc('parents/' + u.uid).delete().catch(function () {}) : Promise.resolve();
+    return leave.then(function () { return u ? auth.signOut() : null; }).catch(function () {}).then(function () {
+      return db ? db.terminate().then(function () { return db.clearPersistence(); }) : null;
+    }).catch(function () {}).then(function () {
+      DB.device.cloud = null; DB.device.session = null; DB.saveDevice();
+      if (next) { Server.save(next); location.replace(Cloud.appUrl() + '?s=' + Server.param(next) + (code ? '&c=' + code : '')); }
+      else { Server.forget(); location.replace(Cloud.appUrl()); }
+    });
+  };
+
+  // 관장님: Firebase 설정값을 붙여 넣어 우리 도장 서버에 연결하기
+  Cloud.connectModal = function () {
+    UI.modal({
+      title: '우리 도장 서버 연결', wide: true,
+      html: '<p class="soft">관장님이 만든 Firebase 프로젝트의 설정값을 붙여 넣어 주세요. 프로젝트 만드는 방법은 <a href="manual.html#server" target="_blank" rel="noopener">사용설명서</a>에 있어요.</p>' +
+        '<ol class="soft" style="margin:0;padding-left:20px;line-height:1.9"><li>Firebase 콘솔 → 톱니바퀴 → <b>프로젝트 설정</b> → <b>일반</b> 탭</li><li>아래쪽 <b>내 앱</b>의 웹 앱에서 <b>구성</b>을 고릅니다.</li><li><code>const firebaseConfig = { … };</code> 전체를 복사해서 아래에 붙여 넣습니다.</li></ol>' +
+        '<textarea class="input mono" id="cfgText" style="min-height:170px;font-size:12px" placeholder="const firebaseConfig = {\n  apiKey: &quot;…&quot;,\n  projectId: &quot;…&quot;,\n  appId: &quot;…&quot;\n};" autofocus></textarea>' +
+        '<p class="fine">도장에서 받은 연결 링크가 있으면 그 링크를 붙여 넣어도 돼요. 이 값은 비밀번호가 아니라 어느 서버를 쓰는지 알려 주는 주소예요.</p><p class="bad-t small" data-err></p>',
+      actions: [{ label: '취소', kind: 'quiet' }, {
+        label: '연결하기', kind: 'primary', onClick: function (root) {
+          var c = Server.fromText(root.querySelector('#cfgText').value);
+          if (!c) { root.querySelector('[data-err]').textContent = '설정값을 찾지 못했어요. apiKey, projectId, appId 가 들어 있는 firebaseConfig 전체를 붙여 넣어 주세요.'; return false; }
+          Server.save(c);
+          location.replace(Cloud.appUrl());
+          return false;
+        }
+      }]
+    });
+  };
+
+  // 관장님의 다른 기기·도장 태블릿을 같은 서버에 연결하는 링크
+  Cloud.shareLinkModal = function () {
+    var link = Cloud.link();
+    UI.modal({
+      title: '다른 기기 연결 링크',
+      html: '<p class="soft">도장 태블릿이나 관장님의 다른 휴대폰·컴퓨터에서 이 링크를 열면 우리 도장 서버(<b class="mono">' + esc(Cloud.projectId()) + '</b>)에 연결돼요. 그다음 관리자 이메일로 로그인하세요.</p>' +
+        '<textarea class="input mono" readonly style="min-height:96px;font-size:12px">' + esc(link) + '</textarea>' +
+        '<p class="fine">학부모님께는 이 링크 대신 원생 정보의 <b>초대 코드 보내기</b>를 써 주세요. 초대 문자에 링크와 코드가 같이 들어가요.</p>',
+      actions: [
+        { label: '문자로', icon: 'send', onClick: function () { location.href = 'sms:?body=' + encodeURIComponent(link); return false; } },
+        { label: '복사', icon: 'copy', onClick: function () { U.copy(link).then(function (ok) { UI.toast(ok ? '링크를 복사했어요' : '복사하지 못했어요. 글자를 길게 눌러 선택해 주세요.'); }); return false; } },
+        { label: '닫기', kind: 'primary' }
+      ]
+    });
+  };
+
   // 같은 보호자 번호를 쓰는 형제가 새로 등록되면 이미 연결된 학부모 기기에도 보이게 합니다
   Cloud.linkSiblings = function (s) {
     var phones = (s.guardians || []).map(function (g) { return U.digits(g.phone); }).filter(Boolean);
@@ -611,6 +675,15 @@
     if (Cloud.role === 'not-admin') { rulesModal(next); return; }
     if (Cloud.role === 'parent') { UI.toast('이 기기는 학부모 앱으로 연결되어 있어요. 학부모 메뉴에서 연결을 끊은 뒤 관리자로 로그인하세요.'); return; }
     if (Cloud.role === 'offline') { UI.toast('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.'); return; }
+    if (Cloud.role === 'no-db') {
+      UI.modal({
+        title: '데이터베이스가 아직 없어요',
+        html: '<p class="soft">이 Firebase 프로젝트(<b class="mono">' + esc(Cloud.projectId()) + '</b>)에 Firestore 데이터베이스가 아직 만들어지지 않았어요.</p>' +
+          '<p class="soft">Firebase 콘솔 → <b>Firestore Database</b> → <b>데이터베이스 만들기</b>에서 위치를 <b>asia-northeast3 (Seoul)</b>로 골라 만든 뒤, 이 화면을 새로고침해 주세요.</p>',
+        actions: [{ label: '로그아웃', kind: 'quiet', left: true, onClick: function () { Cloud.signOut(); } }, { label: '닫기', kind: 'primary' }]
+      });
+      return;
+    }
     loginModal(next);
   };
   function again(next) { return detectRole().then(function () { Cloud.adminFlow(next); }); }
@@ -752,26 +825,58 @@
   }
 
   // ---------- 화면: 학부모 초대 코드 ----------
-  Cloud.inviteEntry = function (next) {
+  Cloud.inviteEntry = function (next, code) {
     if (Cloud.role === 'admin' || (Cloud.user && !Cloud.user.isAnonymous)) {
       UI.toast('이 기기는 관리자 계정으로 로그인되어 있어요. 학부모 화면은 원생 정보의 "학부모 화면 보기"로 확인하세요.');
       return;
     }
     UI.modal({
       title: '학부모 앱 시작',
-      html: '<p class="soft">도장에서 문자로 받은 <b>초대 코드 8자리</b>를 입력해 주세요. 형제·자매는 한 코드로 함께 연결돼요.</p>' +
-        '<div class="field"><label for="ivCode">초대 코드</label><input class="input mono" id="ivCode" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" style="letter-spacing:.15em;text-transform:uppercase" autofocus></div>' +
+      html: (code ? '<p class="soft">도장에서 보낸 초대 코드가 들어 있어요. <b>연결하기</b>를 눌러 주세요. 형제·자매는 한 코드로 함께 연결돼요.</p>'
+        : '<p class="soft">도장에서 문자로 받은 <b>초대 코드 8자리</b>를 입력해 주세요. 형제·자매는 한 코드로 함께 연결돼요.</p>') +
+        (U.isIOS() && !U.standalone() ? '<div class="notice-bar">' + UI.icon('info') + '<span>아이폰은 먼저 화면 아래 <b>공유</b> 버튼 → <b>홈 화면에 추가</b>를 누르고, 홈 화면에 생긴 아이콘으로 열어서 연결해 주세요. 사파리에서 연결하면 홈 화면 아이콘에서는 다시 연결해야 해요.</span></div>' : '') +
+        '<div class="field"><label for="ivCode">초대 코드</label><input class="input mono" id="ivCode" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" value="' + esc(code ? Cloud.fmtCode(String(code).toUpperCase().replace(/[^A-Z0-9]/g, '')) : '') + '" style="letter-spacing:.15em;text-transform:uppercase" autofocus></div>' +
         '<p class="bad-t small" data-err></p>' +
         '<button class="link-btn" type="button" data-privacy style="align-self:flex-start">개인정보 처리방침 보기</button>',
       actions: [{ label: '취소', kind: 'quiet' }, {
         label: '연결하기', kind: 'primary', onClick: function (root, close) {
           var err = root.querySelector('[data-err]');
           err.textContent = '연결하는 중…';
-          Cloud.redeem(root.querySelector('#ivCode').value).then(function () { close(); next(); }, function (e) { err.textContent = e.message; });
+          Cloud.redeem(root.querySelector('#ivCode').value).then(function () { U.dropParam('c'); close(); next(); }, function (e) { err.textContent = e.message; });
           return false;
         }
       }],
       onMount: function (root) { root.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); }; }
+    });
+  };
+
+  // 관리자 비밀번호(6자리)를 잊었을 때: 관리자 계정의 로그인 비밀번호로 본인 확인 후 새로 정해요
+  Cloud.resetPin = function (next) {
+    if (!Cloud.started || listenRole !== 'admin') { UI.toast('서버 자료를 받은 뒤에 다시 해 주세요'); return; }
+    UI.modal({
+      title: '관리자 비밀번호 다시 정하기',
+      html: '<p class="soft">관리자 계정(<b>' + esc(Cloud.email()) + '</b>)의 로그인 비밀번호로 본인 확인을 한 뒤, 새 6자리 비밀번호를 정해요.</p>' +
+        '<div class="field"><label for="rpPw">계정 로그인 비밀번호</label><input class="input" id="rpPw" type="password" autocomplete="current-password" autofocus></div>' +
+        '<div class="form-grid"><div class="field"><label for="rpNew">새 비밀번호 (숫자 6자리)</label><input class="input mono" id="rpNew" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>' +
+        '<div class="field"><label for="rpNew2">한 번 더</label><input class="input mono" id="rpNew2" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div></div>' +
+        '<p class="bad-t small" data-err></p>',
+      actions: [{ label: '취소', kind: 'quiet' }, {
+        label: '바꾸기', kind: 'primary', onClick: function (root, close) {
+          var err = root.querySelector('[data-err]');
+          var nw = root.querySelector('#rpNew').value, bad = U.pinProblem(nw, root.querySelector('#rpNew2').value);
+          if (bad) { err.textContent = bad; return false; }
+          err.textContent = '확인하는 중…';
+          auth.currentUser.reauthenticateWithCredential(fb.auth.EmailAuthProvider.credential(Cloud.email(), root.querySelector('#rpPw').value)).then(function () {
+            DB.settings().adminPin = nw;
+            DB.device.pinFails = 0; DB.device.pinLockUntil = 0; DB.saveDevice();
+            DB.save();
+            close();
+            UI.toast('관리자 비밀번호를 새로 정했어요');
+            if (next) next();
+          }, function (e) { err.textContent = msgOf(e); });
+          return false;
+        }
+      }]
     });
   };
 
@@ -784,7 +889,9 @@
     if (!siblings.some(function (x) { return x.id === s.id; })) siblings.unshift(s);
     var code = Cloud.createInvite(siblings.map(function (x) { return x.id; }), phone);
     var st = DB.settings();
-    var msg = '[' + st.dojangName + '] 학부모 앱 초대 코드: ' + Cloud.fmtCode(code) + '\n앱에서 "학부모"를 누르고 코드를 입력해 주세요. 7일 안에 한 번 쓸 수 있어요. (' + siblings.map(function (x) { return x.name; }).join(', ') + ')';
+    var msg = '[' + st.dojangName + '] 학부모 앱 초대 (' + siblings.map(function (x) { return x.name; }).join(', ') + ')\n' +
+      '아래 링크를 열고 "연결하기"를 누르면 우리 아이 출석, 알림장, 참가신청서를 볼 수 있어요. 7일 안에 한 번 쓸 수 있어요.\n' +
+      Cloud.link(code) + '\n초대 코드: ' + Cloud.fmtCode(code);
     UI.modal({
       title: '학부모 앱 초대 코드',
       html: '<p class="soft">' + esc(siblings.map(function (x) { return x.name; }).join(', ')) + ' 보호자(' + esc(U.fmtPhone(phone)) + ')에게 보낼 코드예요. 7일 안에 한 번만 쓸 수 있어요.</p>' +

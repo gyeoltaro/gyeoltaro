@@ -17,18 +17,14 @@
     });
   }
 
-  // 같은 숫자 반복(111111)이나 연속 숫자(123456)는 쉽게 맞힐 수 있어 막습니다
-  function weakPin(p) {
-    if (/^(\d)\1+$/.test(p)) return true;
-    return '01234567890123'.indexOf(p) >= 0 || '98765432109876'.indexOf(p) >= 0;
-  }
-
   // ---------- 서버 · 계정 (2단계) ----------
   function cloudSection(st) {
     var emails = st.adminEmails || [];
     var cs = Cloud.statusText();
-    return section('서버 · 관리자 계정', '', '<dl class="kv"><dt>로그인</dt><dd>' + esc(Cloud.email() || '-') + '</dd>' +
+    return section('서버 · 관리자 계정', '', '<dl class="kv"><dt>도장 서버</dt><dd class="mono">' + esc(Cloud.projectId() || '-') + '</dd>' +
+      '<dt>로그인</dt><dd>' + esc(Cloud.email() || '-') + '</dd>' +
       '<dt>연결 상태</dt><dd>' + (cs ? UI.pill(cs.text, cs.tone, true) : '-') + '</dd></dl>' +
+      (Server.preset ? '' : '<div class="hstack"><button class="btn" type="button" data-act="share-link">' + UI.icon('share') + '다른 기기 연결 링크</button><span class="hint">도장 태블릿, 관장님의 다른 휴대폰·컴퓨터를 같은 서버에 연결할 때 써요.</span></div>') +
       '<div class="field"><span class="label">관리자 이메일 (관장·사범님)</span><div class="stack sm">' + emails.map(function (e, i) {
         return '<div class="hstack" style="flex-wrap:nowrap"><span class="mono" style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(e) + '</span>' +
           (emails.length > 1 ? '<button class="icon-btn" type="button" data-act="del-email" data-i="' + i + '" aria-label="' + esc(e) + ' 빼기">' + UI.icon('trash') + '</button>' : '') + '</div>';
@@ -36,7 +32,16 @@
       '<div class="hstack" style="flex-wrap:nowrap"><input class="input" id="newEmail" type="email" placeholder="사범님 이메일 추가"><button class="btn" type="button" data-act="add-email">추가</button></div>' +
       '<span class="hint">이메일을 바꾸면 아래 "보안 규칙 보기"에서 규칙을 복사해 Firebase에 다시 붙여 넣어야 적용돼요.</span></div>' +
       '<div class="hstack"><button class="btn" type="button" data-act="rules">' + UI.icon('lock') + '보안 규칙 보기</button>' +
-      '<button class="btn danger" type="button" data-act="signout">' + UI.icon('logout') + '이 기기에서 로그아웃</button></div>');
+      '<button class="btn danger" type="button" data-act="signout">' + UI.icon('logout') + '이 기기에서 로그아웃</button>' +
+      (Server.preset ? '' : '<button class="btn danger" type="button" data-act="disconnect">' + UI.icon('x') + '이 기기 서버 연결 해제</button>') + '</div>');
+  }
+  // 체험 모드: 아직 서버에 연결하지 않았을 때
+  function serverSection() {
+    return section('도장 서버 연결', '지금은 체험 모드예요',
+      '<p class="soft">지금은 모든 정보가 <b>이 기기에만</b> 저장돼요. 도장 태블릿, 관장님 휴대폰, 학부모님 휴대폰이 같은 자료를 보려면 우리 도장의 Firebase 서버를 만들어 연결하세요. 서버는 관장님 구글 계정에 만들어지고 무료 한도 안에서 쓸 수 있어요.</p>' +
+      '<p class="fine">연결한 뒤 처음 설정에서 이 기기에 있던 자료를 서버로 옮길 수 있어요.</p>' +
+      '<div class="hstack"><button class="btn primary" type="button" data-act="connect">' + UI.icon('lock') + '우리 도장 서버 연결</button>' +
+      '<a class="btn" href="manual.html#server" target="_blank" rel="noopener">' + UI.icon('info') + '서버 만드는 방법</a></div>');
   }
   function rulesView(emails) {
     var text = Cloud.rulesText(emails);
@@ -183,9 +188,11 @@
         '<hr class="form-sep"><div class="hstack"><span class="soft">보관 기간(퇴원·행사 종료 후 1년)이 지난 정보: <b>' + purgeN + '건</b></span>' +
         '<button class="btn" type="button" data-act="purge"' + (purgeN ? '' : ' disabled') + '>' + UI.icon('trash') + '정리하기</button></div>');
 
-      h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>');
+      h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>' +
+        (App.installPrompt ? '<div class="hstack"><button class="btn" type="button" data-act="install">' + UI.icon('tablet') + '이 기기 홈 화면에 앱 추가</button><span class="hint">도장 태블릿에서 주소창 없이 앱처럼 열려요.</span></div>' : ''));
 
-      if (window.Cloud && Cloud.enabled) h += cloudSection(st);
+      if (Cloud.enabled) h += cloudSection(st);
+      else if (!Server.preset) h += serverSection();
       h += section('데이터', '저장 위치: ' + where + ' · 약 ' + (size / 1024 / 1024).toFixed(2) + 'MB',
         (window.Cloud && Cloud.enabled
           ? '<p class="soft">자료는 서버(서울)에 저장되고, 인터넷이 끊겨도 이 기기에 적어 두었다가 연결되면 자동으로 올라가요. 백업 파일은 만일을 위한 추가 보관용이에요. 비밀번호로 잠겨서 비밀번호 없이는 아무도 열 수 없어요.</p>'
@@ -198,10 +205,10 @@
         '<button class="btn" type="button" data-act="reseed">샘플 데이터 다시 넣기</button>' +
         (DB.state.demo ? '' : '<button class="btn danger" type="button" data-act="wipe">모든 데이터 지우기</button>') + '</div>');
 
-      h += section('앱 정보', '1단계 · HTML 미리보기', '<ul class="soft" style="margin:0;padding-left:18px;line-height:1.9">' +
-        '<li>지금: 출석 키오스크, 원생, 출석부, 회비장부, 체력측정, 알림장, 참가신청서, 승급심사 결과증</li>' +
-        '<li>2단계: 서버(서울 리전) 연결로 관장님·학부모님 휴대폰 사이 데이터 공유, 앱 푸시 알림(등원·알림장·신청 마감)</li>' +
-        '<li>3단계: 안드로이드 앱(APK)으로 포장해서 공기계와 학부모님 휴대폰에 설치</li></ul>');
+      h += section('앱 정보', '태권도 통합 관리 · 무료 배포판',
+        '<p class="soft">이 앱은 무료로 나눠 드리는 프로그램이에요. 도장 자료는 각 도장이 만든 Firebase 서버(관장님 구글 계정)에만 저장되고, 앱을 만든 사람은 볼 수 없어요.</p>' +
+        '<p class="fine">프로그램 오류로 생긴 손해는 책임질 수 없어요. 한 달에 한 번은 위 "백업 파일 만들기"로 백업해 두세요. 개인정보를 다루는 책임(보호책임자 지정, 동의서, 보관 기간 관리)은 각 도장에 있어요.</p>' +
+        (Server.preset ? '' : '<div><a class="btn" href="manual.html" target="_blank" rel="noopener">' + UI.icon('info') + '사용설명서</a></div>'));
 
       el.innerHTML = h;
 
@@ -285,9 +292,8 @@
           var cur = el.querySelector('#pCur').value, nw = el.querySelector('#pNew').value, nw2 = el.querySelector('#pNew2').value;
           var r = App.checkAdminPin(cur);
           if (r !== true) { UI.toast(r); return; }
-          if (!/^\d{6}$/.test(nw)) { UI.toast('새 비밀번호는 숫자 6자리로 정해 주세요'); return; }
-          if (weakPin(nw)) { UI.toast('같은 숫자나 연속된 숫자는 쓸 수 없어요'); return; }
-          if (nw !== nw2) { UI.toast('새 비밀번호가 서로 달라요'); return; }
+          var bad = U.pinProblem(nw, nw2);
+          if (bad) { UI.toast(bad); return; }
           st.adminPin = nw;
           DB.save();
           UI.toast('관리자 비밀번호를 바꿨어요');
@@ -320,6 +326,14 @@
           DB.save();
           App.refresh();
           rulesView(st.adminEmails);
+        },
+        'share-link': function () { Cloud.shareLinkModal(); },
+        connect: function () { Cloud.connectModal(); },
+        install: function () { App.install(); },
+        disconnect: function () {
+          UI.confirm({ title: '서버 연결 해제', message: '이 기기에서 도장 서버(' + Cloud.projectId() + ') 연결을 풀까요?\n로그인과 이 기기에 저장된 자료 사본이 지워져요. 서버의 자료는 그대로 남아요.\n다시 쓰려면 연결 링크를 열거나 설정값을 붙여 넣으면 돼요.', ok: '연결 해제', danger: true }).then(function (ok) {
+            if (ok) Cloud.disconnect();
+          });
         },
         signout: function () {
           UI.confirm({ title: '로그아웃', message: '이 기기에서 관리자 계정을 로그아웃할까요?\n출석 화면으로도 쓸 수 없게 돼요.', ok: '로그아웃', danger: true }).then(function (ok) {

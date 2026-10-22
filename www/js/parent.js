@@ -54,6 +54,11 @@
         '<div><small>' + esc(U.fmtM(ym)) + ' 회비</small><b class="' + (fee ? 'good' : billed ? 'bad' : '') + '">' + (fee ? (fee.method === '면제' ? '면제' : '납부') : billed ? '미납' : '-') + '</b></div>' +
         '<div><small>새 알림장</small><b class="' + (unread ? 'bad' : '') + '">' + unread + '개</b></div></div></div>';
 
+      // 홈 화면에 추가 안내 (브라우저가 추가 기능을 알려 줄 때만)
+      if (App.installPrompt && !preview() && !DB.device.hideInstallTip) {
+        h += '<div class="notice-bar">' + UI.icon('smile') + '<span>홈 화면에 추가하면 앱처럼 바로 열 수 있어요.</span>' +
+          '<button class="btn sm primary" type="button" data-act="install">추가</button><button class="btn sm quiet" type="button" data-act="hide-install">닫기</button></div>';
+      }
       if (openEvents.length) {
         h += '<section class="section"><div class="section-head"><h2>신청 받는 중</h2></div><div class="stack">' + openEvents.slice(0, 2).map(function (e) { return eventCard(e, s); }).join('') + '</div></section>';
       }
@@ -72,7 +77,9 @@
         event: function (b) { App.go('events', { id: b.getAttribute('data-id') }); },
         'cal-prev': function () { ps.calYm = U.addMonths(ps.calYm, -1); App.refresh(); },
         'cal-next': function () { ps.calYm = U.addMonths(ps.calYm, 1); App.refresh(); },
-        'copy-acc': copyAcc
+        'copy-acc': copyAcc,
+        install: function () { App.install(); },
+        'hide-install': function () { DB.device.hideInstallTip = true; DB.saveDevice(); App.refresh(); }
       });
     }
   };

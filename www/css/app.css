@@ -185,6 +185,7 @@ body.modal-open{ overflow:hidden; }
 .icon-btn:hover{ background:var(--surface-2); color:var(--ink); }
 .icon-btn svg{ width:20px; height:20px; }
 .link-btn{ border:0; background:none; padding:0; color:var(--accent-ink); font-weight:600; font-size:13px; }
+a.link-btn{ text-decoration:none; }
 .link-btn:hover{ text-decoration:underline; }
 
 .input, select.input, textarea.input{
@@ -332,6 +333,7 @@ table.t td.wrap{ white-space:normal; min-width:140px; }
 }
 .notice-bar svg{ width:18px; height:18px; flex:none; margin-top:2px; }
 .notice-bar .btn{ margin-left:auto; }
+.notice-bar .btn + .btn{ margin-left:0; }
 
 /* ---------- avatar & belt ---------- */
 .av{
@@ -529,6 +531,7 @@ table.t td.wrap{ white-space:normal; min-width:140px; }
   font-size:13.5px; color:var(--ink-soft);
 }
 .demo-box b{ color:var(--ink); font-family:var(--f-mono); font-weight:600; }
+.demo-box .lead{ color:var(--ink); font-weight:700; }
 .demo-box .btn{ margin-left:auto; }
 .fine{ font-size:12.5px; color:var(--muted); line-height:1.7; }
 

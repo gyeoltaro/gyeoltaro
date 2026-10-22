@@ -1,0 +1,22 @@
+/* 앱 화면 파일을 기기에 보관해 두었다가 인터넷이 끊겼을 때도 다시 열 수 있게 합니다.
+   인터넷이 되면 항상 새 파일을 먼저 받아서, 앱을 고치면 바로 반영돼요. 원생 자료는 여기에 저장하지 않아요(서버 자료는 Firebase가 따로 보관). */
+var CACHE = 'tkd-app-v1';
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  e.respondWith(fetch(req).then(function (res) {
+    if (res.ok) {
+      var copy = res.clone();
+      e.waitUntil(caches.open(CACHE).then(function (c) { return c.put(req, copy); }));
+    }
+    return res;
+  }).catch(function () {
+    return caches.match(req, { ignoreSearch: true }).then(function (hit) {
+      if (hit) return hit;
+      if (req.mode === 'navigate') return caches.match('./', { ignoreSearch: true }).then(function (r) { return r || Response.error(); });
+      return Response.error();
+    });
+  }));
+});

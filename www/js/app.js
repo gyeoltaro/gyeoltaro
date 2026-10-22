@@ -146,9 +146,12 @@
   };
   App.askAdminPin = function (opts) {
     var len = DB.settings().adminPin.length;
+    // 서버 모드에서는 비밀번호를 잊어도 관리자 계정 비밀번호로 다시 정할 수 있어요
+    var forgot = Cloud.enabled && Cloud.role === 'admin' && Cloud.started
+      ? { label: '비밀번호를 잊었어요', fn: function () { Cloud.resetPin(function () { App.setSession({ role: 'admin' }); }); } } : null;
     return UI.pinPrompt({
       title: opts.title, sub: opts.sub || '관리자 비밀번호 ' + len + '자리를 눌러 주세요', length: len,
-      check: App.checkAdminPin, lockedMsg: App.pinLockMsg, sticky: opts.sticky, extra: opts.extra
+      check: App.checkAdminPin, lockedMsg: App.pinLockMsg, sticky: opts.sticky, extra: opts.extra || forgot
     });
   };
 
@@ -264,9 +267,15 @@
         '<button class="btn sm" type="button" data-act="demo-parent">학부모 화면 바로 보기</button></div>';
     }
     var cs = Cloud.statusText();
+    var free = !Server.preset;
+    if (!cloud && free) {
+      h += '<div class="demo-box"><span><span class="lead">체험 모드</span> · ' + (DB.state.demo ? '샘플 자료로 둘러보는 중이에요. ' : '') + '모든 정보는 이 기기에만 저장돼요.</span>' +
+        '<button class="btn sm primary" type="button" data-act="connect">' + UI.icon('lock') + '우리 도장 서버 연결</button></div>';
+    }
     h += '<p class="fine">' + (cloud
-      ? '자료는 서버(서울)에 저장되어 도장 태블릿, 관장님 휴대폰, 학부모 휴대폰이 같은 정보를 봐요. ' + (cs ? UI.pill(cs.text, cs.tone, true) + ' ' : '') + (Cloud.role === 'admin' && Cloud.email() ? '<span class="nowrap">' + esc(Cloud.email()) + '</span> ' : '')
-      : '1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ') +
+      ? '자료는 도장 서버(서울)에 저장되어 도장 태블릿, 관장님 휴대폰, 학부모 휴대폰이 같은 정보를 봐요. ' + (cs ? UI.pill(cs.text, cs.tone, true) + ' ' : '') + (Cloud.role === 'admin' && Cloud.email() ? '<span class="nowrap">' + esc(Cloud.email()) + '</span> ' : '')
+      : free ? '학부모님은 도장에서 받은 링크로 열어 주세요. ' : '1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ') +
+      (free ? '<a class="link-btn" href="manual.html" target="_blank" rel="noopener">사용설명서</a> · ' : '') +
       '<button class="link-btn" type="button" data-act="privacy">개인정보 처리방침</button></p></div></div>';
     root.innerHTML = h;
     UI.bind(root, {
@@ -283,6 +292,7 @@
         Cloud.inviteEntry(function () { App.setSession(Cloud.parentSession()); });
       } : parentLogin,
       privacy: function () { Parts.openPrivacy(); },
+      connect: function () { Cloud.connectModal(); },
       'demo-parent': function () {
         var kids = DB.studentsByPhone(demoKid.guardians[0].phone);
         App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: demoKid.id, phone: U.digits(demoKid.guardians[0].phone) });
@@ -473,10 +483,49 @@
       App.render(true);
       syncBack();
       if (adminish()) checkIdle(); else resetIdle();
+      fromLink();
     }).catch(function (e) {
       console.error(e);
       root.innerHTML = '<div class="boot">앱을 불러오지 못했어요. 새로고침해 주세요. (' + esc(e.message) + ')</div>';
     });
   }
+  // 도장이 보낸 링크로 열었을 때: 다른 도장 서버면 바꿀지 묻고, 초대 코드가 있으면 바로 연결 화면을 엽니다
+  function fromLink() {
+    var code = U.param('c'), next = Server.pending;
+    // 읽은 값은 화면을 열기 전에 주소에서 지워요(뒤로가기 기록에 남지 않게).
+    // 아이폰 사파리는 "홈 화면에 추가"가 지금 주소를 그대로 쓰므로 초대 코드를 남겨 둬요.
+    if (next) U.dropParam('s');
+    if (!(code && !next && U.isIOS() && !U.standalone())) U.dropParam('c');
+    if (next) {
+      UI.confirm({
+        title: '다른 서버로 연결할까요?',
+        message: '이 링크는 다른 도장 서버(' + next.projectId + ')로 연결하는 링크예요.\n지금 이 기기는 ' + Cloud.projectId() + ' 서버에 연결되어 있어요.\n바꾸면 이 기기의 지금 로그인과 저장된 사본이 지워져요.',
+        ok: '바꾸기'
+      }).then(function (ok) { if (ok) Cloud.disconnect(next, code); });
+      return;
+    }
+    if (!code || !Cloud.enabled) return;
+    if (Cloud.role === 'parent' || App.session) { U.dropParam('c'); return; }
+    Cloud.inviteEntry(function () { App.setSession(Cloud.parentSession()); }, code);
+  }
+
+  // 홈 화면에 추가 (안드로이드 크롬 등): 브라우저가 띄우는 안내 대신 앱 안의 버튼으로 보여 줍니다
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    App.installPrompt = e;
+    if (App.session && App.session.role !== 'kiosk') App.softRefresh();
+  });
+  App.install = function () {
+    var p = App.installPrompt;
+    if (!p) return;
+    App.installPrompt = null;
+    p.prompt();
+    p.userChoice.then(function () { App.softRefresh(); }, function () {});
+  };
+  // 인터넷이 끊겼을 때도 앱을 다시 열 수 있게 화면 파일을 기기에 보관합니다
+  if ('serviceWorker' in navigator && !Server.preset && /^(https:|http:\/\/(localhost|127\.0\.0\.1)[:/])/.test(location.href)) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -9,7 +9,9 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 8766, BASE = `http://127.0.0.1:${PORT}/index.html`;
-const CONFIG = { apiKey: 'demo-key', authDomain: 'demo-tkd.firebaseapp.com', projectId: 'demo-tkd' };
+// 도장이 보내는 연결 링크의 서버 값 (프로젝트ID.API키.앱ID). 에뮬레이터는 키를 확인하지 않아요
+const LINK = 'demo-tkd.AIzaE2eTestKeyForTheFirebaseEmulator000.1:123456789:web:abc123';
+const CONFIG = { apiKey: 'AIzaE2eTestKeyForTheFirebaseEmulator000', authDomain: 'demo-tkd.firebaseapp.com', projectId: 'demo-tkd', appId: '1:123456789:web:abc123' };
 const EMAIL = 'owner@test.com', PW = 'secret123';
 
 // 에뮬레이터를 깨끗하게 비우고, 테스트용 관리자(owner@test.com) 규칙을 넣습니다
@@ -32,13 +34,14 @@ async function t(name, fn) {
   try { await fn(); pass++; console.log('  ok  ' + name); }
   catch (e) { fail++; console.log('  FAIL ' + name + ' → ' + e.message.split('\n')[0]); }
 }
-async function open(label, viewport) {
+// url 을 주면 서버 설정 없이(새 휴대폰처럼) 그 주소로 엽니다
+async function open(label, viewport, url) {
   const ctx = await browser.newContext({ viewport, locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
-  await ctx.addInitScript(cfg => { window.FIREBASE_CONFIG = cfg; window.FIREBASE_EMULATOR = true; }, CONFIG);
+  await ctx.addInitScript(cfg => { if (cfg) window.FIREBASE_CONFIG = cfg; window.FIREBASE_EMULATOR = true; }, url ? null : CONFIG);
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push(`[${label}] ${e.message}`));
   page.on('console', m => { if (process.env.E2E_DEBUG && (m.type() === 'warning' || m.type() === 'error')) console.log(`    [${label} ${m.type()}] ${m.text().slice(0, 300)}`); });
-  await page.goto(BASE);
+  await page.goto(url || BASE);
   await page.waitForSelector('.start-card');
   return { ctx, page };
 }
@@ -197,13 +200,44 @@ await t('다른 아이 정보는 서버가 직접 막는다', async () => {
   const code3 = await P.evaluate(() => firebase.firestore().doc('config/admin').get({ source: 'server' }).then(() => 'read', e => e.code));
   if (code1 !== 'permission-denied' || code2 !== 'permission-denied' || code3 !== 'permission-denied') throw new Error([code1, code2, code3].join(','));
 });
-await t('같은 초대 코드는 다시 쓸 수 없다', async () => {
-  const P2 = (await open('parent2', { width: 390, height: 844 })).page;
-  await P2.click('[data-act="parent"]');
-  await P2.fill('#ivCode', code);
+await t('이미 쓴 초대 코드는 링크로 열어도 다시 쓸 수 없다', async () => {
+  const P2 = (await open('parent2', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code}`)).page;
+  await P2.waitForSelector('#ivCode');
   await P2.click('.modal [data-mact="1"]');
   await P2.waitForSelector('text=이미 썼거나');
   await P2.context().close();
+});
+
+// ---------- 새 휴대폰: 도장이 보낸 초대 링크만으로 서버 연결 ----------
+let L, otherKids;
+await t('초대 링크로 열면 도장 서버가 연결되고 코드가 채워진다', async () => {
+  let code2;
+  ({ code2, otherKids } = await A.evaluate(id => {
+    const s = DB.student(id), sibs = DB.studentsByPhone(s.guardians[0].phone).map(x => x.id);
+    return { code2: Cloud.createInvite(sibs, s.guardians[0].phone), otherKids: sibs };
+  }, other));
+  await until(A, c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.exists), code2);
+  L = (await open('link-parent', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code2}`)).page;
+  await L.waitForSelector('#ivCode');
+  const st = await L.evaluate(() => ({ code: document.querySelector('#ivCode').value, saved: localStorage.getItem('tkd-server-v1'), project: Cloud.projectId(), enabled: Cloud.enabled }));
+  if (st.code !== code2.slice(0, 4) + '-' + code2.slice(4) || st.saved !== LINK || st.project !== 'demo-tkd' || !st.enabled) throw new Error(JSON.stringify(st));
+  await L.click('.modal [data-mact="1"]');
+  await L.waitForSelector('#cSubmit, [data-tab="home"].on', { timeout: 30000 });
+  const q = await L.evaluate(() => location.search);
+  if (/[?&]c=/.test(q) || q.indexOf('s=') < 0) throw new Error('url after redeem: ' + q);
+  await until(A, ids => ids.every(id => Cloud.parentsOf(id).length > 0), otherKids);
+});
+await t('관리자가 보내는 초대 문자에 도장 서버 링크가 들어간다', async () => {
+  const link = await A.evaluate(() => Cloud.link('ABCDEFGH'));
+  if (link !== `http://127.0.0.1:${PORT}/?s=${LINK}&c=ABCDEFGH`) throw new Error(link);
+});
+await t('이 기기 서버 연결 해제를 하면 체험 모드로 돌아가고 학부모 연결도 풀린다', async () => {
+  await Promise.all([L.waitForNavigation(), L.evaluate(() => Cloud.disconnect())]);
+  await L.waitForSelector('.start-card');
+  const st = await L.evaluate(() => ({ enabled: Cloud.enabled, saved: localStorage.getItem('tkd-server-v1'), search: location.search }));
+  if (st.enabled || st.saved || st.search) throw new Error(JSON.stringify(st));
+  await until(A, ids => ids.every(id => Cloud.parentsOf(id).length === 0), otherKids);
+  await L.context().close();
 });
 
 // ---------- 알림장·신청서 주고받기 ----------
@@ -250,6 +284,21 @@ await t('원생 정보에 연결된 학부모 기기가 보인다', async () => 
 await t('관리자가 연결을 끊으면 학부모 기기는 처음 화면으로 돌아간다', async () => {
   await A.evaluate(id => { Cloud.parentsOf(id).forEach(p => Cloud.unlinkParent(p.id)); }, kids[0]);
   await P.waitForSelector('.start-card', { timeout: 20000 });
+});
+
+await t('관리자 비밀번호를 잊으면 계정 비밀번호로 다시 정하고 태블릿에도 반영된다', async () => {
+  await A.evaluate(() => App.logout());
+  await A.click('[data-act="admin"]');
+  await A.click('.modal [data-extra]');
+  await A.waitForSelector('#rpPw');
+  await A.fill('#rpPw', 'wrong-password'); await A.fill('#rpNew', '483920'); await A.fill('#rpNew2', '483920');
+  await A.click('.modal [data-mact="1"]');
+  await A.waitForSelector('.modal [data-err]:has-text("맞지 않아요")');
+  await A.fill('#rpPw', PW);
+  await A.click('.modal [data-mact="1"]');
+  await A.waitForSelector('.shell');
+  if (await A.evaluate(() => DB.settings().adminPin) !== '483920') throw new Error('pin not changed');
+  await until(K, () => DB.settings().adminPin === '483920');
 });
 
 await browser.close();

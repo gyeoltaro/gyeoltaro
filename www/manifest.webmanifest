@@ -1,0 +1,14 @@
+{
+  "name": "태권도 통합 관리",
+  "short_name": "태권도 관리",
+  "description": "출석체크, 회비장부, 체력측정, 알림장, 참가신청서, 승급심사 결과증",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#f4f1ea",
+  "lang": "ko",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -214,6 +214,29 @@
     });
   };
   U.isEncrypted = function (obj) { return !!(obj && obj.format === 'tkd-backup' && obj.data); };
+
+  // ---------- 주소 · 기기 ----------
+  U.param = function (k) { try { return new URLSearchParams(location.search).get(k); } catch (e) { return null; } };
+  // 주소창에서 값 하나를 지웁니다 (예: 이미 쓴 초대 코드)
+  U.dropParam = function (k) {
+    try {
+      var u = new URL(location.href);
+      if (!u.searchParams.has(k)) return;
+      u.searchParams.delete(k);
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    } catch (e) {}
+  };
+  // 관리자 비밀번호(숫자 6자리) 검사: 문제가 있으면 안내 문구, 괜찮으면 null
+  // 같은 숫자 반복(111111)이나 연속 숫자(123456)는 쉽게 맞힐 수 있어 막습니다
+  U.pinProblem = function (nw, again) {
+    if (!/^\d{6}$/.test(nw)) return '새 비밀번호는 숫자 6자리로 정해 주세요';
+    if (/^(\d)\1+$/.test(nw) || '01234567890123'.indexOf(nw) >= 0 || '98765432109876'.indexOf(nw) >= 0) return '같은 숫자나 연속된 숫자는 쓸 수 없어요';
+    if (nw !== again) return '새 비밀번호가 서로 달라요';
+    return null;
+  };
+  U.isIOS = function () { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); };
+  // 홈 화면 아이콘으로 연 앱인지
+  U.standalone = function () { return navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches); };
   U.decryptText = function (obj, password) {
     return deriveKey(password, unb64(obj.salt), obj.iterations).then(function (key) {
       return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(obj.iv) }, key, unb64(obj.data));

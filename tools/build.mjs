@@ -14,12 +14,13 @@ const outIdx = args.indexOf('--out');
 const out = outIdx >= 0 ? resolve(args[outIdx + 1]) : join(root, 'dist', 'taekwondo.html');
 
 let html = readFileSync(join(www, 'index.html'), 'utf8');
+html = html.replace(/<link rel="(?:manifest|icon|apple-touch-icon)"[^>]*>\n?/g, '');
 html = html.replace(/<link rel="stylesheet" href="(css\/[^"]+)">/g, (_, p) => `<style>\n${readFileSync(join(www, p), 'utf8')}</style>`);
 // 한 파일 미리보기는 서버에 연결할 수 없으므로 1단계(기기 저장) 모드로 묶습니다. --cloud 를 주면 서버 설정을 그대로 둡니다.
 const cloud = args.includes('--cloud');
 html = html.replace(/<script src="((?:js\/)?[^":]+\.js)"><\/script>/g, (_, p) => {
-  if (p === 'firebase-config.js' && !cloud) return '<script>window.FIREBASE_CONFIG = false;</script>';
-  const js = readFileSync(join(www, p), 'utf8');
+  let js = readFileSync(join(www, p), 'utf8');
+  if (p === 'firebase-config.js' && !cloud) js = 'window.FIREBASE_CONFIG = false;\n' + js;
   if (js.includes('</script')) throw new Error(`${p}에 </script 문자열이 있어 한 파일로 묶을 수 없습니다`);
   return `<script>\n${js}</script>`;
 });
