@@ -149,13 +149,17 @@
         var g = guardianOf(s);
         var msg = '[' + st.dojangName + '] ' + s.name + ' 원생의 개인정보 동의를 학부모 앱에서 부탁드립니다. 로그인: 보호자 휴대폰 번호 + 출석번호 ' + s.pin;
         return '<div class="row">' + UI.av(s, 'sm') + '<span class="main"><span class="title">' + esc(s.name) + '</span><span class="sub">' + esc(g ? (g.name || '') + ' ' + U.fmtPhone(g.phone) : '보호자 연락처 없음') + '</span></span>' +
-          '<span class="side">' + (g && g.phone ? '<a class="btn sm" href="' + esc(smsHref(g.phone, msg)) + '">앱 안내 문자</a>' : '') +
+          '<span class="side">' + (g && g.phone ? (window.Cloud && Cloud.enabled
+            ? '<button class="btn sm" type="button" data-invite="' + esc(s.id) + '">초대 코드 보내기</button>'
+            : '<a class="btn sm" href="' + esc(smsHref(g.phone, msg)) + '">앱 안내 문자</a>') : '') +
           '<button class="btn sm primary" type="button" data-now="' + esc(s.id) + '">지금 받기</button></span></div>';
       }).join('') + '</div>';
     UI.modal({
       title: '보호자 동의가 없는 원생 ' + list.length + '명', wide: true, html: html, actions: [{ label: '닫기', kind: 'primary' }],
       onMount: function (root, close) {
         root.addEventListener('click', function (e) {
+          var iv = e.target.closest('[data-invite]');
+          if (iv) { close(); Cloud.inviteModal(DB.student(iv.getAttribute('data-invite'))); return; }
           var b = e.target.closest('[data-now]');
           if (!b) return;
           var s = DB.student(b.getAttribute('data-now'));

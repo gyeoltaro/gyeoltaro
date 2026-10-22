@@ -75,6 +75,19 @@
     });
   }
 
+  // 서버 모드: 초대 코드로 연결된 학부모 기기
+  function parentAppRow(s) {
+    var list = Cloud.parentsOf(s.id);
+    var waiting = (DB.state.invites || []).filter(function (i) { return !i.usedBy && i.expiresAt > Date.now() && i.studentIds.indexOf(s.id) >= 0; });
+    return (list.length ? UI.pill('기기 ' + list.length + '대 연결', 'good') : UI.pill('연결 안 됨', '')) +
+      (waiting.length ? ' ' + UI.pill('초대 코드 ' + waiting.length + '개 대기', 'info') : '') +
+      ' <button class="link-btn" type="button" data-act="invite">초대 코드 보내기</button>' +
+      list.map(function (p) {
+        return '<div class="small soft" style="margin-top:4px">' + esc(U.fmtPhone(p.phone) || '보호자') + ' · ' + esc(U.fmtDate(U.ymd(new Date(p.createdAt)))) + ' 연결 ' +
+          '<button class="link-btn" type="button" data-act="unlink" data-id="' + esc(p.id) + '">연결 끊기</button></div>';
+      }).join('');
+  }
+
   function renderDetail(el, s) {
     var today = U.today();
     var ym = calYm[s.id] || U.ym();
@@ -98,6 +111,7 @@
         (DB.hasConsent(s) ? '<button class="link-btn" type="button" data-act="consent-view">동의서 보기</button>' + (s.consent.by === 'app' && !s.consent.smsSentAt ? ' · <button class="link-btn" type="button" data-act="consent-sms">확인 문자 보내기</button>' : '')
           : '<button class="link-btn" type="button" data-act="consent-take">지금 이 기기에서 받기</button>') +
         (DB.hasConsent(s) ? '<div class="small soft" style="margin-top:4px">' + Parts.consentSummary(s) + '</div>' : '') + '</dd>' +
+      (window.Cloud && Cloud.enabled ? '<dt>학부모 앱</dt><dd>' + parentAppRow(s) + '</dd>' : '') +
       '<dt>월 회비</dt><dd>' + esc(U.won(DB.feeOf(s))) + (s.fee != null && s.fee !== '' ? ' <span class="small muted">(개별 금액)</span>' : '') + '</dd>' +
       '<dt>보호자</dt><dd>' + ((s.guardians || []).length ? s.guardians.map(function (g) {
         return '<div>' + esc(g.name || '-') + ' <span class="muted small">' + esc(g.relation || '') + '</span> <span class="mono">' + esc(U.fmtPhone(g.phone)) + '</span></div>';
@@ -124,6 +138,15 @@
       'consent-view': function () { Parts.viewConsent(s); },
       'consent-sms': function () { Parts.smsPendingModal(); },
       'consent-take': function () { Parts.openConsentForm(s); },
+      invite: function () { Cloud.inviteModal(s); },
+      unlink: function (b) {
+        UI.confirm({ title: '학부모 기기 연결 끊기', message: '이 기기에서 더 이상 학부모 앱을 볼 수 없게 할까요?\n다시 연결하려면 새 초대 코드가 필요해요.', ok: '연결 끊기', danger: true }).then(function (ok) {
+          if (!ok) return;
+          Cloud.unlinkParent(b.getAttribute('data-id'));
+          App.refresh();
+          UI.toast('연결을 끊었어요');
+        });
+      },
       preview: function () { App.previewParent(s); },
       fees: function () { App.nav('fees'); },
       repin: function () {
@@ -218,6 +241,7 @@
         obj.memo = root.querySelector('#fMemo').value.trim();
         if (obj.consent && obj.consent.healthWithdrawnAt) obj.consent.healthAck = Date.now();
         obj.photo = photo || null;
+        if (window.Cloud && Cloud.enabled) Cloud.linkSiblings(obj);
         DB.upsert('students', obj);
         if (isNew) {
           UI.toast(name + ' 원생을 등록했어요. 출석번호는 ' + pin + ' 이에요.');

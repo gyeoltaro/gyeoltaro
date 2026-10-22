@@ -29,26 +29,75 @@
     return recs.filter(function (r) { return r.values[key] != null && r.values[key] !== ''; }).map(function (r) { return +r.values[key]; });
   }
 
+  // 나이별 기록 모음 (이름 없음). 서버 모드에서 학부모 화면의 또래 비교에 쓰입니다.
+  // 5명보다 적은 나이 묶음은 누구 기록인지 짐작할 수 있어 빼고 '전체'에만 넣습니다.
+  Parts.fitnessStats = function () {
+    var latest = latestMap(), by = {}, all = {};
+    Object.keys(latest).forEach(function (id) {
+      var s = DB.student(id);
+      if (!s || s.purged) return;
+      var r = latest[id], age = U.age(s.birth, r.date);
+      Object.keys(r.values).forEach(function (k) {
+        (all[k] || (all[k] = [])).push(r.values[k]);
+        if (age != null) { var g = by[age] || (by[age] = {}); (g[k] || (g[k] = [])).push(r.values[k]); }
+      });
+    });
+    function sortAll(o) { Object.keys(o).forEach(function (k) { o[k].sort(function (a, b) { return a - b; }); }); }
+    Object.keys(by).forEach(function (a) {
+      var n = Math.max.apply(null, Object.keys(by[a]).map(function (k) { return by[a][k].length; }));
+      if (n < 5) delete by[a]; else sortAll(by[a]);
+    });
+    sortAll(all);
+    return { by: by, all: all };
+  };
+
+  // 비교할 또래 기록: 관리자는 전체 원생 자료로, 서버 모드 학부모는 통계로
+  function peerPool(s, rec, latest) {
+    var age = U.age(s.birth, rec.date);
+    var stats = window.Cloud && Cloud.enabled && Cloud.role === 'parent' ? DB.state.fitnessStats : null;
+    function size(vals) { return Math.max.apply(null, [0].concat(Object.keys(vals).map(function (k) { return vals[k].length; }))); }
+    var gather;
+    if (stats) {
+      gather = function (d) {
+        var out = {};
+        Object.keys(stats.by || {}).forEach(function (a) {
+          if (age != null && Math.abs(+a - age) > d) return;
+          var g = stats.by[a];
+          Object.keys(g).forEach(function (k) { out[k] = (out[k] || []).concat(g[k]); });
+        });
+        return out;
+      };
+    } else {
+      latest = latest || latestMap();
+      var pool = Object.keys(latest).map(function (id) { return { s: DB.student(id), r: latest[id] }; }).filter(function (x) { return x.s; });
+      gather = function (d) {
+        var out = {};
+        pool.forEach(function (x) {
+          var a = U.age(x.s.birth, x.r.date);
+          if (d != null && age != null && a != null && Math.abs(a - age) > d) return;
+          Object.keys(x.r.values).forEach(function (k) {
+            var v = x.r.values[k];
+            if (v != null && v !== '') (out[k] || (out[k] = [])).push(+v);
+          });
+        });
+        return out;
+      };
+    }
+    var vals = gather(0), scope = '같은 나이';
+    if (size(vals) < 6) { vals = gather(1); scope = '비슷한 나이'; }
+    if (size(vals) < 6) { vals = stats ? (stats.all || {}) : gather(null); scope = '전체 원생'; }
+    return { vals: vals, scope: scope, n: size(vals) };
+  }
+
   // 또래 비교 점수(0~10): 같은 나이 원생들의 최근 기록 중 몇 %보다 잘했는지
   function peerScore(s, rec, latest) {
-    latest = latest || latestMap();
-    var age = U.age(s.birth, rec.date);
-    var pool = Object.keys(latest).map(function (id) { return { s: DB.student(id), r: latest[id] }; }).filter(function (x) { return x.s; });
-    function within(d) {
-      return pool.filter(function (x) {
-        var a = U.age(x.s.birth, x.r.date);
-        return age == null || a == null || Math.abs(a - age) <= d;
-      });
-    }
-    var peers = within(0), scope = '같은 나이';
-    if (peers.length < 6) { peers = within(1); scope = '비슷한 나이'; }
-    if (peers.length < 6) { peers = pool; scope = '전체 원생'; }
+    var peers = peerPool(s, rec, latest), scope = peers.scope;
     var out = {};
     items().forEach(function (it) {
       var v = rec.values[it.key];
       if (v == null || v === '') { out[it.key] = null; return; }
       v = +v;
-      var vals = peers.map(function (x) { return x.r.values[it.key]; }).filter(function (x) { return x != null && x !== ''; }).map(Number);
+      var vals = (peers.vals[it.key] || []).map(Number);
       if (vals.length < 3) { out[it.key] = null; return; }
       var beat = 0, tie = 0;
       vals.forEach(function (x) {
@@ -58,7 +107,7 @@
       var pct = (beat + tie / 2) / vals.length;
       out[it.key] = { score: U.round(0.5 + pct * 9.5, 1), top: Math.max(1, Math.round((1 - pct) * 100)) };
     });
-    return { scores: out, scope: scope, n: peers.length };
+    return { scores: out, scope: scope, n: peers.n };
   }
 
   function deltaHtml(it, v, pv) {

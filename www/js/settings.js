@@ -23,6 +23,31 @@
     return '01234567890123'.indexOf(p) >= 0 || '98765432109876'.indexOf(p) >= 0;
   }
 
+  // ---------- 서버 · 계정 (2단계) ----------
+  function cloudSection(st) {
+    var emails = st.adminEmails || [];
+    var cs = Cloud.statusText();
+    return section('서버 · 관리자 계정', '', '<dl class="kv"><dt>로그인</dt><dd>' + esc(Cloud.email() || '-') + '</dd>' +
+      '<dt>연결 상태</dt><dd>' + (cs ? UI.pill(cs.text, cs.tone, true) : '-') + '</dd></dl>' +
+      '<div class="field"><span class="label">관리자 이메일 (관장·사범님)</span><div class="stack sm">' + emails.map(function (e, i) {
+        return '<div class="hstack" style="flex-wrap:nowrap"><span class="mono" style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(e) + '</span>' +
+          (emails.length > 1 ? '<button class="icon-btn" type="button" data-act="del-email" data-i="' + i + '" aria-label="' + esc(e) + ' 빼기">' + UI.icon('trash') + '</button>' : '') + '</div>';
+      }).join('') + '</div>' +
+      '<div class="hstack" style="flex-wrap:nowrap"><input class="input" id="newEmail" type="email" placeholder="사범님 이메일 추가"><button class="btn" type="button" data-act="add-email">추가</button></div>' +
+      '<span class="hint">이메일을 바꾸면 아래 "보안 규칙 보기"에서 규칙을 복사해 Firebase에 다시 붙여 넣어야 적용돼요.</span></div>' +
+      '<div class="hstack"><button class="btn" type="button" data-act="rules">' + UI.icon('lock') + '보안 규칙 보기</button>' +
+      '<button class="btn danger" type="button" data-act="signout">' + UI.icon('logout') + '이 기기에서 로그아웃</button></div>');
+  }
+  function rulesView(emails) {
+    var text = Cloud.rulesText(emails);
+    UI.modal({
+      title: 'Firestore 보안 규칙', wide: true,
+      html: '<p class="soft">Firebase 콘솔 → Firestore Database → 규칙 탭에 있던 내용을 모두 지우고 붙여 넣은 뒤 "게시"를 누르세요.</p>' +
+        '<textarea class="input mono" readonly style="min-height:260px;font-size:12px">' + esc(text) + '</textarea>',
+      actions: [{ label: '규칙 복사', icon: 'copy', onClick: function () { U.copy(text).then(function (ok) { UI.toast(ok ? '규칙을 복사했어요' : '복사하지 못했어요'); }); return false; } }, { label: '닫기', kind: 'primary' }]
+    });
+  }
+
   // ---------- 백업 (비밀번호로 암호화) ----------
   function backupModal() {
     UI.modal({
@@ -110,7 +135,7 @@
     render: function (el) {
       var st = DB.settings();
       var size = DB.estimateSize();
-      var where = { idb: '이 기기 (IndexedDB)', local: '이 기기 (브라우저 저장소)', memory: '임시 메모리 (창을 닫으면 사라짐)' }[DB.backend];
+      var where = { cloud: '서버 (Firebase · 서울)', idb: '이 기기 (IndexedDB)', local: '이 기기 (브라우저 저장소)', memory: '임시 메모리 (창을 닫으면 사라짐)' }[DB.backend];
       var h = '<header class="page-head"><div><span class="eyebrow">' + esc(st.dojangName) + '</span><h1>설정</h1></div></header>';
 
       h += section('도장 정보', '', '<div class="form-grid">' +
@@ -160,8 +185,11 @@
 
       h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>');
 
+      if (window.Cloud && Cloud.enabled) h += cloudSection(st);
       h += section('데이터', '저장 위치: ' + where + ' · 약 ' + (size / 1024 / 1024).toFixed(2) + 'MB',
-        '<p class="soft">1단계에서는 모든 정보가 <b>이 기기에만</b> 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 꼭 백업 파일을 만들어 두세요. 백업 파일은 관장님이 정한 비밀번호로 잠겨서, 비밀번호 없이는 아무도 열 수 없어요.</p>' +
+        (window.Cloud && Cloud.enabled
+          ? '<p class="soft">자료는 서버(서울)에 저장되고, 인터넷이 끊겨도 이 기기에 적어 두었다가 연결되면 자동으로 올라가요. 백업 파일은 만일을 위한 추가 보관용이에요. 비밀번호로 잠겨서 비밀번호 없이는 아무도 열 수 없어요.</p>'
+          : '<p class="soft">1단계에서는 모든 정보가 <b>이 기기에만</b> 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 꼭 백업 파일을 만들어 두세요. 백업 파일은 관장님이 정한 비밀번호로 잠겨서, 비밀번호 없이는 아무도 열 수 없어요.</p>') +
         '<div class="hstack"><button class="btn" type="button" data-act="backup">' + UI.icon('download') + '백업 파일 만들기</button>' +
         '<button class="btn" type="button" data-act="restore">' + UI.icon('upload') + '백업 불러오기</button><input type="file" accept=".json,application/json" hidden id="restoreFile"></div>' +
         '<hr class="form-sep">' +
@@ -276,6 +304,28 @@
         },
         'view-privacy': function () { Parts.openPrivacy(); },
         purge: purgeModal,
+        rules: function () { rulesView(st.adminEmails); },
+        'add-email': function () {
+          var v = el.querySelector('#newEmail').value.trim().toLowerCase();
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { UI.toast('이메일 주소를 확인해 주세요'); return; }
+          st.adminEmails = (st.adminEmails || []).filter(function (e) { return e !== v; }).concat([v]);
+          DB.save();
+          App.refresh();
+          rulesView(st.adminEmails);
+        },
+        'del-email': function (b) {
+          var i = +b.getAttribute('data-i');
+          if (st.adminEmails[i] === Cloud.email()) { UI.toast('지금 로그인한 이메일은 뺄 수 없어요'); return; }
+          st.adminEmails.splice(i, 1);
+          DB.save();
+          App.refresh();
+          rulesView(st.adminEmails);
+        },
+        signout: function () {
+          UI.confirm({ title: '로그아웃', message: '이 기기에서 관리자 계정을 로그아웃할까요?\n출석 화면으로도 쓸 수 없게 돼요.', ok: '로그아웃', danger: true }).then(function (ok) {
+            if (ok) Cloud.signOut().then(function () { App.setSession(null); });
+          });
+        },
         backup: backupModal,
         restore: function () { restoreFile.click(); },
         'clear-demo': function () {

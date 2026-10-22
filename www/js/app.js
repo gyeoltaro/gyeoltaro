@@ -32,6 +32,7 @@
 
   App.render = function (toTop) {
     var y = window.scrollY || 0;
+    App.formBusy = false;
     runLeave();
     var s = App.session;
     try {
@@ -48,7 +49,28 @@
   };
   App.refresh = function () { App.render(false); };
 
+  // 다른 기기에서 바뀐 내용이 오면 화면을 다시 그립니다. 글을 쓰거나 서명하는 중이면 기다립니다.
+  App.formBusy = false;
+  var refreshWait = null;
+  App.softRefresh = function () {
+    clearTimeout(refreshWait);
+    if (!App.session) { if (!UI.modalOpen()) App.render(false); return; }
+    App.updateShell();
+    if (App.session.role === 'kiosk' || App.formBusy) return;
+    var ae = document.activeElement;
+    var typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && root.contains(ae);
+    if (UI.modalOpen() || typing) { refreshWait = setTimeout(App.softRefresh, 1500); return; }
+    App.refresh();
+  };
+  function markBusy(e) {
+    if (e.target && e.target.closest && e.target.closest('#view') && (e.type !== 'pointerdown' || e.target.tagName === 'CANVAS')) App.formBusy = true;
+  }
+  document.addEventListener('input', markBusy, true);
+  document.addEventListener('change', markBusy, true);
+  document.addEventListener('pointerdown', markBusy, true);
+
   App.go = function (view, params) {
+    App.formBusy = false;
     App.stack.push({ view: App.view, params: App.params, y: window.scrollY || 0 });
     App.view = view;
     App.params = params || {};
@@ -56,6 +78,7 @@
     syncBack();
   };
   App.nav = function (view, params) {
+    App.formBusy = false;
     App.stack = [];
     App.view = view;
     App.params = params || {};
@@ -65,6 +88,7 @@
 
   App.setSession = function (s) {
     UI.closeAll();
+    App.formBusy = false;
     App.locked = false;
     resetIdle();
     App.session = s;
@@ -223,7 +247,8 @@
   }
   function renderStart() {
     var st = DB.settings();
-    var demoKid = DB.state.demo ? DB.state.students[0] : null;
+    var cloud = Cloud.enabled;
+    var demoKid = DB.state.demo && !cloud ? DB.state.students[0] : null;
     var demoPhone = demoKid && demoKid.guardians[0] ? U.fmtPhone(demoKid.guardians[0].phone) : '';
     var h = '<div class="start"><div class="start-inner">' +
       '<header class="start-head"><span class="eyebrow">' + esc(U.fmtLong(U.today())) + '</span><h1>' + esc(st.dojangName) + '</h1>' +
@@ -231,22 +256,32 @@
       '<div class="start-grid">' +
       startCard('kiosk', 'tablet', '출석체크', '도장 태블릿에 켜 두는 화면이에요. 아이들이 출석번호 4자리를 눌러요.', 'kiosk-card') +
       startCard('admin', 'lock', '관장 · 사범님', '원생, 출석부, 회비장부, 체력측정, 알림장, 승급심사를 관리해요.') +
-      startCard('parent', 'users', '학부모', '우리 아이 출석, 알림장, 참가신청서, 성장기록을 봐요.') +
+      startCard('parent', 'users', '학부모', cloud ? '도장에서 받은 초대 코드로 시작해요. 우리 아이 출석, 알림장, 신청서, 성장기록을 봐요.' : '우리 아이 출석, 알림장, 참가신청서, 성장기록을 봐요.') +
       '</div>';
     if (demoKid) {
       h += '<div class="demo-box"><span>체험용 관리자 비밀번호 <b>' + esc(st.adminPin) + '</b></span>' +
         '<span>학부모 <b>' + esc(demoPhone) + '</b> · 출석번호 <b>' + esc(demoKid.pin) + '</b></span>' +
         '<button class="btn sm" type="button" data-act="demo-parent">학부모 화면 바로 보기</button></div>';
     }
-    h += '<p class="fine">1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ' +
+    var cs = Cloud.statusText();
+    h += '<p class="fine">' + (cloud
+      ? '자료는 서버(서울)에 저장되어 도장 태블릿, 관장님 휴대폰, 학부모 휴대폰이 같은 정보를 봐요. ' + (cs ? UI.pill(cs.text, cs.tone, true) + ' ' : '') + (Cloud.role === 'admin' && Cloud.email() ? '<span class="nowrap">' + esc(Cloud.email()) + '</span> ' : '')
+      : '1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ') +
       '<button class="link-btn" type="button" data-act="privacy">개인정보 처리방침</button></p></div></div>';
     root.innerHTML = h;
     UI.bind(root, {
-      kiosk: function () { App.setSession({ role: 'kiosk' }); },
+      kiosk: function () {
+        if (cloud) { Cloud.adminFlow(function () { App.setSession({ role: 'kiosk' }); }); return; }
+        App.setSession({ role: 'kiosk' });
+      },
       admin: function () {
+        if (cloud && !(Cloud.role === 'admin' && Cloud.started)) { Cloud.adminFlow(function () { App.setSession({ role: 'admin' }); }); return; }
         App.askAdminPin({ title: '관장 · 사범님 확인' }).then(function (ok) { if (ok) App.setSession({ role: 'admin' }); });
       },
-      parent: parentLogin,
+      parent: cloud ? function () {
+        if (Cloud.role === 'parent' && Cloud.started) { App.setSession(Cloud.parentSession()); return; }
+        Cloud.inviteEntry(function () { App.setSession(Cloud.parentSession()); });
+      } : parentLogin,
       privacy: function () { Parts.openPrivacy(); },
       'demo-parent': function () {
         var kids = DB.studentsByPhone(demoKid.guardians[0].phone);
@@ -285,7 +320,7 @@
   function renderAdmin() {
     if (!root.querySelector('.shell')) {
       root.innerHTML = '<div class="shell"><aside class="sidebar">' +
-        '<div class="brand"><div class="brand-name"><small>관리자</small><b data-brand></b></div>' +
+        '<div class="brand"><div class="brand-name"><small>관리자</small><b data-brand></b><span data-cloud></span></div>' +
         '<div class="brand-actions"><button class="icon-btn" type="button" data-act="kiosk" aria-label="출석 화면 열기">' + UI.icon('tablet') + '</button>' +
         '<button class="icon-btn" type="button" data-act="logout" aria-label="처음 화면으로">' + UI.icon('logout') + '</button></div></div>' +
         '<nav class="nav" aria-label="관리 메뉴">' + ADMIN_NAV.map(function (n) {
@@ -318,6 +353,11 @@
   function renderParent() {
     var s = App.session;
     var ids = (s.ids || []).filter(function (id) { var k = DB.student(id); return k && k.status !== 'left'; });
+    if (!ids.length && Cloud.enabled && (s.ids || []).length) {
+      // 서버에서 아이 정보가 아직 오지 않았을 때
+      root.innerHTML = '<div class="boot">불러오는 중…</div>';
+      return;
+    }
     if (!ids.length) { App.session = null; DB.device.session = null; DB.saveDevice(); setMode('start'); renderStart(); return; }
     s.ids = ids;
     if (ids.indexOf(s.cur) < 0) s.cur = ids[0];
@@ -365,6 +405,11 @@
         if (cb) cb.onclick = function () { close(); Parts.consentManage(kid); };
       },
       actions: s.preview ? [{ label: '관리자로 돌아가기', kind: 'primary', onClick: exitPreview }]
+        : Cloud.enabled ? [{ label: '이 기기 연결 끊기', kind: 'danger', onClick: function () {
+          UI.confirm({ title: '연결 끊기', message: '이 휴대폰에서 학부모 앱 연결을 끊을까요?\n다시 쓰려면 도장에서 새 초대 코드를 받아야 해요.', ok: '연결 끊기', danger: true }).then(function (ok) {
+            if (ok) Cloud.unlinkSelf().then(function () { App.setSession(null); UI.toast('연결을 끊었어요'); });
+          });
+        } }, { label: '닫기', kind: 'primary' }]
         : [{ label: '로그아웃', kind: 'danger', onClick: function () { App.logout(); } }, { label: '닫기', kind: 'primary' }]
     });
   }
@@ -383,6 +428,8 @@
       });
       setBadge('notices', DB.unseenReplies());
       setBadge('events', DB.unseenApps());
+      var cs = Cloud.statusText(), cl = root.querySelector('[data-cloud]');
+      if (cl) cl.innerHTML = cs ? UI.pill(cs.text, cs.tone, true) : '';
       var nav = root.querySelector('.nav');
       if (active && nav && nav.scrollWidth > nav.clientWidth) {
         if (active.offsetLeft < nav.scrollLeft || active.offsetLeft + active.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = active.offsetLeft - 16;
@@ -392,7 +439,8 @@
       if (!kid) return;
       var head = root.querySelector('#pHead');
       if (head) {
-        head.innerHTML = '<div class="p-who">' + UI.av(kid, 'sm') + '<div class="main"><b>' + esc(kid.name) + '</b><small>' + esc(DB.settings().dojangName + ' · ' + kid.className) + '</small></div></div>' +
+        var pcs = Cloud.statusText();
+        head.innerHTML = '<div class="p-who">' + UI.av(kid, 'sm') + '<div class="main"><b>' + esc(kid.name) + '</b><small>' + esc(DB.settings().dojangName + ' · ' + kid.className) + (pcs && pcs.tone === 'warn' ? ' · ' + pcs.text : '') + '</small></div></div>' +
           (s.ids.length > 1 ? '<div class="p-kids">' + s.ids.filter(function (id) { return id !== s.cur; }).map(function (id) {
             var k = DB.student(id);
             return '<button type="button" class="chip" data-kid="' + esc(id) + '" aria-label="' + esc(k.name) + ' 보기">' + esc(k.name) + '</button>';
@@ -409,7 +457,17 @@
     root = document.getElementById('app');
     DB.init().then(function () {
       var s = DB.device.session;
-      if (s && s.role === 'parent' && !(s.ids || []).some(function (id) { return DB.student(id); })) s = null;
+      if (!Cloud.enabled) {
+        if (s && s.role === 'parent' && !(s.ids || []).some(function (id) { return DB.student(id); })) s = null;
+        return s;
+      }
+      var r = Cloud.role;
+      if (s && (s.role === 'admin' || s.role === 'kiosk') && !(r === 'admin' && Cloud.hasData)) s = null;
+      if (s && s.role === 'parent') s = r === 'parent' ? Object.assign(Cloud.parentSession(), { cur: s.cur }) : null;
+      if (!s && r === 'parent') s = Cloud.parentSession();
+      var ready = (r === 'admin' && Cloud.hasData) || r === 'parent' ? Cloud.start() : Promise.resolve();
+      return ready.then(function () { return s; });
+    }).then(function (s) {
       App.session = s || null;
       lastActive = DB.device.lastActive || 0;
       App.render(true);

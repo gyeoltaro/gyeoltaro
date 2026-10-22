@@ -158,7 +158,8 @@
     document.body.classList.add('modal-open');
     if (opts.onMount) opts.onMount(root, entry.close);
     var first = root.querySelector('[autofocus]');
-    if (first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 30);
+    // 이미 창 안의 다른 칸에 입력 중이면 커서를 옮기지 않습니다
+    if (first) setTimeout(function () { try { if (!root.contains(document.activeElement)) first.focus(); } catch (e) {} }, 30);
     if (window.App) App.syncBack();
     return entry.close;
   };

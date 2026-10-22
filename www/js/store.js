@@ -55,7 +55,8 @@
       version: 1, demo: false, createdAt: Date.now(),
       settings: defaultSettings(),
       students: [], attendance: {}, payments: [], fitness: [],
-      notices: [], events: [], applications: [], exams: []
+      notices: [], events: [], applications: [], exams: [],
+      parents: [], invites: [], fitnessStats: null
     };
   }
 
@@ -110,7 +111,9 @@
     return Promise.resolve(true);
   }
   var saving = false, dirty = false, warned = false;
+  function cloudOn() { return !!(window.Cloud && Cloud.enabled); }
   function save() {
+    if (cloudOn()) { Cloud.schedule(); return; }
     dirty = true;
     if (!saving) flush();
   }
@@ -203,11 +206,33 @@
     STATUS_LABEL: { active: '재원', paused: '휴원', left: '퇴원' },
     get state() { return state; },
     get device() { return device; },
-    get backend() { return backend; }
+    get backend() { return cloudOn() ? 'cloud' : backend; }
   };
+
+  DB.blankState = blank;
+  DB.upgradeState = upgrade;
+  DB.localSnapshot = null;
+  // 서버 모드에서 화면에 보이는 자료를 통째로 바꿀 때 (로그인·로그아웃·처음 설정)
+  DB._replaceState = function (st) { state = st || blank(); };
 
   DB.init = function () {
     loadDevice();
+    if (cloudOn()) {
+      // 서버 모드: 이 기기에 남아 있던 1단계 자료는 '처음 설정'에서 올릴 수 있게 읽어만 둡니다
+      return openIDB().then(function (db) {
+        idb = db;
+        return db ? idbGet(DATA_KEY) : null;
+      }).then(function (data) {
+        data = data || lsGet(DATA_KEY);
+        DB.localSnapshot = data && data.version ? upgrade(data) : null;
+        state = blank();
+        return Cloud.init();
+      }).catch(function (e) {
+        console.error(e);
+        Cloud.role = 'offline';
+        Cloud.initError = e;
+      });
+    }
     return openIDB().then(function (db) {
       idb = db;
       if (db) { backend = 'idb'; return idbGet(DATA_KEY); }
@@ -544,14 +569,23 @@
   DB.importJSON = function (text) {
     var d = JSON.parse(text);
     if (!d || !d.version || !Array.isArray(d.students)) throw new Error('백업 파일 형식이 아닙니다');
+    var emails = state.settings.adminEmails;
     state = upgrade(d);
+    if (cloudOn()) { state.settings.adminEmails = emails; state.parents = []; state.invites = []; }
     save();
   };
   DB.reset = function (withDemo) {
-    var keep = state.settings;
+    var keep = state.settings, parents = state.parents, invites = state.invites;
     state = blank();
     if (withDemo && window.Seed) { Seed.fill(state); state.demo = true; }
     else { state.settings = keep; }
+    // 서버 모드에서는 관리자 이메일·비밀번호와 학부모 기기 연결을 그대로 둡니다
+    if (cloudOn()) {
+      state.settings.adminEmails = keep.adminEmails;
+      state.settings.adminPin = keep.adminPin;
+      state.parents = withDemo ? [] : parents;
+      state.invites = withDemo ? [] : invites;
+    }
     save();
   };
   DB.clearDemoFlag = function () { state.demo = false; save(); };

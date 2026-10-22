@@ -14,7 +14,7 @@ const out = outIdx >= 0 ? resolve(args[outIdx + 1]) : join(root, 'dist', 'taekwo
 
 let html = readFileSync(join(www, 'index.html'), 'utf8');
 html = html.replace(/<link rel="stylesheet" href="(css\/[^"]+)">/g, (_, p) => `<style>\n${readFileSync(join(www, p), 'utf8')}</style>`);
-html = html.replace(/<script src="(js\/[^"]+)"><\/script>/g, (_, p) => {
+html = html.replace(/<script src="((?:js\/)?[^":]+\.js)"><\/script>/g, (_, p) => {
   const js = readFileSync(join(www, p), 'utf8');
   if (js.includes('</script')) throw new Error(`${p}에 </script 문자열이 있어 한 파일로 묶을 수 없습니다`);
   return `<script>\n${js}</script>`;
