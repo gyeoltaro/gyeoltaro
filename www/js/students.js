@@ -48,8 +48,9 @@
     }
     list.forEach(function (s) {
       var unpaid = s.status === 'active' && !fm[s.id] && (!s.joinDate || s.joinDate <= U.monthEnd(ym));
+      var noConsent = s.status !== 'left' && !DB.hasConsent(s);
       h += '<button class="row" type="button" data-act="open" data-id="' + esc(s.id) + '">' + UI.av(s) +
-        '<span class="main"><span class="title">' + esc(s.name) + ' ' + UI.statusPill(s) + (unpaid ? UI.pill('회비 미납', 'bad') : '') + '</span>' +
+        '<span class="main"><span class="title">' + esc(s.name) + ' ' + UI.statusPill(s) + (noConsent ? UI.pill('동의 전', 'warn') : '') + (unpaid ? UI.pill('회비 미납', 'bad') : '') + '</span>' +
         '<span class="sub">' + esc(UI.studentSub(s)) + (s.status === 'left' && s.leftAt ? ' · 퇴원 ' + esc(U.fmtDate(s.leftAt)) : ' · 번호 <span class="mono">' + esc(s.pin || '----') + '</span>') + '</span></span>' +
         '<span class="side"><span class="hide-sm">' + UI.belt(s.grade) + '</span><span class="small muted num">이번 달 ' + (mc[s.id] || 0) + '회</span></span></button>';
     });
@@ -93,6 +94,10 @@
       '<dt>반</dt><dd>' + esc(s.className || '-') + '</dd>' +
       '<dt>입관일</dt><dd>' + esc(s.joinDate ? U.fmtDate(s.joinDate) + ' (' + (monthsIn + 1) + '개월째)' : '-') + '</dd>' +
       (s.status === 'left' && s.leftAt ? '<dt>퇴원일</dt><dd>' + esc(U.fmtDate(s.leftAt)) + ' <span class="small muted">(1년이 지나면 개인정보를 정리해요)</span></dd>' : '') +
+      '<dt>보호자 동의</dt><dd>' + UI.pill(Parts.consentLabel(s).text, Parts.consentLabel(s).tone) + ' ' +
+        (DB.hasConsent(s) ? '<button class="link-btn" type="button" data-act="consent-view">동의서 보기</button>' + (s.consent.by === 'app' && !s.consent.smsSentAt ? ' · <button class="link-btn" type="button" data-act="consent-sms">확인 문자 보내기</button>' : '')
+          : '<button class="link-btn" type="button" data-act="consent-take">지금 이 기기에서 받기</button>') +
+        (DB.hasConsent(s) ? '<div class="small soft" style="margin-top:4px">' + Parts.consentSummary(s) + '</div>' : '') + '</dd>' +
       '<dt>월 회비</dt><dd>' + esc(U.won(DB.feeOf(s))) + (s.fee != null && s.fee !== '' ? ' <span class="small muted">(개별 금액)</span>' : '') + '</dd>' +
       '<dt>보호자</dt><dd>' + ((s.guardians || []).length ? s.guardians.map(function (g) {
         return '<div>' + esc(g.name || '-') + ' <span class="muted small">' + esc(g.relation || '') + '</span> <span class="mono">' + esc(U.fmtPhone(g.phone)) + '</span></div>';
@@ -116,6 +121,9 @@
     UI.bind(el, {
       back: function () { App.back(); },
       edit: function () { openForm(s); },
+      'consent-view': function () { Parts.viewConsent(s); },
+      'consent-sms': function () { Parts.smsPendingModal(); },
+      'consent-take': function () { Parts.openConsentForm(s); },
       preview: function () { App.previewParent(s); },
       fees: function () { App.nav('fees'); },
       repin: function () {
@@ -153,8 +161,9 @@
     var photo = d.photo;
     var html =
       '<div class="hstack" style="gap:14px"><span data-photo>' + UI.av(d, 'lg') + '</span>' +
-      '<div class="hstack"><button class="btn sm" type="button" data-pick>' + UI.icon('camera') + '사진 선택</button>' +
+      '<div class="stack sm"><div class="hstack"><button class="btn sm" type="button" data-pick' + (DB.photoAllowed(s) ? '' : ' disabled') + '>' + UI.icon('camera') + '사진 선택</button>' +
       '<button class="btn sm quiet" type="button" data-unphoto' + (photo ? '' : ' hidden') + '>사진 삭제</button></div>' +
+      (DB.photoAllowed(s) ? '' : '<span class="small muted">보호자가 사진 촬영·이용에 동의하면 올릴 수 있어요.</span>') + '</div>' +
       '<input type="file" accept="image/*" hidden data-file></div>' +
       '<div class="form-grid">' +
       '<div class="field"><label for="fName">이름 *</label><input class="input" id="fName" value="' + esc(d.name) + '" autofocus></div>' +
@@ -169,7 +178,8 @@
       '<div class="field"><label for="fFee">월 회비 (원)</label><input class="input" id="fFee" inputmode="numeric" value="' + esc(d.fee != null ? d.fee : '') + '" placeholder="' + esc(U.n(st.monthlyFee)) + '"><span class="hint">비워 두면 기본 회비로 계산해요. 형제 할인 등은 여기에 적어 주세요.</span></div>' +
       '<div class="field"><label for="fStatus">상태</label><select class="input" id="fStatus">' + UI.options([{ value: 'active', label: '재원' }, { value: 'paused', label: '휴원' }, { value: 'left', label: '퇴원' }], d.status) + '</select></div>' +
       guardianFields(1, d.guardians[0]) + guardianFields(2, d.guardians[1]) +
-      '<div class="field full"><label for="fMemo">메모</label><textarea class="input" id="fMemo" placeholder="알레르기, 차량, 주의할 점 등">' + esc(d.memo) + '</textarea></div>' +
+      '<div class="field full"><label for="fMemo">메모</label><textarea class="input" id="fMemo" placeholder="차량, 주의할 점 등">' + esc(d.memo) + '</textarea>' +
+      '<span class="hint">' + (s && s.consent && s.consent.health ? '보호자가 건강 정보 처리에 동의했어요. 알레르기 등 안전에 필요한 내용만 적어 주세요.' : '알레르기·질환 같은 건강 정보는 보호자가 건강 정보 처리에 동의한 경우에만 적어 주세요.') + '</span></div>' +
       '</div>';
 
     var actions = [];
@@ -206,11 +216,14 @@
         if (obj.status !== 'left') delete obj.leftAt;
         obj.guardians = guardians;
         obj.memo = root.querySelector('#fMemo').value.trim();
+        if (obj.consent && obj.consent.healthWithdrawnAt) obj.consent.healthAck = Date.now();
         obj.photo = photo || null;
         DB.upsert('students', obj);
         if (isNew) {
           UI.toast(name + ' 원생을 등록했어요. 출석번호는 ' + pin + ' 이에요.');
           App.go('students', { id: obj.id });
+          UI.confirm({ title: '보호자 동의 받기', message: '보호자가 옆에 계시면 지금 이 기기에서 동의서를 받을 수 있어요.\n나중에 받거나 학부모 앱으로 받을 수도 있어요.', ok: '지금 받기', cancel: '나중에' })
+            .then(function (ok) { if (ok) Parts.openConsentForm(obj); });
         } else {
           UI.toast('저장했어요');
           App.refresh();

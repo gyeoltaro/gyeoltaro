@@ -480,6 +480,19 @@
   };
   DB.zeroItems = function () { var o = {}; EXAM_ITEMS.forEach(function (k) { o[k] = 0; }); return o; };
 
+  // ---- 보호자 동의 (consent.js) ----
+  DB.hasConsent = function (s) { return !!(s && s.consent && s.consent.required); };
+  DB.photoAllowed = function (s) { return DB.hasConsent(s) && !!s.consent.photo; };
+  DB.consentPending = function () {
+    return state.students.filter(function (s) { return s.status !== 'left' && !s.purged && !DB.hasConsent(s); });
+  };
+  DB.smsPending = function () {
+    return state.students.filter(function (s) { return s.status !== 'left' && DB.hasConsent(s) && s.consent.by === 'app' && !s.consent.smsSentAt; });
+  };
+  DB.healthWithdrawn = function () {
+    return state.students.filter(function (s) { return s.consent && s.consent.healthWithdrawnAt && !s.consent.healthAck; });
+  };
+
   // ---- 개인정보 보관 기간 (퇴원 후 1년, 행사 종료 후 1년) ----
   DB.purgeCutoff = function () { var d = new Date(); d.setFullYear(d.getFullYear() - 1); return U.ymd(d); };
   DB.purgeDue = function () {

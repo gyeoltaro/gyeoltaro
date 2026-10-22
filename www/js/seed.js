@@ -341,6 +341,17 @@
     ];
     notices[4].replies = [];
 
+    // 보호자 동의: 대부분 받은 상태, 몇 명은 아직 받지 않은 상태 (체험용 원생 0·1번은 학부모 앱 첫 화면에서 동의)
+    students.forEach(function (s, idx) {
+      if (idx < 2 || idx % 13 === 5 || s.status === 'left') return;
+      var g = s.guardians[0], at = U.parse(s.joinDate).getTime() + 10 * 3600000;
+      var byApp = R() < 0.35, health = /알레르기|천식/.test(s.memo);
+      s.consent = {
+        v: 1, at: at, by: byApp ? 'app' : 'in-person', guardianName: g.name, relation: g.relation, phone: U.digits(g.phone),
+        required: true, photo: R() < 0.82, health: health, self: U.age(s.birth) >= 14 ? true : null, signature: null,
+        smsSentAt: byApp && idx % 17 !== 3 ? at + 3600000 : null
+      };
+    });
     students.forEach(function (s) { delete s._girl; delete s._p; delete s._away; });
     st.ledgerStart = U.addMonths(ym, -2);
     // 퇴원한 지 1년이 넘은 원생 (개인정보 정리 기능 체험용)

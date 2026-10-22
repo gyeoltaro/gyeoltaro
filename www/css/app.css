@@ -822,3 +822,5 @@ body.mode-parent::before{ content:""; position:fixed; inset:0 0 auto; height:env
 .policy ul{ margin:0; padding-left:20px; }
 .policy .t td, .policy .t th{ font-size:13px; }
 .pin-pad button svg{ width:24px; height:24px; vertical-align:middle; }
+.consent-gate .p-tabs{ display:none; }
+.consent-gate .p-main{ padding-bottom:calc(32px + env(safe-area-inset-bottom, 0px)); }

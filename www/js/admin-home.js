@@ -51,6 +51,10 @@
       var todos = [];
       if (setting.adminPin.length < 6) todos.push(['관리자 비밀번호가 ' + setting.adminPin.length + '자리예요. 6자리로 바꿔 주세요.', '설정', 'go', 'settings']);
       if (!(setting.privacy || {}).officer) todos.push(['개인정보 처리방침에 보호책임자 이름과 연락처를 넣어 주세요.', '설정', 'go', 'settings']);
+      var pendN = DB.consentPending().length, smsN = DB.smsPending().length, healthN = DB.healthWithdrawn().length;
+      if (pendN) todos.push(['보호자 동의를 아직 받지 않은 원생이 ' + pendN + '명 있어요.', '동의 받기', 'consent', '']);
+      if (smsN) todos.push(['학부모 앱으로 동의한 보호자 ' + smsN + '명에게 확인 문자를 보내 주세요.', '확인 문자', 'sms', '']);
+      if (healthN) todos.push(['건강 정보 동의를 철회한 원생이 ' + healthN + '명 있어요. 메모의 건강 정보를 지워 주세요.', '원생 보기', 'health', '']);
       var purgeN = DB.purgeDue().length + DB.oldApps().length;
       if (purgeN) todos.push(['보관 기간(1년)이 지난 개인정보가 ' + purgeN + '건 있어요.', '정리하기', 'purge', '']);
       var bars = '';
@@ -145,6 +149,9 @@
         go: function (b) { App.nav(b.getAttribute('data-v')); },
         kiosk: function () { App.openKiosk(); },
         purge: function () { Views.admin.settings.purge(); },
+        consent: function () { Parts.consentPendingModal(); },
+        sms: function () { Parts.smsPendingModal(); },
+        health: function () { App.go('students', { id: DB.healthWithdrawn()[0].id }); },
         notice: function () { App.nav('notices'); Views.admin.notices.compose(); },
         student: function (b) { App.go('students', { id: b.getAttribute('data-id') }); },
         event: function (b) { App.go('events', { id: b.getAttribute('data-id') }); },

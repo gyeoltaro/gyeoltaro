@@ -250,7 +250,7 @@
       privacy: function () { Parts.openPrivacy(); },
       'demo-parent': function () {
         var kids = DB.studentsByPhone(demoKid.guardians[0].phone);
-        App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: demoKid.id });
+        App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: demoKid.id, phone: U.digits(demoKid.guardians[0].phone) });
       }
     });
   }
@@ -269,7 +269,7 @@
           var kids = DB.studentsByPhone(phone);
           var match = kids.filter(function (k) { return k.pin === pin; })[0];
           if (!kids.length || !match) { err.textContent = '휴대폰 번호 또는 출석번호가 맞지 않아요. 다시 확인해 주세요.'; return false; }
-          App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: match.id });
+          App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: match.id, phone: U.digits(phone) });
         }
       }],
       onMount: function (m) {
@@ -329,7 +329,10 @@
         }).join('') + '</div></nav>';
       root.addEventListener('click', parentShellClick);
     }
-    var v = Views.parent[App.view] || Views.parent.home;
+    // 보호자 동의 전에는 동의서만 보여 줍니다 (관리자 미리보기는 예외)
+    var gated = !s.preview && !DB.hasConsent(DB.student(s.cur));
+    root.classList.toggle('consent-gate', gated);
+    var v = gated ? Views.parent.consent : (Views.parent[App.view] || Views.parent.home);
     var el = root.querySelector('#view');
     el.onclick = null;
     v.render(el, App.params || {});
@@ -354,8 +357,13 @@
       html: '<div class="hstack">' + UI.av(kid, 'sm') + '<b>' + esc(kid.name) + '</b><span class="small muted">' + esc(UI.studentSub(kid)) + '</span></div>' +
         '<dl class="kv"><dt>출석번호</dt><dd class="mono">' + esc(kid.pin) + '</dd><dt>급수</dt><dd>' + UI.belt(kid.grade) + '</dd></dl>' +
         '<p class="fine">알림장 답글로 관장님께 언제든 연락할 수 있어요.</p>' +
-        '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button>',
-      onMount: function (m) { m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); }; },
+        '<div class="hstack">' + (DB.hasConsent(kid) ? '<button class="btn" type="button" data-consent>' + UI.icon('check') + '개인정보 동의 내역</button>' : '') +
+        '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button></div>',
+      onMount: function (m, close) {
+        m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
+        var cb = m.querySelector('[data-consent]');
+        if (cb) cb.onclick = function () { close(); Parts.consentManage(kid); };
+      },
       actions: s.preview ? [{ label: '관리자로 돌아가기', kind: 'primary', onClick: exitPreview }]
         : [{ label: '로그아웃', kind: 'danger', onClick: function () { App.logout(); } }, { label: '닫기', kind: 'primary' }]
     });

@@ -23,6 +23,53 @@
     return '01234567890123'.indexOf(p) >= 0 || '98765432109876'.indexOf(p) >= 0;
   }
 
+  // ---------- 백업 (비밀번호로 암호화) ----------
+  function backupModal() {
+    UI.modal({
+      title: '백업 파일 만들기',
+      html: '<p class="soft">백업 파일에는 원생·보호자 정보가 모두 들어 있어요. 관장님이 정한 비밀번호로 잠가서 저장하고, 불러올 때 같은 비밀번호가 있어야 열려요.</p>' +
+        '<div class="field"><label for="bkPw">백업 비밀번호 (8자 이상)</label><input class="input" id="bkPw" type="password" autocomplete="new-password" autofocus></div>' +
+        '<div class="field"><label for="bkPw2">한 번 더</label><input class="input" id="bkPw2" type="password" autocomplete="new-password"></div>' +
+        '<div class="notice-bar">' + UI.icon('alert') + '<span>비밀번호를 잊으면 누구도 백업을 열 수 없어요. 따로 적어서 안전한 곳에 보관하세요.</span></div>',
+      actions: [{ label: '취소', kind: 'quiet' }, {
+        label: '잠가서 저장', kind: 'primary', icon: 'lock', onClick: function (root, close) {
+          var pw = root.querySelector('#bkPw').value, pw2 = root.querySelector('#bkPw2').value;
+          if (pw.length < 8) { UI.toast('비밀번호는 8자 이상으로 정해 주세요'); return false; }
+          if (pw !== pw2) { UI.toast('두 비밀번호가 서로 달라요'); return false; }
+          U.encryptText(DB.exportJSON(), pw).then(function (out) {
+            var name = '태권도관리_백업_' + U.today() + '.json';
+            close();
+            UI.toast(U.download(name, out, 'application/json') ? name + ' 저장을 시작했어요' : '이 화면에서는 파일을 저장할 수 없어요');
+          }, function (e) { UI.toast(e.message); });
+          return false;
+        }
+      }]
+    });
+  }
+  function restoreFrom(fileName, text) {
+    var obj;
+    try { obj = JSON.parse(text); } catch (e) { UI.toast('백업 파일이 아니에요'); return; }
+    function apply(json) {
+      UI.confirm({ title: '백업 불러오기', message: '"' + fileName + '" 파일로 지금 데이터를 모두 바꿀까요?\n지금 데이터는 사라져요.', ok: '불러오기', danger: true }).then(function (ok) {
+        if (!ok) return;
+        try { DB.importJSON(json); UI.toast('백업을 불러왔어요'); App.nav('home'); }
+        catch (e) { UI.toast('불러오지 못했어요: ' + e.message); }
+      });
+    }
+    if (!U.isEncrypted(obj)) { apply(text); return; }
+    UI.modal({
+      title: '백업 비밀번호',
+      html: '<p class="soft">이 백업 파일은 잠겨 있어요. 만들 때 정한 비밀번호를 입력해 주세요.</p>' +
+        '<div class="field"><label for="rsPw">백업 비밀번호</label><input class="input" id="rsPw" type="password" autocomplete="off" autofocus></div>',
+      actions: [{ label: '취소', kind: 'quiet' }, {
+        label: '열기', kind: 'primary', onClick: function (root, close) {
+          U.decryptText(obj, root.querySelector('#rsPw').value).then(function (json) { close(); apply(json); }, function (e) { UI.toast(e.message); });
+          return false;
+        }
+      }]
+    });
+  }
+
   // 보관 기간(1년)이 지난 개인정보 정리
   function purgeModal() {
     var due = DB.sortStudents(DB.purgeDue()), apps = DB.oldApps();
@@ -114,7 +161,7 @@
       h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>');
 
       h += section('데이터', '저장 위치: ' + where + ' · 약 ' + (size / 1024 / 1024).toFixed(2) + 'MB',
-        '<p class="soft">1단계에서는 모든 정보가 <b>이 기기에만</b> 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 꼭 백업 파일을 만들어 두세요.</p>' +
+        '<p class="soft">1단계에서는 모든 정보가 <b>이 기기에만</b> 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 꼭 백업 파일을 만들어 두세요. 백업 파일은 관장님이 정한 비밀번호로 잠겨서, 비밀번호 없이는 아무도 열 수 없어요.</p>' +
         '<div class="hstack"><button class="btn" type="button" data-act="backup">' + UI.icon('download') + '백업 파일 만들기</button>' +
         '<button class="btn" type="button" data-act="restore">' + UI.icon('upload') + '백업 불러오기</button><input type="file" accept=".json,application/json" hidden id="restoreFile"></div>' +
         '<hr class="form-sep">' +
@@ -142,13 +189,7 @@
         restoreFile.value = '';
         if (!f) return;
         var reader = new FileReader();
-        reader.onload = function () {
-          UI.confirm({ title: '백업 불러오기', message: '"' + f.name + '" 파일로 지금 데이터를 모두 바꿀까요?\n지금 데이터는 사라져요.', ok: '불러오기', danger: true }).then(function (ok) {
-            if (!ok) return;
-            try { DB.importJSON(reader.result); UI.toast('백업을 불러왔어요'); App.nav('home'); }
-            catch (e) { UI.toast('불러오지 못했어요: ' + e.message); }
-          });
-        };
+        reader.onload = function () { restoreFrom(f.name, reader.result); };
         reader.readAsText(f);
       };
 
@@ -235,11 +276,7 @@
         },
         'view-privacy': function () { Parts.openPrivacy(); },
         purge: purgeModal,
-        backup: function () {
-          var json = DB.exportJSON(), name = '태권도관리_백업_' + U.today() + '.json';
-          var ok = U.download(name, json, 'application/json');
-          UI.toast(ok ? name + ' 저장을 시작했어요' : '이 화면에서는 파일을 저장할 수 없어요');
-        },
+        backup: backupModal,
         restore: function () { restoreFile.click(); },
         'clear-demo': function () {
           UI.confirm({ title: '샘플 지우기', message: '샘플 원생 100명과 출석·회비·알림장 기록을 모두 지우고 빈 상태로 시작할까요?', ok: '지우고 시작', danger: true }).then(function (ok) {

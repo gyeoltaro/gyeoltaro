@@ -184,6 +184,44 @@
     }).join('\r\n');
   };
 
+  // ---- 백업 암호화: 비밀번호 → PBKDF2(SHA-256) → AES-256-GCM ----
+  function b64(buf) {
+    var a = new Uint8Array(buf), s = '';
+    for (var i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  function unb64(str) {
+    var bin = atob(str), a = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    return a;
+  }
+  function deriveKey(password, salt, iterations) {
+    var subtle = window.crypto && window.crypto.subtle;
+    if (!subtle) return Promise.reject(new Error('이 기기에서는 암호화를 쓸 수 없어요 (https 주소나 앱에서 열어 주세요)'));
+    return subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+      return subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    });
+  }
+  U.encryptText = function (text, password) {
+    var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iterations = 250000;
+    return deriveKey(password, salt, iterations).then(function (key) {
+      return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(text));
+    }).then(function (ct) {
+      return JSON.stringify({
+        format: 'tkd-backup', version: 1, cipher: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iterations: iterations,
+        salt: b64(salt), iv: b64(iv), data: b64(ct), createdAt: new Date().toISOString()
+      });
+    });
+  };
+  U.isEncrypted = function (obj) { return !!(obj && obj.format === 'tkd-backup' && obj.data); };
+  U.decryptText = function (obj, password) {
+    return deriveKey(password, unb64(obj.salt), obj.iterations).then(function (key) {
+      return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(obj.iv) }, key, unb64(obj.data));
+    }).then(function (pt) { return new TextDecoder().decode(pt); }, function (e) {
+      throw new Error(/암호화/.test(e.message) ? e.message : '비밀번호가 맞지 않아요');
+    });
+  };
+
   window.U = U;
   // 화면 등록용
   window.Views = { admin: {}, parent: {} };
