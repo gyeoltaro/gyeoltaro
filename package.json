@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npx http-server www -p 8090 -c-1",
     "build": "node tools/build.mjs",
+    "deploy": "node tools/deploy.mjs",
     "rules": "node tools/rules.mjs",
     "test:rules": "firebase emulators:exec --project demo-tkd-rules --only firestore \"node tests/rules.test.mjs\"",
     "test:e2e": "firebase emulators:exec --project demo-tkd --only auth,firestore \"node tests/cloud.e2e.mjs\""

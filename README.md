@@ -23,6 +23,7 @@
 ```bash
 npm start            # http://localhost:8090 에서 열립니다
 npm run build        # dist/taekwondo.html 한 파일로 묶기
+npm run deploy       # www/ 를 웹 주소용 저장소(GitHub Pages)에 올리기 (tools/deploy.mjs 의 SITE)
 ```
 
 처음 열면 체험용 샘플 데이터(원생 100명)가 들어 있습니다.
@@ -79,6 +80,7 @@ www/                 앱 본체 (나중에 APK로 포장할 폴더)
     parent.js        학부모 화면
     app.js           화면 이동, 뒤로가기(안드로이드 뒤로 버튼 포함)
 tools/build.mjs      한 파일 HTML로 묶기
+tools/deploy.mjs     웹 주소용 저장소에 화면 파일만 올리기
 ```
 
 ## 서버 모드 (2단계)
