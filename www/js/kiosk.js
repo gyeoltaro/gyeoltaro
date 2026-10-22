@@ -132,8 +132,7 @@
     });
     result.addEventListener('click', hideResult);
     el.querySelector('[data-exit]').addEventListener('click', function () {
-      UI.pinPrompt({ title: '관리자 확인', sub: '관리자 비밀번호 4자리를 눌러 주세요', check: function (p) { return p === DB.settings().adminPin; } })
-        .then(function (ok) { if (ok) App.setSession({ role: 'admin' }); });
+      App.askAdminPin({ title: '관리자 확인' }).then(function (ok) { if (ok) App.setSession({ role: 'admin' }); });
     });
     function onKey(e) {
       if (UI.modalOpen()) return;

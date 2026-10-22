@@ -806,3 +806,19 @@ body.mode-parent::before{ content:""; position:fixed; inset:0 0 auto; height:env
 .copy-line{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); font-size:14px; }
 .copy-line span{ flex:1; min-width:0; user-select:all; overflow-wrap:anywhere; }
 @media (max-width:520px){ .hide-sm{ display:none !important; } }
+
+/* ---------- lock screen & privacy ---------- */
+.modal-back.lock{ background:var(--bg); z-index:400; }
+.modal-back.lock .modal{ box-shadow:var(--shadow); }
+.pin-extra{ align-self:center; margin-top:2px; }
+.consent-box{ display:flex; flex-direction:column; gap:8px; padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius-sm); }
+.consent-box .consent{ font-size:13px; }
+.consent-t{ width:100%; border-collapse:collapse; font-size:13px; }
+.consent-t th{ width:5.5em; padding:4px 8px 4px 0; text-align:left; vertical-align:top; color:var(--muted); font-weight:600; white-space:nowrap; }
+.consent-t td{ padding:4px 0; color:var(--ink-soft); overflow-wrap:anywhere; }
+.policy{ display:flex; flex-direction:column; gap:10px; }
+.policy h3{ font-size:15px; font-weight:700; margin-top:10px; }
+.policy p, .policy li{ font-size:14px; line-height:1.75; color:var(--ink-soft); }
+.policy ul{ margin:0; padding-left:20px; }
+.policy .t td, .policy .t th{ font-size:13px; }
+.pin-pad button svg{ width:24px; height:24px; vertical-align:middle; }

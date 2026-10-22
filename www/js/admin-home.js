@@ -47,10 +47,22 @@
         '<div class="actions"><button class="btn" type="button" data-act="kiosk">' + UI.icon('tablet') + '출석 화면 열기</button>' +
         '<button class="btn primary" type="button" data-act="notice">' + UI.icon('edit') + '알림장 쓰기</button></div></header>';
 
+      var setting = DB.settings();
+      var todos = [];
+      if (setting.adminPin.length < 6) todos.push(['관리자 비밀번호가 ' + setting.adminPin.length + '자리예요. 6자리로 바꿔 주세요.', '설정', 'go', 'settings']);
+      if (!(setting.privacy || {}).officer) todos.push(['개인정보 처리방침에 보호책임자 이름과 연락처를 넣어 주세요.', '설정', 'go', 'settings']);
+      var purgeN = DB.purgeDue().length + DB.oldApps().length;
+      if (purgeN) todos.push(['보관 기간(1년)이 지난 개인정보가 ' + purgeN + '건 있어요.', '정리하기', 'purge', '']);
+      var bars = '';
+      todos.forEach(function (t) {
+        bars += '<div class="notice-bar">' + UI.icon('lock') + '<span>' + esc(t[0]) + '</span><button class="btn sm" type="button" data-act="' + t[2] + '" data-v="' + t[3] + '">' + esc(t[1]) + '</button></div>';
+      });
+
       if (st.demo) {
-        h += '<div class="notice-bar">' + UI.icon('info') + '<span>지금은 <b>샘플 데이터(원생 100명)</b>로 보고 있어요. 실제로 쓰려면 설정에서 샘플을 지우고 원생을 등록하세요.</span>' +
+        bars += '<div class="notice-bar">' + UI.icon('info') + '<span>지금은 <b>샘플 데이터(원생 100명)</b>로 보고 있어요. 실제로 쓰려면 설정에서 샘플을 지우고 원생을 등록하세요.</span>' +
           '<button class="btn sm" type="button" data-act="go" data-v="settings">설정</button></div>';
       }
+      if (bars) h += '<div class="stack sm">' + bars + '</div>';
 
       // 요약 타일
       h += '<div class="tiles">';
@@ -132,6 +144,7 @@
       UI.bind(el, {
         go: function (b) { App.nav(b.getAttribute('data-v')); },
         kiosk: function () { App.openKiosk(); },
+        purge: function () { Views.admin.settings.purge(); },
         notice: function () { App.nav('notices'); Views.admin.notices.compose(); },
         student: function (b) { App.go('students', { id: b.getAttribute('data-id') }); },
         event: function (b) { App.go('events', { id: b.getAttribute('data-id') }); },

@@ -44,8 +44,9 @@
     var d = ev ? JSON.parse(JSON.stringify(ev)) : {
       kind: '대회', title: '', date: U.addDays(U.today(), 21), time: '10:00', place: '', fee: 0,
       deadline: U.addDays(U.today(), 10), target: { type: 'all' }, choiceLabel: '', choices: [], askLabel: '',
-      description: '', consent: DEFAULT_CONSENT, closed: false
+      description: '', consent: DEFAULT_CONSENT, closed: false, thirdParty: null
     };
+    var tp = d.thirdParty || {}, tpOn = !!d.thirdParty || (isNew && d.kind === '대회');
     var kind = d.kind, tclasses = (d.target.classes || []).slice(), ttype = d.target.type || 'all';
     var html = '<div class="field"><span class="label">종류</span><div class="chips" data-kinds>' +
       DB.EVENT_KINDS.map(function (k) { return '<button type="button" class="chip' + (k === kind ? ' on' : '') + '" data-k="' + k + '">' + k + '</button>'; }).join('') + '</div></div>' +
@@ -64,6 +65,14 @@
       '<div class="field"><label for="eChoices">선택지 (쉼표로 구분)</label><input class="input" id="eChoices" value="' + esc((d.choices || []).join(', ')) + '" placeholder="예: 품새, 겨루기"></div>' +
       '<div class="field full"><label for="eAsk">추가 질문 (선택)</label><input class="input" id="eAsk" value="' + esc(d.askLabel) + '" placeholder="예: 체중 (kg), 티셔츠 사이즈"></div>' +
       '<div class="field full"><label for="eConsent">보호자 동의 문구</label><textarea class="input" id="eConsent" style="min-height:80px">' + esc(d.consent || DEFAULT_CONSENT) + '</textarea></div>' +
+      '<div class="full form-title">개인정보 제3자 제공</div>' +
+      '<label class="check full"><input type="checkbox" id="eTP"' + (tpOn ? ' checked' : '') + '>대회 주최 측 등 다른 곳에 참가자 정보를 넘겨야 해요</label>' +
+      '<div class="full form-grid" data-tp' + (tpOn ? '' : ' hidden') + '>' +
+      '<div class="field"><label for="eTPto">받는 곳</label><input class="input" id="eTPto" value="' + esc(tp.to || '') + '" placeholder="예: OO구 태권도협회"></div>' +
+      '<div class="field"><label for="eTPpurpose">목적</label><input class="input" id="eTPpurpose" value="' + esc(tp.purpose || '대회 참가 접수 및 경기 진행') + '"></div>' +
+      '<div class="field full"><label for="eTPitems">넘기는 항목</label><input class="input" id="eTPitems" value="' + esc(tp.items || '이름, 생년월일, 성별, 소속 도장, 체급(체중)') + '"></div>' +
+      '<div class="field full"><label for="eTPperiod">받는 곳의 보유 기간</label><input class="input" id="eTPperiod" value="' + esc(tp.period || '대회 종료 후 주최 측 기준에 따라 파기') + '"></div>' +
+      '</div><p class="full fine">켜 두면 학부모 신청서에 "제3자 제공 동의"가 따로 나오고, 동의해야 신청할 수 있어요. 개인정보 처리방침에도 자동으로 들어가요.</p>' +
       '</div>';
     UI.modal({
       title: isNew ? '행사 만들기' : '행사 수정', wide: true, html: html,
@@ -73,6 +82,8 @@
           if (!v('eTitle')) { UI.toast('행사 이름을 입력해 주세요'); root.querySelector('#eTitle').focus(); return false; }
           if (!v('eDate')) { UI.toast('날짜를 정해 주세요'); return false; }
           if (ttype === 'class' && !tclasses.length) { UI.toast('대상 반을 골라 주세요'); return false; }
+          var tpChecked = root.querySelector('#eTP').checked;
+          if (tpChecked && !v('eTPto')) { UI.toast('개인정보를 받는 곳을 입력해 주세요'); root.querySelector('#eTPto').focus(); return false; }
           var obj = ev || { id: U.uid(), createdAt: Date.now(), closed: false };
           obj.kind = kind;
           obj.title = v('eTitle');
@@ -88,12 +99,14 @@
           if (obj.choices.length && !obj.choiceLabel) obj.choiceLabel = '선택';
           obj.askLabel = v('eAsk');
           obj.consent = v('eConsent') || DEFAULT_CONSENT;
+          obj.thirdParty = tpChecked ? { to: v('eTPto'), purpose: v('eTPpurpose'), items: v('eTPitems'), period: v('eTPperiod') } : null;
           DB.upsert('events', obj);
           UI.toast(isNew ? '행사를 만들었어요. 학부모 화면에서 신청할 수 있어요.' : '저장했어요');
           if (isNew) App.go('events', { id: obj.id }); else App.refresh();
         }
       }],
       onMount: function (root) {
+        root.querySelector('#eTP').onchange = function (e) { root.querySelector('[data-tp]').hidden = !e.target.checked; };
         root.querySelector('[data-kinds]').addEventListener('click', function (e) {
           var b = e.target.closest('[data-k]');
           if (!b) return;
@@ -151,6 +164,13 @@
     });
   }
 
+  function consentText(a) {
+    if (a.by === 'admin') return '종이 신청서로 받음';
+    var c = a.consents || {};
+    var list = [c.privacy ? '개인정보 수집·이용' : null, c.third ? '제3자 제공' : null, c.event || a.agreed ? '참가 안내' : null].filter(Boolean);
+    return list.length ? list.join(' · ') + ' 동의 (' + U.fmtStamp(a.submittedAt) + ')' : '-';
+  }
+
   function appDetail(a, ev) {
     var s = DB.student(a.studentId);
     var html = '<dl class="kv">' +
@@ -160,7 +180,7 @@
       '<dt>메모</dt><dd>' + esc(a.memo || '-') + '</dd>' +
       '<dt>보호자</dt><dd>' + esc(a.guardianName || '-') + '</dd>' +
       '<dt>신청</dt><dd>' + esc(U.fmtStamp(a.submittedAt) + (a.by === 'admin' ? ' · 관리자 등록' : ' · 학부모 신청')) + '</dd>' +
-      '<dt>동의</dt><dd>' + (a.agreed ? '동의함' : '-') + '</dd>' +
+      '<dt>동의</dt><dd>' + esc(consentText(a)) + '</dd>' +
       '<dt>서명</dt><dd>' + (a.signature ? '<img class="sig-img" style="height:72px" src="' + esc(a.signature) + '" alt="보호자 서명">' : '<span class="muted">없음</span>') + '</dd>' +
       '</dl>';
     var actions = [];
@@ -234,6 +254,7 @@
     h += '<section class="section"><div class="section-head"><h2>신청서 항목</h2></div><div class="card pad stack">' +
       '<dl class="kv">' + (ev.choiceLabel ? '<dt>' + esc(ev.choiceLabel) + '</dt><dd>' + esc(ev.choices.join(' / ')) + '</dd>' : '') +
       (ev.askLabel ? '<dt>추가 질문</dt><dd>' + esc(ev.askLabel) + '</dd>' : '') +
+      '<dt>개인정보</dt><dd class="soft">수집·이용 동의 (필수)' + (ev.thirdParty ? '<br>제3자 제공 동의 (필수): ' + esc(ev.thirdParty.to + ' · ' + ev.thirdParty.items) : '') + '</dd>' +
       '<dt>보호자 동의</dt><dd class="soft">' + esc(ev.consent || DEFAULT_CONSENT) + '</dd><dt>서명</dt><dd>보호자 손글씨 서명</dd></dl>';
     if (ev.choices && ev.choices.length && live.length) {
       h += '<div class="breakdown">' + ev.choices.map(function (c) { return '<span>' + esc(c) + '<b>' + live.filter(function (a) { return a.choice === c; }).length + '명</b></span>'; }).join('') + '</div>';

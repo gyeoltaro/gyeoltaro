@@ -12,7 +12,7 @@
   }
 
   function renderList(el) {
-    var all = DB.state.students, ym = U.ym();
+    var all = DB.state.students.filter(function (s) { return !s.purged; }), ym = U.ym();
     var counts = { active: 0, paused: 0, left: 0 };
     all.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
     var q = ls.q.trim(), qd = U.digits(q);
@@ -50,7 +50,7 @@
       var unpaid = s.status === 'active' && !fm[s.id] && (!s.joinDate || s.joinDate <= U.monthEnd(ym));
       h += '<button class="row" type="button" data-act="open" data-id="' + esc(s.id) + '">' + UI.av(s) +
         '<span class="main"><span class="title">' + esc(s.name) + ' ' + UI.statusPill(s) + (unpaid ? UI.pill('회비 미납', 'bad') : '') + '</span>' +
-        '<span class="sub">' + esc(UI.studentSub(s)) + ' · 번호 <span class="mono">' + esc(s.pin || '----') + '</span></span></span>' +
+        '<span class="sub">' + esc(UI.studentSub(s)) + (s.status === 'left' && s.leftAt ? ' · 퇴원 ' + esc(U.fmtDate(s.leftAt)) : ' · 번호 <span class="mono">' + esc(s.pin || '----') + '</span>') + '</span></span>' +
         '<span class="side"><span class="hide-sm">' + UI.belt(s.grade) + '</span><span class="small muted num">이번 달 ' + (mc[s.id] || 0) + '회</span></span></button>';
     });
     h += '</div>';
@@ -92,6 +92,7 @@
       '<dt>학교</dt><dd>' + esc(s.school || '-') + '</dd>' +
       '<dt>반</dt><dd>' + esc(s.className || '-') + '</dd>' +
       '<dt>입관일</dt><dd>' + esc(s.joinDate ? U.fmtDate(s.joinDate) + ' (' + (monthsIn + 1) + '개월째)' : '-') + '</dd>' +
+      (s.status === 'left' && s.leftAt ? '<dt>퇴원일</dt><dd>' + esc(U.fmtDate(s.leftAt)) + ' <span class="small muted">(1년이 지나면 개인정보를 정리해요)</span></dd>' : '') +
       '<dt>월 회비</dt><dd>' + esc(U.won(DB.feeOf(s))) + (s.fee != null && s.fee !== '' ? ' <span class="small muted">(개별 금액)</span>' : '') + '</dd>' +
       '<dt>보호자</dt><dd>' + ((s.guardians || []).length ? s.guardians.map(function (g) {
         return '<div>' + esc(g.name || '-') + ' <span class="muted small">' + esc(g.relation || '') + '</span> <span class="mono">' + esc(U.fmtPhone(g.phone)) + '</span></div>';
@@ -190,6 +191,7 @@
         });
         var fee = U.digits(v('fFee'));
         var obj = s || { id: U.uid(), createdAt: Date.now() };
+        var prevStatus = s ? s.status : null;
         obj.name = name;
         obj.gender = v('fGender');
         obj.birth = v('fBirth');
@@ -200,6 +202,8 @@
         obj.joinDate = v('fJoin');
         obj.fee = fee === '' ? null : +fee;
         obj.status = v('fStatus');
+        if (obj.status === 'left' && prevStatus !== 'left') obj.leftAt = U.today();
+        if (obj.status !== 'left') delete obj.leftAt;
         obj.guardians = guardians;
         obj.memo = root.querySelector('#fMemo').value.trim();
         obj.photo = photo || null;

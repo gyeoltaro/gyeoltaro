@@ -17,7 +17,49 @@
     });
   }
 
+  // 같은 숫자 반복(111111)이나 연속 숫자(123456)는 쉽게 맞힐 수 있어 막습니다
+  function weakPin(p) {
+    if (/^(\d)\1+$/.test(p)) return true;
+    return '01234567890123'.indexOf(p) >= 0 || '98765432109876'.indexOf(p) >= 0;
+  }
+
+  // 보관 기간(1년)이 지난 개인정보 정리
+  function purgeModal() {
+    var due = DB.sortStudents(DB.purgeDue()), apps = DB.oldApps();
+    if (!due.length && !apps.length) { UI.toast('정리할 개인정보가 없어요'); return; }
+    var sel = {};
+    due.forEach(function (s) { sel[s.id] = true; });
+    var html = '<p class="soft">보관 기간(1년)이 지난 개인정보예요. 정리하면 되돌릴 수 없으니, 필요하면 먼저 백업해 두세요.</p>';
+    if (due.length) {
+      html += '<div class="form-title">퇴원 후 1년이 지난 원생 ' + due.length + '명</div><div class="pick-list">' + due.map(function (s) {
+        return '<label><input type="checkbox" data-id="' + esc(s.id) + '" checked><b>' + esc(s.name) + '</b><span class="sub">퇴원 ' + esc(U.fmtDate(s.leftAt)) + '</span></label>';
+      }).join('') + '</div><p class="fine">이름, 생년월일, 사진, 보호자 연락처와 출석·체력측정·승급심사·신청서 기록을 지워요. 회비 금액 기록은 장부 보관을 위해 이름 없이 남아요.</p>';
+    }
+    if (apps.length) {
+      html += '<div class="form-title">끝난 지 1년이 지난 행사 신청서 ' + apps.length + '건</div><p class="fine">답변, 메모, 보호자 성함, 서명을 지우고 신청했다는 기록만 남겨요.</p>';
+    }
+    UI.modal({
+      title: '개인정보 정리', html: html,
+      actions: [{ label: '취소', kind: 'quiet' }, {
+        label: '정리하기', kind: 'danger', onClick: function () {
+          var ids = Object.keys(sel).filter(function (k) { return sel[k]; });
+          ids.forEach(function (id) { DB.purgeStudent(id); });
+          if (apps.length) DB.purgeApps(apps);
+          App.refresh();
+          UI.toast('원생 ' + ids.length + '명' + (apps.length ? ', 신청서 ' + apps.length + '건' : '') + '의 개인정보를 정리했어요');
+        }
+      }],
+      onMount: function (root) {
+        root.addEventListener('change', function (e) {
+          var id = e.target.getAttribute('data-id');
+          if (id) sel[id] = e.target.checked;
+        });
+      }
+    });
+  }
+
   Views.admin.settings = {
+    purge: purgeModal,
     render: function (el) {
       var st = DB.settings();
       var size = DB.estimateSize();
@@ -45,11 +87,29 @@
             '<td><button class="icon-btn" type="button" data-act="del-item" data-i="' + i + '" aria-label="' + esc(it.label) + ' 삭제">' + UI.icon('trash') + '</button></td></tr>';
         }).join('') + '</tbody></table></div><div class="hstack"><button class="btn" type="button" data-act="add-item">' + UI.icon('plus') + '항목 추가</button><button class="btn primary" type="button" data-act="save-items">항목 저장</button></div>');
 
-      h += section('관리자 비밀번호', '관리자 화면에 들어오거나 출석 화면을 끌 때 써요', '<div class="form-grid">' +
-        '<div class="field"><label for="pCur">지금 비밀번호</label><input class="input mono" id="pCur" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div><div></div>' +
-        '<div class="field"><label for="pNew">새 비밀번호 (숫자 4자리)</label><input class="input mono" id="pNew" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>' +
-        '<div class="field"><label for="pNew2">한 번 더</label><input class="input mono" id="pNew2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>' +
-        '</div><div><button class="btn primary" type="button" data-act="save-pin">비밀번호 바꾸기</button></div>');
+      var pv = st.privacy || {};
+      var purgeN = DB.purgeDue().length + DB.oldApps().length;
+      h += section('관리자 비밀번호', '관리자 화면에 들어오거나 출석 화면을 끌 때 써요',
+        (st.adminPin.length < 6 ? '<div class="notice-bar">' + UI.icon('alert') + '<span>지금 비밀번호는 ' + st.adminPin.length + '자리예요. 6자리로 바꿔 주세요.</span></div>' : '') +
+        '<div class="form-grid">' +
+        '<div class="field"><label for="pCur">지금 비밀번호</label><input class="input mono" id="pCur" type="password" inputmode="numeric" maxlength="' + st.adminPin.length + '" autocomplete="off"></div><div></div>' +
+        '<div class="field"><label for="pNew">새 비밀번호 (숫자 6자리)</label><input class="input mono" id="pNew" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>' +
+        '<div class="field"><label for="pNew2">한 번 더</label><input class="input mono" id="pNew2" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>' +
+        '</div><div><button class="btn primary" type="button" data-act="save-pin">비밀번호 바꾸기</button></div>' +
+        '<hr class="form-sep"><div class="field" style="max-width:320px"><label for="sLock">자동 잠금</label><select class="input" id="sLock">' +
+        UI.options([{ value: 5, label: '5분 동안 안 쓰면 잠금' }, { value: 10, label: '10분 동안 안 쓰면 잠금' }, { value: 30, label: '30분 동안 안 쓰면 잠금' }, { value: 0, label: '자동으로 잠그지 않음' }], +st.autoLockMin) +
+        '</select><span class="hint">비밀번호를 5번 틀리면 5분 동안 잠겨요.</span></div>');
+
+      h += section('개인정보 보호', '개인정보 처리방침과 보관 기간 관리',
+        '<p class="soft">처리방침은 앱이 실제로 다루는 정보에 맞춰 자동으로 만들어져요. 학부모 화면, 로그인 화면, 참가신청서에서 볼 수 있어요.</p>' +
+        '<div class="form-grid">' +
+        '<div class="field"><label for="pvOfficer">개인정보 보호책임자</label><input class="input" id="pvOfficer" value="' + esc(pv.officer || '') + '" placeholder="예: 관장 홍길동"></div>' +
+        '<div class="field"><label for="pvPhone">책임자 연락처</label><input class="input" id="pvPhone" type="tel" inputmode="numeric" value="' + esc(U.fmtPhone(pv.phone || '')) + '" placeholder="도장 전화 또는 휴대폰"></div>' +
+        '<div class="field"><label for="pvEmail">이메일 (선택)</label><input class="input" id="pvEmail" type="email" value="' + esc(pv.email || '') + '"></div>' +
+        '<div class="field"><label for="pvSince">처리방침 시행일</label><input class="input" id="pvSince" type="date" value="' + esc(pv.since || U.today()) + '"></div>' +
+        '</div><div class="hstack"><button class="btn primary" type="button" data-act="save-privacy">저장</button><button class="btn" type="button" data-act="view-privacy">' + UI.icon('lock') + '처리방침 보기</button></div>' +
+        '<hr class="form-sep"><div class="hstack"><span class="soft">보관 기간(퇴원·행사 종료 후 1년)이 지난 정보: <b>' + purgeN + '건</b></span>' +
+        '<button class="btn" type="button" data-act="purge"' + (purgeN ? '' : ' disabled') + '>' + UI.icon('trash') + '정리하기</button></div>');
 
       h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>');
 
@@ -65,11 +125,16 @@
 
       h += section('앱 정보', '1단계 · HTML 미리보기', '<ul class="soft" style="margin:0;padding-left:18px;line-height:1.9">' +
         '<li>지금: 출석 키오스크, 원생, 출석부, 회비장부, 체력측정, 알림장, 참가신청서, 승급심사 결과증</li>' +
-        '<li>2단계: 서버 연결로 관장님·학부모님 휴대폰 사이 데이터 공유, 앱 푸시 알림(등원·알림장·신청 마감)</li>' +
+        '<li>2단계: 서버(서울 리전) 연결로 관장님·학부모님 휴대폰 사이 데이터 공유, 앱 푸시 알림(등원·알림장·신청 마감)</li>' +
         '<li>3단계: 안드로이드 앱(APK)으로 포장해서 공기계와 학부모님 휴대폰에 설치</li></ul>');
 
       el.innerHTML = h;
 
+      el.querySelector('#sLock').onchange = function (e) {
+        st.autoLockMin = +e.target.value;
+        DB.save();
+        UI.toast(st.autoLockMin ? st.autoLockMin + '분 동안 안 쓰면 잠가요' : '자동 잠금을 껐어요');
+      };
       el.querySelector('#sSound').onchange = function (e) { st.kioskSound = e.target.checked; DB.save(); UI.toast(e.target.checked ? '출석 소리를 켰어요' : '출석 소리를 껐어요'); };
       var restoreFile = el.querySelector('#restoreFile');
       restoreFile.onchange = function () {
@@ -149,14 +214,27 @@
         },
         'save-pin': function () {
           var cur = el.querySelector('#pCur').value, nw = el.querySelector('#pNew').value, nw2 = el.querySelector('#pNew2').value;
-          if (cur !== st.adminPin) { UI.toast('지금 비밀번호가 맞지 않아요'); return; }
-          if (!/^\d{4}$/.test(nw)) { UI.toast('새 비밀번호는 숫자 4자리로 정해 주세요'); return; }
+          var r = App.checkAdminPin(cur);
+          if (r !== true) { UI.toast(r); return; }
+          if (!/^\d{6}$/.test(nw)) { UI.toast('새 비밀번호는 숫자 6자리로 정해 주세요'); return; }
+          if (weakPin(nw)) { UI.toast('같은 숫자나 연속된 숫자는 쓸 수 없어요'); return; }
           if (nw !== nw2) { UI.toast('새 비밀번호가 서로 달라요'); return; }
           st.adminPin = nw;
           DB.save();
-          ['#pCur', '#pNew', '#pNew2'].forEach(function (id) { el.querySelector(id).value = ''; });
           UI.toast('관리자 비밀번호를 바꿨어요');
+          App.refresh();
         },
+        'save-privacy': function () {
+          st.privacy = st.privacy || {};
+          st.privacy.officer = el.querySelector('#pvOfficer').value.trim();
+          st.privacy.phone = U.digits(el.querySelector('#pvPhone').value);
+          st.privacy.email = el.querySelector('#pvEmail').value.trim();
+          st.privacy.since = el.querySelector('#pvSince').value || U.today();
+          DB.save();
+          UI.toast('개인정보 보호책임자 정보를 저장했어요');
+        },
+        'view-privacy': function () { Parts.openPrivacy(); },
+        purge: purgeModal,
         backup: function () {
           var json = DB.exportJSON(), name = '태권도관리_백업_' + U.today() + '.json';
           var ok = U.download(name, json, 'application/json');

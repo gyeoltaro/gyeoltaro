@@ -32,10 +32,13 @@
   function defaultSettings() {
     return {
       dojangName: '우리 태권도장',
-      adminPin: '1234',
+      adminPin: '123456',
+      autoLockMin: 10,
       monthlyFee: 150000,
       account: '',
       kioskSound: true,
+      // 개인정보 처리방침에 들어가는 보호책임자 정보. cloud는 2단계 서버 연결 후 true
+      privacy: { officer: '', phone: '', email: '', since: '', cloud: false },
       classes: ['1부 14:00', '2부 15:00', '3부 16:00', '4부 17:00', '5부 18:00'],
       fitnessItems: [
         { key: 'jump', label: '제자리멀리뛰기', short: '멀리뛰기', unit: 'cm', better: 'high' },
@@ -137,6 +140,9 @@
     Object.keys(b).forEach(function (k) { if (d[k] == null) d[k] = b[k]; });
     var s = d.settings;
     Object.keys(b.settings).forEach(function (k) { if (s[k] == null) s[k] = b.settings[k]; });
+    Object.keys(b.settings.privacy).forEach(function (k) { if (s.privacy[k] == null) s.privacy[k] = b.settings.privacy[k]; });
+    // 퇴원일이 없던 예전 기록은 오늘을 퇴원일로 봅니다 (보관 기간을 넉넉하게 잡기 위해)
+    d.students.forEach(function (st) { if (st.status === 'left' && !st.leftAt) st.leftAt = U.today(); });
     return d;
   }
 
@@ -473,6 +479,52 @@
     return Object.keys(seen).sort().reverse();
   };
   DB.zeroItems = function () { var o = {}; EXAM_ITEMS.forEach(function (k) { o[k] = 0; }); return o; };
+
+  // ---- 개인정보 보관 기간 (퇴원 후 1년, 행사 종료 후 1년) ----
+  DB.purgeCutoff = function () { var d = new Date(); d.setFullYear(d.getFullYear() - 1); return U.ymd(d); };
+  DB.purgeDue = function () {
+    var cut = DB.purgeCutoff();
+    return state.students.filter(function (s) { return s.status === 'left' && !s.purged && s.leftAt && s.leftAt <= cut; });
+  };
+  DB.oldApps = function () {
+    var cut = DB.purgeCutoff();
+    return state.applications.filter(function (a) {
+      if (a.purged) return false;
+      var ev = DB.byId('events', a.eventId);
+      return ev && ev.date <= cut;
+    });
+  };
+  // 이름·연락처 등은 지우고, 회비 금액 기록만 장부용으로 남깁니다
+  DB.purgeStudent = function (id) {
+    var s = DB.student(id);
+    if (!s) return;
+    var anon = {
+      id: s.id, name: '정리된 퇴원생', gender: '', birth: '', school: '', grade: s.grade, className: s.className,
+      pin: '', guardians: [], joinDate: s.joinDate, status: 'left', leftAt: s.leftAt, fee: s.fee, memo: '', photo: null,
+      createdAt: s.createdAt, purged: true, purgedAt: U.today()
+    };
+    state.students = state.students.map(function (x) { return x.id === id ? anon : x; });
+    Object.keys(state.attendance).forEach(function (d) {
+      delete state.attendance[d][id];
+      if (!Object.keys(state.attendance[d]).length) delete state.attendance[d];
+    });
+    state.fitness = state.fitness.filter(function (f) { return f.studentId !== id; });
+    state.exams = state.exams.filter(function (x) { return x.studentId !== id; });
+    state.applications = state.applications.filter(function (a) { return a.studentId !== id; });
+    state.notices.forEach(function (n) {
+      if (n.target && n.target.studentIds) n.target.studentIds = n.target.studentIds.filter(function (x) { return x !== id; });
+      if (n.reads) delete n.reads[id];
+      n.replies = (n.replies || []).filter(function (r) { return r.studentId !== id; });
+    });
+    state.payments.forEach(function (p) { if (p.studentId === id) { p.memo = ''; p.ref = null; } });
+    save();
+  };
+  DB.purgeApps = function (apps) {
+    apps.forEach(function (a) {
+      a.signature = null; a.memo = ''; a.answer = ''; a.guardianName = ''; a.purged = true;
+    });
+    save();
+  };
 
   // ---- 백업·초기화 ----
   DB.exportJSON = function () { return JSON.stringify(state); };

@@ -103,27 +103,36 @@
   // ---------- 모달 ----------
   var modals = [];
   UI.modalOpen = function () { return modals.length > 0; };
+  // 뒤로가기·Esc로 맨 위 창 닫기. 잠금 화면(sticky)은 닫히지 않고 그대로 남습니다.
   UI.closeTop = function () {
     if (!modals.length) return false;
-    modals[modals.length - 1].close();
+    var top = modals[modals.length - 1];
+    if (!top.sticky) top.close();
     return true;
   };
-  /* opts: { title, html, wide, actions:[{label, kind, left, onClick(root, close) → false면 닫지 않음}], onMount(root, close), onClose, dismissable } */
+  UI.closeAll = function () {
+    modals.slice().reverse().forEach(function (m) { m.close(); });
+  };
+  UI.isTop = function (root) { return modals.length > 0 && modals[modals.length - 1].root === root; };
+  /* opts: { title, html, wide, actions:[{label, kind, left, onClick(root, close) → false면 닫지 않음}], onMount(root, close), onClose, dismissable,
+             sticky: 잠금 화면처럼 사용자가 닫을 수 없는 창, cls: 바깥 틀에 붙일 클래스 } */
   UI.modal = function (opts) {
     var back = document.createElement('div');
-    back.className = 'modal-back';
+    back.className = 'modal-back' + (opts.cls ? ' ' + opts.cls : '');
     var acts = (opts.actions || []).map(function (a, i) {
       return '<button type="button" class="btn ' + (a.kind || '') + (a.left ? ' left' : '') + '" data-mact="' + i + '">' + (a.icon ? UI.icon(a.icon) : '') + esc(a.label) + '</button>';
     }).join('');
     back.innerHTML =
       '<div class="modal' + (opts.wide ? ' wide' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(opts.title || '') + '">' +
-      '<div class="modal-head"><h2>' + esc(opts.title || '') + '</h2><button type="button" class="icon-btn" data-x aria-label="닫기">' + UI.icon('x') + '</button></div>' +
+      '<div class="modal-head"><h2>' + esc(opts.title || '') + '</h2>' + (opts.sticky ? '' : '<button type="button" class="icon-btn" data-x aria-label="닫기">' + UI.icon('x') + '</button>') + '</div>' +
       '<div class="modal-body">' + (opts.html || '') + '</div>' +
       (acts ? '<div class="modal-foot">' + acts + '</div>' : '') +
       '</div>';
     var root = back.querySelector('.modal');
     var closed = false;
     var entry = {
+      root: root,
+      sticky: !!opts.sticky,
       close: function () {
         if (closed) return;
         closed = true;
@@ -135,7 +144,7 @@
       }
     };
     back.addEventListener('click', function (e) {
-      if (e.target === back) { if (opts.dismissable !== false) entry.close(); return; }
+      if (e.target === back) { if (opts.dismissable !== false && !opts.sticky) entry.close(); return; }
       if (e.target.closest('[data-x]')) { entry.close(); return; }
       var b = e.target.closest('[data-mact]');
       if (b) {
@@ -194,39 +203,55 @@
     toastTimer = setTimeout(function () { el.remove(); if (toastEl === el) toastEl = null; }, action ? 5000 : 2600);
   };
 
-  // ---------- 비밀번호 4자리 입력 ----------
+  // ---------- 비밀번호 입력 ----------
+  /* opts: { title, sub, length(기본 4), check(pin) → true 또는 오류 문구, lockedMsg() → 잠겨 있으면 문구,
+             sticky: 닫을 수 없는 잠금 화면, extra: { label, fn } 아래쪽 보조 버튼 } */
   UI.pinPrompt = function (opts) {
     return new Promise(function (resolve) {
+      var len = opts.length || 4;
       var val = '', ok = false, onKey = null;
       var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'del'];
-      var html = '<p class="pin-msg" data-msg>' + esc(opts.sub || '4자리 번호를 눌러 주세요') + '</p>' +
-        '<div class="pin-dots" data-dots><i></i><i></i><i></i><i></i></div>' +
+      var html = '<p class="pin-msg" data-msg>' + esc(opts.sub || len + '자리 번호를 눌러 주세요') + '</p>' +
+        '<div class="pin-dots" data-dots>' + new Array(len + 1).join('<i></i>') + '</div>' +
         '<div class="pin-pad">' + keys.map(function (k) {
           if (k === 'clear') return '<button type="button" class="fn" data-k="clear">지우기</button>';
           if (k === 'del') return '<button type="button" class="fn" data-k="del" aria-label="한 칸 지우기">' + UI.icon('backspace') + '</button>';
           return '<button type="button" data-k="' + k + '">' + k + '</button>';
-        }).join('') + '</div>';
+        }).join('') + '</div>' +
+        (opts.extra ? '<button type="button" class="link-btn pin-extra" data-extra>' + esc(opts.extra.label) + '</button>' : '');
       var close = UI.modal({
         title: opts.title || '비밀번호',
         html: html,
+        sticky: opts.sticky,
+        cls: opts.sticky ? 'lock' : '',
         onClose: function () { if (onKey) document.removeEventListener('keydown', onKey); resolve(ok); },
         onMount: function (root) {
           var dots = root.querySelector('[data-dots]'), msg = root.querySelector('[data-msg]');
           function paint() {
             [].forEach.call(dots.children, function (d, i) { d.classList.toggle('on', i < val.length); });
           }
+          function say(text) {
+            msg.textContent = text;
+            msg.classList.add('err');
+            dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+          }
+          function locked() {
+            var m = opts.lockedMsg && opts.lockedMsg();
+            if (m) { val = ''; paint(); say(m); }
+            return !!m;
+          }
           function press(k) {
+            if (locked()) return;
             if (k === 'clear') val = '';
             else if (k === 'del') val = val.slice(0, -1);
-            else if (val.length < 4) val += k;
+            else if (val.length < len) val += k;
             paint();
-            if (val.length === 4) {
+            if (val.length === len) {
               setTimeout(function () {
-                if (opts.check(val)) { ok = true; close(); return; }
+                var r = opts.check(val);
+                if (r === true) { ok = true; close(); return; }
                 val = ''; paint();
-                msg.textContent = opts.error || '번호가 맞지 않아요. 다시 눌러 주세요.';
-                msg.classList.add('err');
-                dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+                say(typeof r === 'string' ? r : (opts.error || '번호가 맞지 않아요. 다시 눌러 주세요.'));
               }, 120);
             }
           }
@@ -234,11 +259,15 @@
             var b = e.target.closest('[data-k]');
             if (b) press(b.getAttribute('data-k'));
           });
+          var extra = root.querySelector('[data-extra]');
+          if (extra) extra.onclick = function () { close(); opts.extra.fn(); };
           onKey = function (e) {
-            if (/^\d$/.test(e.key)) press(e.key);
-            else if (e.key === 'Backspace') press('del');
+            if (!UI.isTop(root)) return;
+            if (/^\d$/.test(e.key)) { e.preventDefault(); press(e.key); }
+            else if (e.key === 'Backspace') { e.preventDefault(); press('del'); }
           };
           document.addEventListener('keydown', onKey);
+          locked();
         }
       });
     });

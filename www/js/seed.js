@@ -131,7 +131,7 @@
     [-2, -1, 0].forEach(function (off) {
       var m = U.addMonths(ym, off), end = U.monthEnd(m);
       students.forEach(function (s, idx) {
-        if (s.status === 'left' && off === 0) return;
+        if (s.status === 'left') return;
         if (s.status === 'paused' && off === 0) return;
         if (s.joinDate > end) return;
         var prob = off < 0 ? 0.97 : (dayNow >= 10 ? 0.74 : 0.42);
@@ -210,6 +210,7 @@
       choiceLabel: '참가 부문', choices: ['품새', '겨루기', '품새+겨루기'], askLabel: '체중 (kg)',
       description: '초등부·중등부 품새, 겨루기 개인전입니다.\n도장 단체 버스로 함께 이동하며 점심 도시락을 준비해 주세요.\n대회 전 2주 동안 토요일 특별 훈련이 있습니다.',
       consent: '위 대회에 자녀의 참가를 신청합니다. 대회 중 안전 수칙을 지키며, 경기 중 발생할 수 있는 경미한 부상에 대해 안내받았습니다.',
+      thirdParty: { to: '구 태권도협회 (대회 주최)', purpose: '대회 참가 접수 및 경기 진행', items: '이름, 생년월일, 성별, 소속 도장, 체급(체중)', period: '대회 종료 후 주최 측 기준에 따라 파기' },
       closed: false, createdAt: Date.now() - 86400000 * 4
     };
     var ev2 = {
@@ -243,6 +244,7 @@
         guardianName: s.guardians[0] ? s.guardians[0].name : '', agreed: true, signature: null,
         submittedAt: Date.now() - int(1, 72) * 3600000, status: '접수', paymentId: null, seen: true, by: 'parent'
       };
+      a.consents = { privacy: a.submittedAt, third: ev.thirdParty ? a.submittedAt : null, event: a.submittedAt };
       if (ev.askLabel.indexOf('체중') >= 0) a.answer = String(Math.round(18 + (U.age(s.birth) - 6) * 3.2 + noise(4)));
       if (ev.askLabel.indexOf('사이즈') >= 0) a.answer = pick(['120', '130', '140', '150']);
       Object.keys(extra || {}).forEach(function (k) { a[k] = extra[k]; });
@@ -341,6 +343,9 @@
 
     students.forEach(function (s) { delete s._girl; delete s._p; delete s._away; });
     st.ledgerStart = U.addMonths(ym, -2);
+    // 퇴원한 지 1년이 넘은 원생 (개인정보 정리 기능 체험용)
+    var leftDay = new Date(); leftDay.setMonth(leftDay.getMonth() - 14);
+    students[99].leftAt = U.ymd(leftDay);
     st.students = students;
     st.payments = payments;
     st.fitness = fitness;

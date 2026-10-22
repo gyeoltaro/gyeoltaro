@@ -171,8 +171,12 @@
         (ev.askLabel ? '<div class="field"><label for="evAnswer">' + esc(ev.askLabel) + '</label><input class="input" id="evAnswer"></div>' : '') +
         '<div class="field"><label for="evMemo">전하실 말씀 (선택)</label><textarea class="input" id="evMemo" style="min-height:72px" placeholder="알레르기, 이동 방법 등"></textarea></div>' +
         '<div class="field"><label for="evGuardian">보호자 성함 *</label><input class="input" id="evGuardian" value="' + esc(g ? g.name : '') + '"></div>' +
-        '<div class="consent">' + esc(ev.consent || '') + '</div>' +
-        '<label class="check"><input type="checkbox" id="evAgree">위 내용을 확인했고 동의합니다 *</label>' +
+        '<div class="consent-box"><label class="check"><input type="checkbox" id="evAgreePriv"><span><b>[필수]</b> 개인정보 수집·이용에 동의합니다</span></label>' + Parts.consentTable(ev) +
+        '<p class="small muted">동의하지 않을 수 있지만, 동의하지 않으면 참가 신청을 할 수 없어요.</p></div>' +
+        (ev.thirdParty ? '<div class="consent-box"><label class="check"><input type="checkbox" id="evAgree3"><span><b>[필수]</b> 개인정보 제3자 제공에 동의합니다</span></label>' + Parts.thirdPartyTable(ev.thirdParty) +
+          '<p class="small muted">동의하지 않을 수 있지만, 동의하지 않으면 주최 측 접수가 어려워 참가할 수 없어요.</p></div>' : '') +
+        '<div class="consent-box"><label class="check"><input type="checkbox" id="evAgree"><span><b>[필수]</b> 행사 안내를 확인했고 참가에 동의합니다</span></label><div class="consent">' + esc(ev.consent || '') + '</div></div>' +
+        '<button class="link-btn" type="button" data-act="privacy" style="align-self:flex-start">개인정보 처리방침 전체 보기</button>' +
         '<div class="field"><span class="label">보호자 서명 *</span><div class="sig" id="evSig"><canvas></canvas><span class="ph">여기에 손가락으로 서명해 주세요</span><button type="button" class="btn sm clear" data-act="sig-clear">다시 쓰기</button></div></div>' +
         (ev.fee ? '<p class="soft">참가비 <b class="num">' + esc(U.won(ev.fee)) + '</b>은(는) 신청 후 아래 계좌로 보내 주세요.</p>' + accountLine() : '') +
         '<button class="btn primary lg block" type="button" data-act="submit">' + UI.icon('send') + '참가신청서 제출</button>' +
@@ -188,6 +192,7 @@
       back: function () { App.back(); },
       'copy-acc': copyAcc,
       'sig-clear': function () { if (pad) pad.clear(); },
+      privacy: function () { Parts.openPrivacy(); },
       cancel: function () {
         UI.confirm({ title: '신청 취소', message: ev.title + ' 신청을 취소할까요?', ok: '신청 취소', danger: true }).then(function (ok) {
           if (!ok) return;
@@ -203,14 +208,19 @@
         if (ev.choices && ev.choices.length && !choiceEl) { UI.toast((ev.choiceLabel || '선택 항목') + '을(를) 골라 주세요'); return; }
         var guardian = el.querySelector('#evGuardian').value.trim();
         if (!guardian) { UI.toast('보호자 성함을 적어 주세요'); el.querySelector('#evGuardian').focus(); return; }
-        if (!el.querySelector('#evAgree').checked) { UI.toast('동의 항목에 체크해 주세요'); return; }
+        if (!el.querySelector('#evAgreePriv').checked) { UI.toast('개인정보 수집·이용 동의에 체크해 주세요'); return; }
+        var third = el.querySelector('#evAgree3');
+        if (third && !third.checked) { UI.toast('개인정보 제3자 제공 동의에 체크해 주세요'); return; }
+        if (!el.querySelector('#evAgree').checked) { UI.toast('참가 동의에 체크해 주세요'); return; }
+        var now = Date.now();
         if (!pad || pad.isEmpty()) { UI.toast('보호자 서명을 해 주세요'); return; }
         var ans = el.querySelector('#evAnswer');
         DB.upsert('applications', {
           id: U.uid(), eventId: ev.id, studentId: s.id,
           choice: choiceEl ? choiceEl.value : '', answer: ans ? ans.value.trim() : '',
           memo: el.querySelector('#evMemo').value.trim(), guardianName: guardian, agreed: true,
-          signature: pad.toDataURL(), submittedAt: Date.now(), status: '접수', paymentId: null, seen: false, by: 'parent'
+          signature: pad.toDataURL(), submittedAt: now, status: '접수', paymentId: null, seen: false, by: 'parent',
+          consents: { privacy: now, third: third ? now : null, event: now }
         });
         App.refresh();
         window.scrollTo(0, 0);

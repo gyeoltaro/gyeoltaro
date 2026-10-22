@@ -64,7 +64,9 @@
   };
 
   App.setSession = function (s) {
-    while (UI.closeTop()) { /* 열려 있는 창을 모두 닫고 화면을 바꿉니다 */ }
+    UI.closeAll();
+    App.locked = false;
+    resetIdle();
     App.session = s;
     App.stack = [];
     App.view = 'home';
@@ -95,6 +97,82 @@
     App.setSession({ role: 'admin' });
     if (ret) { App.view = 'students'; App.params = ret.params || {}; App.render(true); syncBack(); }
   }
+
+  // ---------- 관리자 비밀번호: 5번 틀리면 5분 잠금 ----------
+  var MAX_FAILS = 5, LOCK_MIN = 5;
+  App.pinLockMsg = function () {
+    var until = DB.device.pinLockUntil || 0;
+    if (Date.now() >= until) return null;
+    return '비밀번호를 ' + MAX_FAILS + '번 틀려서 잠겼어요. ' + Math.ceil((until - Date.now()) / 60000) + '분 뒤에 다시 해 주세요.';
+  };
+  App.checkAdminPin = function (pin) {
+    var lockMsg = App.pinLockMsg();
+    if (lockMsg) return lockMsg;
+    var d = DB.device;
+    if (pin === DB.settings().adminPin) { d.pinFails = 0; d.pinLockUntil = 0; DB.saveDevice(); return true; }
+    d.pinFails = (d.pinFails || 0) + 1;
+    if (d.pinFails >= MAX_FAILS) {
+      d.pinFails = 0;
+      d.pinLockUntil = Date.now() + LOCK_MIN * 60000;
+      DB.saveDevice();
+      return App.pinLockMsg();
+    }
+    DB.saveDevice();
+    return '비밀번호가 맞지 않아요. (' + d.pinFails + '/' + MAX_FAILS + '번 틀림)';
+  };
+  App.askAdminPin = function (opts) {
+    var len = DB.settings().adminPin.length;
+    return UI.pinPrompt({
+      title: opts.title, sub: opts.sub || '관리자 비밀번호 ' + len + '자리를 눌러 주세요', length: len,
+      check: App.checkAdminPin, lockedMsg: App.pinLockMsg, sticky: opts.sticky, extra: opts.extra
+    });
+  };
+
+  // ---------- 자동 잠금: 관리자 화면을 한동안 안 쓰면 비밀번호로 잠급니다 ----------
+  var lastActive = Date.now(), lastSaved = 0;
+  function adminish() {
+    var s = App.session;
+    return !!s && (s.role === 'admin' || (s.role === 'parent' && !!s.preview));
+  }
+  function resetIdle() { lastActive = Date.now(); lastSaved = 0; saveActive(); }
+  function saveActive() {
+    if (!DB.device) return;
+    lastSaved = Date.now();
+    DB.device.lastActive = lastActive;
+    DB.saveDevice();
+  }
+  function touch() {
+    if (App.locked) return;
+    lastActive = Date.now();
+    if (adminish() && lastActive - lastSaved > 15000) saveActive();
+  }
+  function checkIdle() {
+    if (!adminish() || App.locked) return;
+    var min = +DB.settings().autoLockMin;
+    if (min > 0 && Date.now() - lastActive >= min * 60000) App.lock();
+  }
+  App.lock = function () {
+    if (App.locked) return;
+    App.locked = true;
+    try { if (document.activeElement) document.activeElement.blur(); } catch (e) {}
+    App.askAdminPin({
+      title: '잠금 해제', sticky: true,
+      sub: '한동안 쓰지 않아 화면을 잠갔어요. 관리자 비밀번호를 눌러 주세요.',
+      extra: { label: '처음 화면으로 나가기', fn: function () { App.logout(); } }
+    }).then(function (ok) {
+      if (!ok) return;
+      App.locked = false;
+      resetIdle();
+    });
+  };
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) {
+    document.addEventListener(ev, touch, { capture: true, passive: true });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') checkIdle();
+    else if (adminish() && !App.locked) saveActive();
+  });
+  setInterval(checkIdle, 15000);
 
   // ---------- 뒤로가기 ----------
   // 브라우저·안드로이드 뒤로 버튼이 앱 밖으로 나가지 않고 모달 닫기 → 이전 화면 → 홈 순서로 동작하게 합니다.
@@ -160,15 +238,16 @@
         '<span>학부모 <b>' + esc(demoPhone) + '</b> · 출석번호 <b>' + esc(demoKid.pin) + '</b></span>' +
         '<button class="btn sm" type="button" data-act="demo-parent">학부모 화면 바로 보기</button></div>';
     }
-    h += '<p class="fine">1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요.</p></div></div>';
+    h += '<p class="fine">1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ' +
+      '<button class="link-btn" type="button" data-act="privacy">개인정보 처리방침</button></p></div></div>';
     root.innerHTML = h;
     UI.bind(root, {
       kiosk: function () { App.setSession({ role: 'kiosk' }); },
       admin: function () {
-        UI.pinPrompt({ title: '관장 · 사범님 확인', sub: '관리자 비밀번호 4자리를 눌러 주세요', check: function (p) { return p === DB.settings().adminPin; } })
-          .then(function (ok) { if (ok) App.setSession({ role: 'admin' }); });
+        App.askAdminPin({ title: '관장 · 사범님 확인' }).then(function (ok) { if (ok) App.setSession({ role: 'admin' }); });
       },
       parent: parentLogin,
+      privacy: function () { Parts.openPrivacy(); },
       'demo-parent': function () {
         var kids = DB.studentsByPhone(demoKid.guardians[0].phone);
         App.setSession({ role: 'parent', ids: kids.map(function (k) { return k.id; }), cur: demoKid.id });
@@ -181,7 +260,8 @@
       title: '학부모 로그인',
       html: '<div class="field"><label for="plPhone">보호자 휴대폰 번호</label><input class="input" id="plPhone" type="tel" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" autofocus></div>' +
         '<div class="field"><label for="plPin">아이 출석번호 4자리</label><input class="input mono" id="plPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>' +
-        '<p class="fine">원생 등록 때 도장에 알려 주신 번호로 들어와요. 형제·자매는 한 번에 함께 보여요.</p><p class="bad-t small" data-err></p>',
+        '<p class="fine">원생 등록 때 도장에 알려 주신 번호로 들어와요. 형제·자매는 한 번에 함께 보여요.</p><p class="bad-t small" data-err></p>' +
+        '<button class="link-btn" type="button" data-privacy style="align-self:flex-start">개인정보 처리방침 보기</button>',
       actions: [{ label: '취소', kind: 'quiet' }, {
         label: '들어가기', kind: 'primary', onClick: function (root) {
           var phone = root.querySelector('#plPhone').value, pin = U.digits(root.querySelector('#plPin').value);
@@ -193,6 +273,7 @@
         }
       }],
       onMount: function (m) {
+        m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
         m.querySelector('#plPin').addEventListener('keydown', function (e) {
           if (e.key === 'Enter') m.querySelector('[data-mact="1"]').click();
         });
@@ -272,7 +353,9 @@
       title: st.dojangName,
       html: '<div class="hstack">' + UI.av(kid, 'sm') + '<b>' + esc(kid.name) + '</b><span class="small muted">' + esc(UI.studentSub(kid)) + '</span></div>' +
         '<dl class="kv"><dt>출석번호</dt><dd class="mono">' + esc(kid.pin) + '</dd><dt>급수</dt><dd>' + UI.belt(kid.grade) + '</dd></dl>' +
-        '<p class="fine">알림장 답글로 관장님께 언제든 연락할 수 있어요.</p>',
+        '<p class="fine">알림장 답글로 관장님께 언제든 연락할 수 있어요.</p>' +
+        '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button>',
+      onMount: function (m) { m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); }; },
       actions: s.preview ? [{ label: '관리자로 돌아가기', kind: 'primary', onClick: exitPreview }]
         : [{ label: '로그아웃', kind: 'danger', onClick: function () { App.logout(); } }, { label: '닫기', kind: 'primary' }]
     });
@@ -320,8 +403,10 @@
       var s = DB.device.session;
       if (s && s.role === 'parent' && !(s.ids || []).some(function (id) { return DB.student(id); })) s = null;
       App.session = s || null;
+      lastActive = DB.device.lastActive || 0;
       App.render(true);
       syncBack();
+      if (adminish()) checkIdle(); else resetIdle();
     }).catch(function (e) {
       console.error(e);
       root.innerHTML = '<div class="boot">앱을 불러오지 못했어요. 새로고침해 주세요. (' + esc(e.message) + ')</div>';
