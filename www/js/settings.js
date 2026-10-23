@@ -54,15 +54,18 @@
       '<div class="hstack"><button class="btn primary" type="button" data-act="connect">' + UI.icon('lock') + '우리 도장 서버 연결</button>' +
       '<a class="btn" href="manual.html#server" target="_blank" rel="noopener">' + UI.icon('info') + '서버 만드는 방법</a></div>');
   }
-  function rulesView(emails) {
+  function rulesView(emails, why) {
     var text = Cloud.rulesText(emails);
     UI.modal({
       title: 'Firestore 보안 규칙', wide: true,
-      html: '<p class="soft">Firebase 콘솔 → Firestore Database → 규칙 탭에 있던 내용을 모두 지우고 붙여 넣은 뒤 "게시"를 누르세요.</p>' +
+      html: (why ? '<div class="notice-bar">' + UI.icon('alert') + '<span>' + esc(why) + '</span></div>' : '') +
+        '<p class="soft">Firebase 콘솔 → Firestore Database → 규칙 탭에 있던 내용을 모두 지우고 붙여 넣은 뒤 "게시"를 누르세요.</p>' +
         '<textarea class="input mono" readonly style="min-height:260px;font-size:12px">' + esc(text) + '</textarea>',
       actions: [{ label: '규칙 복사', icon: 'copy', onClick: function () { U.copy(text).then(function (ok) { UI.toast(ok ? '규칙을 복사했어요' : '복사하지 못했어요'); }); return false; } }, { label: '닫기', kind: 'primary' }]
     });
   }
+
+  Cloud.rulesView = rulesView;
 
   // ---------- 백업 (비밀번호로 암호화) ----------
   function backupModal() {

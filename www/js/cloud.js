@@ -704,6 +704,14 @@
       return pushToken();
     }).then(savePush).catch(function (e) {
       DB.device.pushError = (e && (e.code || e.message)) || 'unknown'; DB.saveDevice();
+      // 알림 주소 저장을 서버가 거절: Firebase에 붙여 넣은 보안 규칙이 앱 푸시가 생기기 전 것이에요
+      if (e && e.code === 'permission-denied') {
+        var err = new Error(Cloud.role === 'admin'
+          ? 'Firebase의 보안 규칙이 예전 것이에요. 지금 열리는 규칙을 복사해 Firebase 콘솔 → Firestore Database → 규칙에 붙여 넣고 게시한 뒤 다시 알림 켜기를 눌러 주세요.'
+          : '도장 서버 설정을 새로 해야 알림을 켤 수 있어요. 도장에 알려 주세요.');
+        err.rules = Cloud.role === 'admin';
+        throw err;
+      }
       throw new Error(e && e.code ? '알림을 켜지 못했어요 (' + e.code + ')' : (e && e.message) || '알림을 켜지 못했어요');
     });
   };
@@ -792,7 +800,10 @@
 
   Cloud.pushToggle = function (on) {
     var p = on ? Cloud.enablePush() : Cloud.disablePush();
-    return p.then(function () { UI.toast(on ? '알림을 켰어요' : '알림을 껐어요'); }, function (e) { UI.toast(e.message); }).then(function () { if (window.App) App.refresh(); });
+    return p.then(function () { UI.toast(on ? '알림을 켰어요' : '알림을 껐어요'); }, function (e) {
+      if (e.rules) Cloud.rulesView(DB.settings().adminEmails, e.message);
+      else UI.toast(e.message);
+    }).then(function () { if (window.App) App.refresh(); });
   };
 
   // 같은 보호자 번호를 쓰는 형제가 새로 등록되면 이미 연결된 학부모 기기에도 보이게 합니다
