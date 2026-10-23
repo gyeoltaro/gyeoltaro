@@ -411,6 +411,7 @@
           var pl = Cloud.pushLine('새 알림장·출석');
           return '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-push="' + (pl.act === 'push-on' ? 1 : 0) + '">' + pl.label + '</button>' : '') + '</div>';
         })() : '') +
+        (Cloud.enabled && Cloud.started && !s.preview ? '<div><button class="link-btn" type="button" data-pushcheck>알림이 안 오나요? 알림 점검</button></div>' : '') +
         '<div class="hstack">' + (DB.hasConsent(kid) ? '<button class="btn" type="button" data-consent>' + UI.icon('check') + '개인정보 동의 내역</button>' : '') +
         '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button>' +
         (Server.preset ? '' : '<a class="btn" href="parents.html" target="_blank" rel="noopener">' + UI.icon('info') + '사용 안내</a>') + '</div>',
@@ -418,6 +419,8 @@
         m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
         var cb = m.querySelector('[data-consent]');
         if (cb) cb.onclick = function () { close(); Parts.consentManage(kid); };
+        var pc = m.querySelector('[data-pushcheck]');
+        if (pc) pc.onclick = function () { close(); Cloud.pushCheck(); };
         var pb = m.querySelector('[data-push]');
         if (pb) pb.onclick = function () { var on = pb.getAttribute('data-push') === '1'; close(); Cloud.pushToggle(on); };
       },

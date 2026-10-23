@@ -674,16 +674,19 @@
   };
   function pushToken() {
     return (fb.messaging ? Promise.resolve() : loadScript(MSG_SDK)).then(function () {
-      return navigator.serviceWorker.register('sw.js');
+      // 알림 주소는 작동 중인 서비스 워커에서만 받을 수 있어서, 등록한 뒤 준비될 때까지 기다려요
+      return navigator.serviceWorker.register('sw.js').then(function () { return navigator.serviceWorker.ready; });
     }).then(function (reg) {
       var opts = { serviceWorkerRegistration: reg }, key = DB.settings().pushKey;
       if (key) opts.vapidKey = key;
       return fb.messaging().getToken(opts);
     });
   }
+  // 서버에 저장이 끝난 뒤에만 "알림 받는 중"으로 표시해요 (보안 규칙이 예전 것이면 저장이 거절될 수 있어요)
   function savePush(token) {
-    DB.device.pushToken = token; DB.saveDevice();
-    return db.doc('push/' + auth.currentUser.uid).set({ token: token, role: Cloud.role === 'admin' ? 'admin' : 'parent', at: Date.now() });
+    return db.doc('push/' + auth.currentUser.uid).set({ token: token, role: Cloud.role === 'admin' ? 'admin' : 'parent', at: Date.now() }).then(function () {
+      DB.device.pushToken = token; DB.device.pushError = null; DB.saveDevice();
+    });
   }
   // 기기에 기록이 없어도(브라우저 저장소를 지운 경우 등) 서버의 알림 주소는 지워요
   function dropPush() {
@@ -699,7 +702,10 @@
     return Notification.requestPermission().then(function (p) {
       if (p !== 'granted') throw new Error(p === 'denied' ? '알림이 차단되어 있어요. 휴대폰 설정에서 이 앱(브라우저)의 알림을 허용해 주세요.' : '알림을 허용해야 받을 수 있어요');
       return pushToken();
-    }).then(savePush).catch(function (e) { throw new Error(e && e.code ? '알림을 켜지 못했어요 (' + e.code + ')' : (e && e.message) || '알림을 켜지 못했어요'); });
+    }).then(savePush).catch(function (e) {
+      DB.device.pushError = (e && (e.code || e.message)) || 'unknown'; DB.saveDevice();
+      throw new Error(e && e.code ? '알림을 켜지 못했어요 (' + e.code + ')' : (e && e.message) || '알림을 켜지 못했어요');
+    });
   };
   Cloud.disablePush = dropPush;
   // 앱을 열 때마다 알림 주소가 바뀌었는지 확인해요
@@ -716,6 +722,74 @@
     if (st === 'ios-home') return { text: '아이폰은 사파리 공유 버튼 → "홈 화면에 추가"를 한 뒤, 홈 화면 아이콘으로 열어야 알림을 받을 수 있어요(iOS 16.4 이상).' };
     return { text: '이 브라우저는 알림을 지원하지 않아요. 크롬이나 사파리 최신 버전에서 열어 주세요.' };
   };
+  // ---------- 알림 점검: 이 기기에서 어느 단계가 막혔는지 보여 줘요 ----------
+  Cloud.pushCheck = function () {
+    var admin = Cloud.role === 'admin', st = DB.settings();
+    var ios = U.isIOS(), home = U.standalone();
+    var supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    var perm = supported ? Notification.permission : 'unsupported';
+    function item(key, title, tone, state, help) {
+      return '<li data-k="' + key + '"><div class="hstack" style="flex-wrap:nowrap"><b style="flex:1">' + esc(title) + '</b>' + UI.pill(state, tone, true) + '</div>' +
+        (help ? '<p class="fine" style="margin:2px 0 0">' + esc(help) + '</p>' : '') + '</li>';
+    }
+    var rows = [
+      st.push ? item('setting', '도장 설정 "앱 푸시 사용"', 'good', '켜짐')
+        : item('setting', '도장 설정 "앱 푸시 사용"', 'bad', '꺼짐', '관리자 화면 → 설정 → 앱 푸시 알림에서 "앱 푸시 사용"을 체크해야 알림이 나가요.'),
+      ios && !home ? item('device', '이 휴대폰', 'bad', '사파리에서 열림', '아이폰은 사파리 공유 버튼 → "홈 화면에 추가"를 한 뒤, 홈 화면 아이콘으로 열어야 알림을 받을 수 있어요(iOS 16.4 이상).')
+        : item('device', '이 휴대폰', 'good', ios ? '아이폰 홈 화면 앱' : '브라우저'),
+      supported ? item('support', '알림 기능 지원', 'good', '지원') : item('support', '알림 기능 지원', 'bad', '지원 안 함', '크롬(안드로이드)이나 아이폰 홈 화면 앱(iOS 16.4 이상)에서 열어 주세요.'),
+      perm === 'granted' ? item('perm', '알림 허용', 'good', '허용됨')
+        : perm === 'denied' ? item('perm', '알림 허용', 'bad', '차단됨', ios ? '아이폰 설정 → 알림 → 태권도 관리 → 알림 허용을 켜 주세요.' : '크롬 주소창 왼쪽 자물쇠(또는 ⋮ → 설정 → 사이트 설정 → 알림)에서 이 사이트 알림을 허용으로 바꾼 뒤 다시 열어 주세요.')
+        : item('perm', '알림 허용', 'warn', perm === 'unsupported' ? '-' : '아직 안 물어봄', '아래 "알림 다시 켜기"를 누르고 "허용"을 눌러 주세요.'),
+      item('sw', '알림 받는 프로그램(서비스 워커)', 'info', '확인 중…'),
+      item('token', '서버에 저장된 이 기기 알림 주소', 'info', '확인 중…'),
+      item('who', '이 기기가 받는 알림', 'info', admin ? '새 참가신청 · 학부모 답글' : '새 알림장 · 출석', admin ? '알림장·출석 알림은 관리자 기기가 아니라 학부모 휴대폰으로 가요.' : '')
+    ];
+    UI.modal({
+      title: '알림 점검',
+      html: '<p class="soft">위에서부터 하나씩 확인해요. 빨간 항목을 고치면 알림이 와요.</p><ul class="pcheck" style="list-style:none;padding:0;margin:0;display:grid;gap:12px">' + rows.join('') + '</ul>' +
+        (DB.device.pushError ? '<p class="fine">지난번 알림 켜기 오류: <span class="mono">' + esc(DB.device.pushError) + '</span></p>' : '') +
+        '<p class="fine" data-result></p>',
+      actions: [
+        { label: '알림 다시 켜기', onClick: function (root, close) { close(); Cloud.pushToggle(true).then(function () { Cloud.pushCheck(); }); return false; } },
+        { label: '이 기기에 시험 알림', onClick: function (root) {
+          var out = root.querySelector('[data-result]');
+          if (!supported || Notification.permission !== 'granted') { out.textContent = '먼저 알림을 허용해 주세요.'; return false; }
+          navigator.serviceWorker.ready.then(function (reg) {
+            return reg.showNotification('시험 알림', { body: '이 알림이 보이면 휴대폰 알림 설정은 정상이에요.', icon: 'icons/icon-192.png', tag: 'test' });
+          }).then(function () { out.textContent = '시험 알림을 띄웠어요. 안 보이면 휴대폰의 방해 금지·알림 설정을 확인해 주세요.'; }, function (e) { out.textContent = '시험 알림을 띄우지 못했어요: ' + (e && e.message); });
+          return false;
+        } }
+      ].concat(admin ? [{ label: '서버에서 시험 알림', kind: 'primary', onClick: function (root) {
+        // 서버 프로그램을 거쳐 관리자 기기로 "학부모 답글" 알림이 한 번 와요. 시험용 기록은 바로 지워요
+        var out = root.querySelector('[data-result]'), id = '_pushtest_' + Date.now();
+        db.doc('nreplies/' + id).set({ nid: '_pushtest', sid: '_pushtest', body: '알림 시험', at: Date.now(), seen: false }).then(function () {
+          out.textContent = '서버에 시험을 요청했어요. 10초 안에 "학부모 답글이 왔어요" 알림이 오면 서버까지 정상이에요.';
+          setTimeout(function () { db.doc('nreplies/' + id).delete().catch(function () {}); }, 15000);
+        }, function (e) { out.textContent = '시험을 요청하지 못했어요: ' + msgOf(e); });
+        return false;
+      } }] : []).concat([{ label: '닫기', kind: admin ? '' : 'primary' }]),
+      onMount: function (root) {
+        function set(key, tone, state, help) {
+          var li = root.querySelector('[data-k="' + key + '"]');
+          if (li) li.outerHTML = item(key, li.querySelector('b').textContent, tone, state, help);
+        }
+        (supported ? navigator.serviceWorker.getRegistration() : Promise.resolve(null)).then(function (reg) {
+          if (reg && reg.active) set('sw', 'good', '작동 중');
+          else set('sw', 'bad', '없음', '앱을 완전히 닫았다가 다시 열어 주세요.');
+        });
+        db.doc('push/' + auth.currentUser.uid).get({ source: 'server' }).then(function (d) {
+          if (!d.exists) set('token', 'bad', '없음', '"알림 다시 켜기"를 눌러 주세요.');
+          else if (d.get('token') !== DB.device.pushToken) set('token', 'warn', '다시 켜기 필요', '"알림 다시 켜기"를 눌러 주세요.');
+          else set('token', 'good', '저장됨');
+        }, function (e) {
+          set('token', 'bad', e && e.code === 'permission-denied' ? '저장 권한 없음' : '확인 못 함',
+            e && e.code === 'permission-denied' ? '서버 보안 규칙이 예전 것이에요. 관장님이 설정 → 서버 · 관리자 계정 → 보안 규칙 보기에서 규칙을 복사해 Firebase에 다시 붙여 넣어 주세요.' : msgOf(e));
+        });
+      }
+    });
+  };
+
   Cloud.pushToggle = function (on) {
     var p = on ? Cloud.enablePush() : Cloud.disablePush();
     return p.then(function () { UI.toast(on ? '알림을 켰어요' : '알림을 껐어요'); }, function (e) { UI.toast(e.message); }).then(function () { if (window.App) App.refresh(); });

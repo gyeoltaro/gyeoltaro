@@ -43,7 +43,8 @@
       '<label class="check"><input type="checkbox" id="sPush"' + (st.push ? ' checked' : '') + '>앱 푸시 사용 (서버 프로그램을 올린 뒤 켜세요)</label>' +
       '<div class="field"><label for="sPushKey">웹 푸시 인증서 공개 키 (선택)</label><div class="hstack" style="flex-wrap:nowrap"><input class="input mono" id="sPushKey" value="' + esc(st.pushKey || '') + '" placeholder="비워 두면 기본 키를 써요" autocomplete="off"><button class="btn" type="button" data-act="save-pushkey">저장</button></div>' +
       '<span class="hint">Firebase 콘솔 → 프로젝트 설정 → 클라우드 메시징 → 웹 푸시 인증서에서 만든 키 쌍이에요.</span></div>' +
-      (st.push ? '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-act="' + pl.act + '">' + pl.label + '</button>' : '') + '</div>' : ''));
+      (st.push ? '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-act="' + pl.act + '">' + pl.label + '</button>' : '') + '</div>' : '') +
+      '<div><button class="btn" type="button" data-act="push-check">' + UI.icon('check') + '알림 점검</button></div>');
   }
   // 체험 모드: 아직 서버에 연결하지 않았을 때
   function serverSection() {
@@ -348,6 +349,7 @@
         'share-link': function () { Cloud.shareLinkModal(); },
         'push-on': function () { Cloud.pushToggle(true); },
         'push-off': function () { Cloud.pushToggle(false); },
+        'push-check': function () { Cloud.pushCheck(); },
         'save-pushkey': function () {
           var v = el.querySelector('#sPushKey').value.trim();
           if (v && !/^[A-Za-z0-9_-]{80,100}={0,2}$/.test(v)) { UI.toast('공개 키 모양이 맞지 않아요. "키 쌍" 값을 그대로 복사해 주세요.'); return; }

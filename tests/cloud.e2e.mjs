@@ -326,6 +326,30 @@ await t('학부모 참가신청서가 관리자에게 실시간으로 들어온�
   const hit = await waitPush(l => l.tag === 'application');
   if (!hit.uids.includes(aUid) || hit.uids.includes(pUid)) throw new Error(JSON.stringify(hit));
 });
+await t('알림 점검 화면이 단계별 상태를 보여 주고, 관리자 서버 시험 알림이 관리자에게 간다', async () => {
+  await A.evaluate(() => App.nav('settings'));
+  await A.click('[data-act="push-check"]');
+  await A.waitForSelector('.pcheck [data-k="token"] .pill:is(.good, .bad, .warn)');
+  const txt = await A.textContent('.pcheck');
+  if (!/켜짐/.test(txt) || !/새 참가신청/.test(txt)) throw new Error(txt);
+  await shot(A, 'c13-push-check');
+  const before = (await pushLog()).filter(l => l.tag === 'reply').length;
+  await A.click('.modal button:has-text("서버에서 시험 알림")');
+  const end = Date.now() + 30000;
+  let logs;
+  while (Date.now() < end && (logs = (await pushLog()).filter(l => l.tag === 'reply')).length <= before) await new Promise(r => setTimeout(r, 500));
+  const last = logs[logs.length - 1];
+  if (logs.length <= before || !last.uids.includes(aUid) || last.uids.includes(pUid)) throw new Error('test push: ' + JSON.stringify(logs));
+  await A.keyboard.press('Escape');
+  // 학부모 메뉴에서도 점검을 연다
+  await P.evaluate(() => App.nav('home'));
+  await P.click('[data-act="p-menu"]');
+  await P.click('.modal [data-pushcheck]');
+  await P.waitForSelector('.pcheck [data-k="token"] .pill:is(.good, .bad, .warn)');
+  if (!/새 알림장/.test(await P.textContent('.pcheck'))) throw new Error('parent check');
+  await shot(P, 'c14-push-check-parent');
+  await P.keyboard.press('Escape');
+});
 await t('원생 정보에 연결된 학부모 기기가 보인다', async () => {
   await A.evaluate(id => App.go('students', { id }), kids[0]);
   await A.waitForSelector('text=기기 1대 연결');
