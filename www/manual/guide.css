@@ -90,6 +90,9 @@ details.dev summary{ cursor:pointer; font-weight:600; }
 .facts{ display:grid; gap:6px; }
 .facts div{ display:flex; gap:10px; }
 .facts b{ flex:none; width:68px; color:var(--accent-ink); }
+.table-like{ display:grid; gap:8px; }
+.table-like div{ display:flex; gap:12px; }
+.table-like b:first-child{ flex:none; width:92px; color:var(--accent-ink); }
 /* 인쇄·PDF: 차례와 앱 주소를 첫 장에, 큰 장은 새 쪽에서 시작, 색 상자는 그대로 */
 @media print{
   @page{ size:A4; }
@@ -106,7 +109,9 @@ details.dev summary{ cursor:pointer; font-weight:600; }
   .print-toc li{ margin:2px 0; }
   .print-addr{ font-size:13px; color:var(--ink-soft); }
   section{ padding-top:18px; }
-  #server, #daily, #push, #parents{ break-before:page; }
+  #server, #push{ break-before:page; }
+  dl.faq dt{ margin-top:10px; }
+  dl.faq dd{ margin-top:2px; }
   h2, h3{ break-after:avoid; }
   h2{ padding-top:0; border-top:0; }
   ol.steps > li, .note, .warn, .tip, .card, dl.faq dt, dl.faq dd{ break-inside:avoid; }
@@ -121,7 +126,7 @@ details.dev summary{ cursor:pointer; font-weight:600; }
   .chips{ display:none; }
   .card.cmd .btn{ display:none; }
   details.dev{ display:none; }
-  #screens, #menu{ break-before:page; }
+  #menu{ break-before:page; }
   .single figure.phones img{ max-width:175px; }
   main a[href^="http"]:not(.raw)::after{ content:" (" attr(href) ")"; font-size:.85em; color:var(--muted); word-break:break-all; }
 }
