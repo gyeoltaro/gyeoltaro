@@ -275,7 +275,7 @@
     h += '<p class="fine">' + (cloud
       ? '자료는 도장 서버(서울)에 저장되어 도장 태블릿, 관장님 휴대폰, 학부모 휴대폰이 같은 정보를 봐요. ' + (cs ? UI.pill(cs.text, cs.tone, true) + ' ' : '') + (Cloud.role === 'admin' && Cloud.email() ? '<span class="nowrap">' + esc(Cloud.email()) + '</span> ' : '')
       : free ? '학부모님은 도장에서 받은 링크로 열어 주세요. ' : '1단계 미리보기예요. 모든 정보는 이 기기에만 저장되고, 다른 휴대폰과는 아직 공유되지 않아요. ') +
-      (free ? '<a class="link-btn" href="manual.html" target="_blank" rel="noopener">사용설명서</a> · ' : '') +
+      (free ? '<a class="link-btn" href="parents.html" target="_blank" rel="noopener">학부모 안내</a> · <a class="link-btn" href="manual.html" target="_blank" rel="noopener">관리자 설명서</a> · ' : '') +
       '<button class="link-btn" type="button" data-act="privacy">개인정보 처리방침</button></p></div></div>';
     root.innerHTML = h;
     UI.bind(root, {
@@ -412,7 +412,8 @@
           return '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-push="' + (pl.act === 'push-on' ? 1 : 0) + '">' + pl.label + '</button>' : '') + '</div>';
         })() : '') +
         '<div class="hstack">' + (DB.hasConsent(kid) ? '<button class="btn" type="button" data-consent>' + UI.icon('check') + '개인정보 동의 내역</button>' : '') +
-        '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button></div>',
+        '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button>' +
+        (Server.preset ? '' : '<a class="btn" href="parents.html" target="_blank" rel="noopener">' + UI.icon('info') + '사용 안내</a>') + '</div>',
       onMount: function (m, close) {
         m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
         var cb = m.querySelector('[data-consent]');

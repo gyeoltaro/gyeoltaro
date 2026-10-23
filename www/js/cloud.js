@@ -953,7 +953,7 @@
     var st = DB.settings();
     var msg = '[' + st.dojangName + '] 학부모 앱 초대 (' + siblings.map(function (x) { return x.name; }).join(', ') + ')\n' +
       '아래 링크를 열고 "연결하기"를 누르면 우리 아이 출석, 알림장, 참가신청서를 볼 수 있어요. 7일 안에 한 번 쓸 수 있어요.\n' +
-      Cloud.link(code) + '\n초대 코드: ' + Cloud.fmtCode(code);
+      Cloud.link(code) + '\n초대 코드: ' + Cloud.fmtCode(code) + '\n사용 안내: ' + Cloud.appUrl() + 'parents.html';
     UI.modal({
       title: '학부모 앱 초대 코드',
       html: '<p class="soft">' + esc(siblings.map(function (x) { return x.name; }).join(', ')) + ' 보호자(' + esc(U.fmtPhone(phone)) + ')에게 보낼 코드예요. 7일 안에 한 번만 쓸 수 있어요.</p>' +

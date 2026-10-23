@@ -218,7 +218,8 @@
       h += section('앱 정보', '태권도 통합 관리 · 무료 배포판',
         '<p class="soft">이 앱은 무료로 나눠 드리는 프로그램이에요. 도장 자료는 각 도장이 만든 Firebase 서버(관장님 구글 계정)에만 저장되고, 앱을 만든 사람은 볼 수 없어요.</p>' +
         '<p class="fine">프로그램 오류로 생긴 손해는 책임질 수 없어요. 한 달에 한 번은 위 "백업 파일 만들기"로 백업해 두세요. 개인정보를 다루는 책임(보호책임자 지정, 동의서, 보관 기간 관리)은 각 도장에 있어요.</p>' +
-        (Server.preset ? '' : '<div><a class="btn" href="manual.html" target="_blank" rel="noopener">' + UI.icon('info') + '사용설명서</a></div>'));
+        (Server.preset ? '' : '<div class="hstack"><a class="btn" href="manual.html" target="_blank" rel="noopener">' + UI.icon('info') + '관리자 설명서</a>' +
+          '<a class="btn" href="parents.html" target="_blank" rel="noopener">' + UI.icon('users') + '학부모용 안내</a></div>'));
 
       el.innerHTML = h;
 
