@@ -128,5 +128,6 @@ details.dev summary{ cursor:pointer; font-weight:600; }
   details.dev{ display:none; }
   #menu{ break-before:page; }
   .single figure.phones img{ max-width:175px; }
+  .single #push{ break-before:auto; }
   main a[href^="http"]:not(.raw)::after{ content:" (" attr(href) ")"; font-size:.85em; color:var(--muted); word-break:break-all; }
 }

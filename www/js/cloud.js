@@ -283,8 +283,9 @@
   function parentDocChanged() {
     var me = Cloud.user && raw.parents[Cloud.user.uid];
     if (!me) {
-      // 도장에서 이 기기 연결을 끊었을 때
+      // 도장에서 이 기기 연결을 끊었을 때 (기기 옮기기 코드는 도장 쪽에서 함께 지워요)
       stop();
+      dropTransfer(null);
       dropPush().then(function () { return auth.signOut(); }).then(function () {
         Cloud.role = 'none'; Cloud.parentDoc = null; remember();
         if (window.App) { App.setSession(null); UI.toast('도장에서 이 기기의 학부모 앱 연결을 끊었어요'); }
@@ -352,6 +353,8 @@
       Cloud.started = true;
       if (dirty) flushNow();
       refreshPush();
+      prepareTransfer();
+      checkRules();
     });
   };
 
@@ -589,7 +592,7 @@
   Cloud.unlinkSelf = function () {
     var u = auth.currentUser;
     stop();
-    return dropPush().then(function () { return db.doc('parents/' + u.uid).delete().catch(function () {}); }).then(function () { return auth.signOut(); }).then(function () {
+    return dropPush().then(function () { return dropTransfer(u); }).then(function () { return db.doc('parents/' + u.uid).delete().catch(function () {}); }).then(function () { return auth.signOut(); }).then(function () {
       Cloud.role = 'none'; Cloud.parentDoc = null; DB._replaceState(null); remember();
     });
   };
@@ -615,7 +618,9 @@
   Cloud.disconnect = function (next, code) {
     stop();
     var u = auth && auth.currentUser;
-    var leave = dropPush().then(function () { return u && u.isAnonymous ? db.doc('parents/' + u.uid).delete().catch(function () {}) : null; });
+    var leave = dropPush().then(function () {
+      return u && u.isAnonymous ? dropTransfer(u).then(function () { return db.doc('parents/' + u.uid).delete().catch(function () {}); }) : null;
+    });
     return leave.then(function () { return u ? auth.signOut() : null; }).catch(function () {}).then(function () {
       return db ? db.terminate().then(function () { return db.clearPersistence(); }) : null;
     }).catch(function () {}).then(function () {
@@ -979,9 +984,8 @@
     }
     UI.modal({
       title: '학부모 앱 시작',
-      html: (code ? '<p class="soft">도장에서 보낸 초대 코드가 들어 있어요. <b>연결하기</b>를 눌러 주세요. 형제·자매는 한 코드로 함께 연결돼요.</p>'
+      html: (code ? '<p class="soft">도장에서 보낸 초대 코드로 연결하고 있어요. 잠시만 기다려 주세요.</p>'
         : '<p class="soft">도장에서 문자로 받은 <b>초대 코드 8자리</b>를 입력해 주세요. 형제·자매는 한 코드로 함께 연결돼요.</p>') +
-        (U.isIOS() && !U.standalone() ? '<div class="notice-bar">' + UI.icon('info') + '<span>아이폰은 먼저 화면 아래 <b>공유</b> 버튼 → <b>홈 화면에 추가</b>를 누르고, 홈 화면에 생긴 아이콘으로 열어서 연결해 주세요. 사파리에서 연결하면 홈 화면 아이콘에서는 다시 연결해야 해요.</span></div>' : '') +
         '<div class="field"><label for="ivCode">초대 코드</label><input class="input mono" id="ivCode" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" value="' + esc(code ? Cloud.fmtCode(String(code).toUpperCase().replace(/[^A-Z0-9]/g, '')) : '') + '" style="letter-spacing:.15em;text-transform:uppercase" autofocus></div>' +
         '<p class="bad-t small" data-err></p>' +
         '<button class="link-btn" type="button" data-privacy style="align-self:flex-start">개인정보 처리방침 보기</button>',
@@ -993,9 +997,73 @@
           return false;
         }
       }],
-      onMount: function (root) { root.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); }; }
+      onMount: function (root) {
+        root.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
+        // 도장이 보낸 링크로 열었으면 버튼을 누르지 않아도 바로 연결해요 (안 되면 이유와 함께 코드 칸이 그대로 남아요)
+        if (code) root.parentNode.querySelector('[data-mact="1"]').click();
+      }
     });
   };
+
+  // ---------- 아이폰: 홈 화면 아이콘이 저절로 연결되게 ----------
+  // 아이폰은 사파리와 홈 화면 아이콘이 저장 공간을 따로 써서, 사파리에서 연결해도 아이콘은 모르는 상태예요.
+  // 그래서 사파리에서 연결된 학부모 기기가 자기 아이 몫의 "기기 옮기기 코드"(7일, 한 번)를 만들어 주소(t=)에 넣어 둬요.
+  // "홈 화면에 추가"는 지금 주소를 그대로 쓰므로, 아이콘을 처음 열면 그 코드로 저절로 연결돼요.
+  // 사파리에서 앱을 열 때마다 기한이 하루 안 남은 코드는 새로 만들어요.
+  var TRANSFER_DAYS = 7;
+  Cloud.transferUrl = null;
+  function prepareTransfer() {
+    Cloud.transferUrl = null;
+    if (Cloud.role !== 'parent' || !U.isIOS() || U.standalone() || !Cloud.parentDoc) return;
+    var ids = (Cloud.parentDoc.studentIds || []).slice(), key = ids.slice().sort().join(',');
+    if (!ids.length) return;
+    var t = DB.device.transfer;
+    var reuse = t && t.ids === key && t.exp > Date.now() + 86400000
+      ? db.doc('invites/' + t.code).get({ source: 'server' }).then(function (d) { return d.exists && !d.get('usedBy'); }, function () { return false; })
+      : Promise.resolve(false);
+    reuse.then(function (ok) {
+      if (ok) return t.code;
+      var code = newCode(), now = Date.now(), exp = now + TRANSFER_DAYS * 86400000;
+      return db.doc('invites/' + code).set({ studentIds: ids, phone: Cloud.parentDoc.phone || '', createdAt: now, expiresAt: exp, usedBy: null, usedAt: null, by: 'transfer' }).then(function () {
+        DB.device.transfer = { code: code, exp: exp, ids: key }; DB.saveDevice();
+        return code;
+      });
+    }).then(function (code) {
+      var base = Cloud.link();
+      Cloud.transferUrl = base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + code;
+      Cloud.applyTransferUrl();
+      if (window.App) App.softRefresh();
+    }, function (e) { console.warn('transfer', e && e.code); });
+  }
+  // 연결을 끊을 때: 만들어 둔 코드를 "사용됨"으로 바꿔 못 쓰게 하고 주소에서도 지워요 (끊은 뒤 아이콘이 다시 연결되지 않게)
+  function dropTransfer(u) {
+    var t = DB.device.transfer;
+    Cloud.transferUrl = null; DB.device.transfer = null; DB.saveDevice(); U.dropParam('t');
+    if (!t || !u) return Promise.resolve();
+    return db.doc('invites/' + t.code).update({ usedBy: u.uid, usedAt: Date.now() }).catch(function () {});
+  }
+  // 사파리 탭을 며칠 열어 둔 채 다시 볼 때도 기한이 남은 코드를 쓰게
+  document.addEventListener('visibilitychange', function () {
+    var t = DB.device && DB.device.transfer;
+    if (!document.hidden && Cloud.transferUrl && Cloud.started && t && t.exp < Date.now() + 86400000) prepareTransfer();
+  });
+  // 화면을 그릴 때마다 주소를 다시 맞춰요 (뒤로가기로 예전 주소가 돌아와도 "홈 화면에 추가"가 이 주소를 쓰게)
+  Cloud.applyTransferUrl = function () {
+    if (!Cloud.transferUrl || location.href === Cloud.transferUrl) return;
+    try { history.replaceState(history.state, '', Cloud.transferUrl); } catch (e) {}
+  };
+
+  // ---------- 보안 규칙이 최신인지 (관리자) ----------
+  Cloud.rulesOutdated = false;
+  Cloud.checkRules = checkRules;
+  function checkRules() {
+    if (Cloud.role !== 'admin') return;
+    db.doc('meta/rules-v' + CloudRules.VERSION).get({ source: 'server' }).then(function () { return false; }, function (e) { return !!(e && e.code === 'permission-denied'); }).then(function (old) {
+      if (old === Cloud.rulesOutdated) return;
+      Cloud.rulesOutdated = old;
+      if (window.App) App.softRefresh();
+    });
+  }
 
   // 관리자 비밀번호(6자리)를 잊었을 때: 관리자 계정의 로그인 비밀번호로 본인 확인 후 새로 정해요
   Cloud.resetPin = function (next) {
@@ -1053,8 +1121,12 @@
     return (S().parents || []).filter(function (p) { return (p.studentIds || []).indexOf(sid) >= 0; });
   };
   Cloud.unlinkParent = function (uid) {
-    var arr = S().parents;
-    for (var i = 0; i < arr.length; i++) if (arr[i].id === uid) { arr.splice(i, 1); break; }
+    var arr = S().parents, p = null;
+    for (var i = 0; i < arr.length; i++) if (arr[i].id === uid) { p = arr.splice(i, 1)[0]; break; }
+    // 그 기기가 만들어 둔 아이폰 "기기 옮기기" 코드도 지워서, 끊은 뒤에 다시 연결되지 않게 해요
+    if (p) S().invites = S().invites.filter(function (v) {
+      return !(v.by === 'transfer' && !v.usedBy && v.phone === p.phone && v.studentIds.some(function (id) { return p.studentIds.indexOf(id) >= 0; }));
+    });
     DB.save();
   };
 })();

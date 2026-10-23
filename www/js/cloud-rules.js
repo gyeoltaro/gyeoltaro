@@ -112,12 +112,26 @@
     "    match /invites/{code} {",
     "      allow get: if isAdmin() || (signedIn() && resource.data.usedBy == null && resource.data.expiresAt > request.time.toMillis());",
     "      allow list: if isAdmin();",
-    "      allow create, delete: if isAdmin();",
+    "      allow delete: if isAdmin();",
+    "      // 관리자, 또는 연결된 학부모가 자기 아이 몫으로만 만드는 \"기기 옮기기\" 코드(아이폰 홈 화면 아이콘용, 7일, 한 번)",
+    "      allow create: if isAdmin() || (isParent()",
+    "        && request.resource.data.keys().hasOnly(['studentIds', 'phone', 'createdAt', 'expiresAt', 'usedBy', 'usedAt', 'by'])",
+    "        && request.resource.data.by == 'transfer'",
+    "        && request.resource.data.usedBy == null && request.resource.data.usedAt == null",
+    "        && request.resource.data.studentIds is list && request.resource.data.studentIds.size() > 0",
+    "        && request.resource.data.studentIds.hasOnly(get(parentPath()).data.studentIds)",
+    "        && request.resource.data.phone == get(parentPath()).data.phone",
+    "        && request.resource.data.expiresAt is number",
+    "        && request.resource.data.expiresAt <= request.time.toMillis() + 8 * 86400000);",
     "      allow update: if isAdmin() || (signedIn() && resource.data.usedBy == null",
     "        && resource.data.expiresAt > request.time.toMillis()",
     "        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])",
     "        && request.resource.data.usedBy == request.auth.uid",
     "        && existsAfter(/databases/$(database)/documents/parents/$(request.auth.uid)));",
+    "    }",
+    "    // 규칙 버전 확인용: 관리자 앱이 이 문서를 읽을 수 있으면 최신 규칙이에요",
+    "    match /meta/rules-v__RULES_VERSION__ {",
+    "      allow get: if isAdmin();",
     "    }",
     "    // 앱 푸시 알림 주소(토큰): 자기 기기 것만 쓰고 읽음. 보내기는 서버 프로그램(functions)이 함",
     "    match /push/{uid} {",
@@ -132,12 +146,15 @@
     ""
   ].join('\n');
 
+  // 규칙을 바꾸면 올려 주세요. 관리자 앱이 meta/rules-v(번호)를 읽어 보고 예전 규칙이면 알려 줘요
+  var VERSION = 2;
+
   function rulesFor(emails) {
     var list = (emails || []).map(function (e) { return String(e).trim().toLowerCase(); }).filter(Boolean);
     if (!list.length) list = ['admin@example.com'];
-    return TEMPLATE.replace('__ADMIN_EMAILS__', list.map(function (e) { return "'" + e.replace(/'/g, '') + "'"; }).join(', '));
+    return TEMPLATE.replace('__RULES_VERSION__', VERSION).replace('__ADMIN_EMAILS__', list.map(function (e) { return "'" + e.replace(/'/g, '') + "'"; }).join(', '));
   }
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = { TEMPLATE: TEMPLATE, rulesFor: rulesFor };
-  if (typeof window !== 'undefined') window.CloudRules = { TEMPLATE: TEMPLATE, rulesFor: rulesFor };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { TEMPLATE: TEMPLATE, rulesFor: rulesFor, VERSION: VERSION };
+  if (typeof window !== 'undefined') window.CloudRules = { TEMPLATE: TEMPLATE, rulesFor: rulesFor, VERSION: VERSION };
 })();

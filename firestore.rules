@@ -107,12 +107,34 @@ service cloud.firestore {
     match /invites/{code} {
       allow get: if isAdmin() || (signedIn() && resource.data.usedBy == null && resource.data.expiresAt > request.time.toMillis());
       allow list: if isAdmin();
-      allow create, delete: if isAdmin();
+      allow delete: if isAdmin();
+      // 관리자, 또는 연결된 학부모가 자기 아이 몫으로만 만드는 "기기 옮기기" 코드(아이폰 홈 화면 아이콘용, 7일, 한 번)
+      allow create: if isAdmin() || (isParent()
+        && request.resource.data.keys().hasOnly(['studentIds', 'phone', 'createdAt', 'expiresAt', 'usedBy', 'usedAt', 'by'])
+        && request.resource.data.by == 'transfer'
+        && request.resource.data.usedBy == null && request.resource.data.usedAt == null
+        && request.resource.data.studentIds is list && request.resource.data.studentIds.size() > 0
+        && request.resource.data.studentIds.hasOnly(get(parentPath()).data.studentIds)
+        && request.resource.data.phone == get(parentPath()).data.phone
+        && request.resource.data.expiresAt is number
+        && request.resource.data.expiresAt <= request.time.toMillis() + 8 * 86400000);
       allow update: if isAdmin() || (signedIn() && resource.data.usedBy == null
         && resource.data.expiresAt > request.time.toMillis()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
         && request.resource.data.usedBy == request.auth.uid
         && existsAfter(/databases/$(database)/documents/parents/$(request.auth.uid)));
+    }
+    // 규칙 버전 확인용: 관리자 앱이 이 문서를 읽을 수 있으면 최신 규칙이에요
+    match /meta/rules-v2 {
+      allow get: if isAdmin();
+    }
+    // 앱 푸시 알림 주소(토큰): 자기 기기 것만 쓰고 읽음. 보내기는 서버 프로그램(functions)이 함
+    match /push/{uid} {
+      allow get, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['token', 'role', 'at'])
+        && request.resource.data.token is string && request.resource.data.token.size() < 4096
+        && (request.resource.data.role == 'parent' || (request.resource.data.role == 'admin' && isAdmin()));
     }
   }
 }

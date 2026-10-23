@@ -24,6 +24,8 @@
     search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
     download: '<path d="M12 4v11M7 10.5 12 15.5l5-5"/><path d="M5 19.5h14"/>',
     upload: '<path d="M12 16V5M7 9.5 12 4.5l5 5"/><path d="M5 19.5h14"/>',
+    ok: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    iosShare: '<path d="M12 15V3.5M8 7.5l4-4 4 4"/><path d="M8.5 10H6v11h12V10h-2.5"/>',
     share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/>',
     camera: '<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
     trash: '<path d="M4.5 6.5h15M9.5 6.5V4h5v2.5M6.5 6.5l1 13.5h9l1-13.5"/>',

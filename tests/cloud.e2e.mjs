@@ -32,21 +32,38 @@ for (let i = 0; i < 50; i++) { try { if ((await fetch(BASE)).ok) break; } catch 
 const browser = await chromium.launch({ channel: 'chromium' });
 const errors = [];
 let pass = 0, fail = 0;
+const pages = {};
 async function t(name, fn) {
   try { await fn(); pass++; console.log('  ok  ' + name); }
-  catch (e) { fail++; console.log('  FAIL ' + name + ' → ' + e.message.split('\n')[0]); }
+  catch (e) {
+    fail++; console.log('  FAIL ' + name + ' → ' + e.message.split('\n')[0]);
+    // E2E_DEBUG=1 이면 열린 화면마다 상태를 보여 줘요
+    if (process.env.E2E_DEBUG) for (const [k, p] of Object.entries(pages)) {
+      if (p.isClosed()) continue;
+      const d = await p.evaluate(() => ({ url: location.search, role: window.Cloud && Cloud.role, modal: (document.querySelector('.modal') || {}).innerText, app: (document.getElementById('app') || {}).innerText })).catch(e => ({ err: e.message }));
+      console.log(`    [${k}] ` + JSON.stringify(d).slice(0, 500));
+    }
+  }
 }
 // url 을 주면 서버 설정 없이(새 휴대폰처럼) 그 주소로 엽니다
-async function open(label, viewport, url) {
-  const ctx = await browser.newContext({ viewport, locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
-  await ctx.addInitScript(cfg => { if (cfg) window.FIREBASE_CONFIG = cfg; window.FIREBASE_EMULATOR = true; }, url ? null : CONFIG);
+// o.iphone: 아이폰 사파리처럼, o.standalone: 아이폰 홈 화면 아이콘으로 연 것처럼, o.wait: 처음에 기다릴 화면
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
+async function open(label, viewport, url, o = {}) {
+  const ctx = await browser.newContext({ viewport, locale: 'ko-KR', timezoneId: 'Asia/Seoul', ...(o.iphone ? { userAgent: IPHONE_UA, hasTouch: true } : {}) });
+  await ctx.addInitScript(([cfg, standalone]) => {
+    if (cfg) window.FIREBASE_CONFIG = cfg; window.FIREBASE_EMULATOR = true;
+    if (standalone) Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true });
+  }, [url ? null : CONFIG, !!o.standalone]);
   const page = await ctx.newPage();
+  pages[label] = page;
   page.on('pageerror', e => errors.push(`[${label}] ${e.message}`));
   page.on('console', m => { if (process.env.E2E_DEBUG && (m.type() === 'warning' || m.type() === 'error')) console.log(`    [${label} ${m.type()}] ${m.text().slice(0, 300)}`); });
   await page.goto(url || BASE);
-  await page.waitForSelector('.start-card');
+  await page.waitForSelector(o.wait || '.start-card', { timeout: 30000 });
   return { ctx, page };
 }
+// 초대 링크로 열면 저절로 연결돼서 동의서나 홈이 바로 나와요
+const LINKED = '#cSubmit, [data-tab="home"].on, .modal [data-err]:not(:empty)';
 async function login(page) {
   await page.waitForSelector('#clEmail');
   await page.fill('#clEmail', EMAIL);
@@ -60,14 +77,24 @@ async function verifyEmail(uid) {
   });
   if (!r.ok) throw new Error('verify failed ' + r.status);
 }
+async function draw(page, sel) {
+  await page.$eval(sel, el => el.scrollIntoView({ block: 'center' }));
+  const box = await (await page.$(sel + ' canvas')).boundingBox();
+  await page.mouse.move(box.x + 30, box.y + 40); await page.mouse.down();
+  await page.mouse.move(box.x + 160, box.y + 90, { steps: 6 }); await page.mouse.up();
+}
 async function sign(page) {
   await page.check('#cReq');
   if (await page.$('#cSelf')) await page.check('#cSelf');
   await page.check('#cGuardian');
-  await page.$eval('#cSig', el => el.scrollIntoView({ block: 'center' }));
-  const box = await (await page.$('#cSig canvas')).boundingBox();
-  await page.mouse.move(box.x + 30, box.y + 40); await page.mouse.down();
-  await page.mouse.move(box.x + 160, box.y + 90, { steps: 6 }); await page.mouse.up();
+  await draw(page, '#cSig');
+}
+// "모두 동의하기" 한 번 + 서명
+async function signAll(page) {
+  await page.click('[data-allagree]');
+  const st = await page.evaluate(() => ['#cReq', '#cPhoto', '#cHealth', '#cSelf', '#cGuardian'].filter(s => document.querySelector(s)).map(s => document.querySelector(s).checked));
+  if (!st.length || st.some(x => !x)) throw new Error('not all checked: ' + st);
+  await draw(page, '#cSig');
 }
 const until = (page, fn, arg, ms = 15000) => page.waitForFunction(fn, arg, { timeout: ms, polling: 200 });
 
@@ -216,31 +243,45 @@ await t('다른 아이 정보는 서버가 직접 막는다', async () => {
   if (code1 !== 'permission-denied' || code2 !== 'permission-denied' || code3 !== 'permission-denied') throw new Error([code1, code2, code3].join(','));
 });
 await t('이미 쓴 초대 코드는 링크로 열어도 다시 쓸 수 없다', async () => {
-  const P2 = (await open('parent2', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code}`)).page;
-  await P2.waitForSelector('#ivCode');
-  await P2.click('.modal [data-mact="1"]');
+  const P2 = (await open('parent2', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code}`, { wait: LINKED })).page;
   await P2.waitForSelector('text=이미 썼거나');
+  if (!(await P2.$('#ivCode'))) throw new Error('code box should stay for retry');
   await P2.context().close();
 });
 
 // ---------- 새 휴대폰: 도장이 보낸 초대 링크만으로 서버 연결 ----------
 let L, otherKids;
-await t('초대 링크로 열면 도장 서버가 연결되고 코드가 채워진다', async () => {
+await t('초대 링크로 열면 버튼을 누르지 않아도 도장 서버에 연결된다', async () => {
   let code2;
-  ({ code2, otherKids } = await A.evaluate(id => {
-    const s = DB.student(id), sibs = DB.studentsByPhone(s.guardians[0].phone).map(x => x.id);
+  // 아직 동의 전인 다른 가족
+  ({ code2, otherKids } = await A.evaluate(skip => {
+    const s = DB.consentPending().find(x => skip.indexOf(x.id) < 0 && x.guardians[0] && x.guardians[0].phone);
+    const sibs = DB.studentsByPhone(s.guardians[0].phone).map(x => x.id);
     return { code2: Cloud.createInvite(sibs, s.guardians[0].phone), otherKids: sibs };
-  }, other));
+  }, kids));
   await until(A, c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.exists), code2);
-  L = (await open('link-parent', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code2}`)).page;
-  await L.waitForSelector('#ivCode');
-  const st = await L.evaluate(() => ({ code: document.querySelector('#ivCode').value, saved: localStorage.getItem('tkd-server-v1'), project: Cloud.projectId(), enabled: Cloud.enabled }));
-  if (st.code !== code2.slice(0, 4) + '-' + code2.slice(4) || st.saved !== LINK || st.project !== 'demo-tkd' || !st.enabled) throw new Error(JSON.stringify(st));
-  await L.click('.modal [data-mact="1"]');
-  await L.waitForSelector('#cSubmit, [data-tab="home"].on', { timeout: 30000 });
-  const q = await L.evaluate(() => location.search);
-  if (/[?&]c=/.test(q) || q.indexOf('s=') < 0) throw new Error('url after redeem: ' + q);
+  L = (await open('link-parent', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${code2}`, { wait: LINKED })).page;
+  await L.waitForSelector('#cSubmit', { timeout: 30000 });
+  const st = await L.evaluate(() => ({ saved: localStorage.getItem('tkd-server-v1'), project: Cloud.projectId(), enabled: Cloud.enabled, role: Cloud.role, q: location.search }));
+  if (st.saved !== LINK || st.project !== 'demo-tkd' || !st.enabled || st.role !== 'parent') throw new Error(JSON.stringify(st));
+  if (/[?&]c=/.test(st.q) || st.q.indexOf('s=') < 0) throw new Error('url after redeem: ' + st.q);
   await until(A, ids => ids.every(id => Cloud.parentsOf(id).length > 0), otherKids);
+});
+await t('모두 동의하기 한 번과 서명으로 동의서를 마친다', async () => {
+  await signAll(L);
+  await shot(L, 'c09b-consent-all');
+  await L.click('#cSubmit');
+  await L.waitForSelector('[data-tab="home"].on');
+  // 동의서는 지금 보고 있는 아이 몫이에요 (형제는 아이를 바꾸면 따로 나와요)
+  await until(A, ids => ids.some(id => { const s = DB.student(id); return s && s.consent && s.consent.by === 'app' && s.consent.photo && s.consent.health; }), otherKids);
+});
+await t('학부모 홈 첫 화면에 "처음 한 번만" 설정 카드가 나오고, 나중에 하기로 접는다', async () => {
+  await L.waitForSelector('.setup-card');
+  const txt = await L.textContent('.setup-card');
+  if (!/홈 화면에 추가/.test(txt) || /알림 받기/.test(txt)) throw new Error(txt); // 도장이 앱 푸시를 아직 안 켰어요
+  await L.click('[data-act="hide-setup"]');
+  await L.waitForSelector('.setup-card', { state: 'detached' });
+  if (!(await L.evaluate(() => DB.device.hideSetup))) throw new Error('not remembered');
 });
 await t('관리자가 보내는 초대 문자에 도장 서버 링크가 들어간다', async () => {
   const link = await A.evaluate(() => Cloud.link('ABCDEFGH'));
@@ -253,6 +294,115 @@ await t('이 기기 서버 연결 해제를 하면 체험 모드로 돌아가고
   if (st.enabled || st.saved || st.search) throw new Error(JSON.stringify(st));
   await until(A, ids => ids.every(id => Cloud.parentsOf(id).length === 0), otherKids);
   await L.context().close();
+});
+
+// ---------- 아이폰: 사파리에서 연결 → 홈 화면 아이콘이 저절로 연결 ----------
+let fam, I, H, tcode;
+await t('아이폰 사파리에서 연결하면 홈 화면 추가용 옮기기 코드가 주소에 들어간다', async () => {
+  let c3;
+  ({ c3, fam } = await A.evaluate(skip => {
+    const s = DB.active().find(x => skip.indexOf(x.id) < 0 && x.guardians[0] && x.guardians[0].phone && !Cloud.parentsOf(x.id).length);
+    const sibs = DB.studentsByPhone(s.guardians[0].phone).map(x => x.id);
+    return { c3: Cloud.createInvite(sibs, s.guardians[0].phone), fam: sibs };
+  }, kids.concat(otherKids)));
+  await until(A, c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.exists), c3);
+  I = (await open('iphone-safari', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${c3}`, { iphone: true, wait: LINKED })).page;
+  if (await I.$('#cSubmit')) { await signAll(I); await I.click('#cSubmit'); }
+  await I.waitForSelector('[data-tab="home"].on');
+  await until(I, () => !!Cloud.transferUrl && /[?&]t=[A-Z0-9]{8}/.test(location.search));
+  tcode = await I.evaluate(() => new URL(location.href).searchParams.get('t'));
+  if (tcode === c3) throw new Error('same code as the used invite');
+  const inv = await A.evaluate(c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.data()), tcode);
+  if (!inv || inv.by !== 'transfer' || inv.usedBy || inv.studentIds.slice().sort().join() !== fam.slice().sort().join() || inv.expiresAt < Date.now() + 6 * 86400000) throw new Error(JSON.stringify(inv));
+  const txt = await I.textContent('.setup-card');
+  if (!/공유/.test(txt) || !/저절로 연결/.test(txt)) throw new Error(txt);
+  await shot(I, 'c15-iphone-setup');
+  // 다른 화면으로 갔다 와도, 새로 고쳐도 같은 코드가 주소에 남아 있어요 (홈 화면에 추가는 지금 주소를 써요)
+  await I.evaluate(() => App.nav('notices'));
+  await I.waitForTimeout(300);
+  if (!(await I.evaluate(c => location.search.indexOf('t=' + c) >= 0, tcode))) throw new Error('lost after nav');
+  await I.reload();
+  await I.waitForSelector('[data-tab]');
+  await until(I, c => location.search.indexOf('t=' + c) >= 0 && Cloud.transferUrl, tcode);
+  // 관리자 화면에는 학부모가 보낸 초대처럼 보이지 않아요
+  await A.evaluate(id => App.go('students', { id }), fam[0]);
+  await A.waitForSelector('text=기기 1대 연결');
+  if (await A.$('text=초대 코드 1개 대기')) throw new Error('transfer shown as pending invite');
+});
+await t('그 주소가 공유돼 다른 사람이 브라우저로 열어도 연결되지 않는다', async () => {
+  const url = await I.evaluate(() => Cloud.transferUrl);
+  for (const [label, o] of [['shared-android', {}], ['shared-iphone-safari', { iphone: true }]]) {
+    const X = (await open(label, { width: 390, height: 844 }, url, o)).page;
+    await X.waitForTimeout(1500);
+    const st = await X.evaluate(() => ({ role: Cloud.role, modal: !!document.querySelector('.modal'), q: location.search, enabled: Cloud.enabled }));
+    if (st.role === 'parent' || st.modal || /[?&]t=/.test(st.q) || !st.enabled) throw new Error(label + ' ' + JSON.stringify(st));
+    await X.context().close();
+  }
+  const used = await A.evaluate(c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.get('usedBy')), tcode);
+  if (used) throw new Error('shared link used the transfer code');
+});
+await t('그 주소로 만든 홈 화면 아이콘을 열면 아무것도 누르지 않아도 연결된다', async () => {
+  H = (await open('iphone-home', { width: 390, height: 844 }, await I.evaluate(() => Cloud.transferUrl), { iphone: true, standalone: true, wait: LINKED })).page;
+  await H.waitForSelector('[data-tab="home"].on');
+  const st = await H.evaluate(() => ({ role: Cloud.role, ids: Cloud.parentDoc.studentIds.slice().sort().join(), q: location.search, tr: Cloud.transferUrl, standalone: U.standalone() }));
+  if (st.role !== 'parent' || st.ids !== fam.slice().sort().join() || /[?&][ct]=/.test(st.q) || st.tr || !st.standalone) throw new Error(JSON.stringify(st));
+  if (await H.$('.setup-card')) throw new Error('setup card on home-screen app without push');
+  await until(A, id => Cloud.parentsOf(id).length === 2, fam[0]);
+  const used = await A.evaluate(c => firebase.firestore().doc('invites/' + c).get({ source: 'server' }).then(d => d.get('usedBy')), tcode);
+  if (!used) throw new Error('transfer code not marked used');
+});
+await t('관리자가 사파리 기기를 끊으면 그 기기의 새 옮기기 코드도 지워진다', async () => {
+  // 쓴 코드는 다시 쓸 수 없어서, 사파리를 다시 열면 새 코드를 만들어요
+  await I.reload();
+  await until(I, c => !!Cloud.transferUrl && Cloud.transferUrl.indexOf(c) < 0, tcode);
+  const t2 = await I.evaluate(() => new URL(Cloud.transferUrl).searchParams.get('t'));
+  const iUid = await uidOf(I);
+  await until(A, c => DB.state.invites.some(v => v.id === c), t2);
+  await A.evaluate(uid => Cloud.unlinkParent(uid), iUid);
+  await I.waitForSelector('.start-card', { timeout: 20000 });
+  const gone = await fetch(`http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/invites/${t2}`, { headers: { Authorization: 'Bearer owner' } });
+  if (gone.status !== 404) throw new Error('transfer code left: ' + gone.status);
+  if (await I.evaluate(() => /[?&][ct]=/.test(location.search) || !!Cloud.transferUrl)) throw new Error('code still in url');
+  if ((await H.evaluate(() => Cloud.role)) !== 'parent') throw new Error('home-screen app lost its link');
+  await I.context().close();
+});
+await t('학부모가 스스로 연결을 끊으면 옮기기 코드도 못 쓰게 된다', async () => {
+  const J = (await open('iphone-safari2', { width: 390, height: 844 }, `${BASE}?s=${LINK}&c=${await A.evaluate(ids => Cloud.createInvite(ids, DB.student(ids[0]).guardians[0].phone), fam)}`, { iphone: true, wait: LINKED })).page;
+  await J.waitForSelector('[data-tab="home"].on', { timeout: 30000 });
+  await until(J, () => !!Cloud.transferUrl);
+  const t3 = await J.evaluate(() => new URL(Cloud.transferUrl).searchParams.get('t'));
+  await J.evaluate(() => Cloud.unlinkSelf().then(() => App.setSession(null)));
+  await J.waitForSelector('.start-card');
+  const d = await (await fetch(`http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/invites/${t3}`, { headers: { Authorization: 'Bearer owner' } })).json();
+  if (!d.fields || !d.fields.usedBy.stringValue) throw new Error('transfer still usable: ' + JSON.stringify(d.fields && d.fields.usedBy));
+  if (await J.evaluate(() => /[?&][ct]=/.test(location.search))) throw new Error('code still in url');
+  await J.context().close();
+  await H.context().close();
+});
+
+// ---------- 보안 규칙 버전 ----------
+await t('보안 규칙이 예전 것이면 관리자 홈에 다시 붙여 넣으라는 안내가 나온다', async () => {
+  if (await A.evaluate(() => Cloud.rulesOutdated)) throw new Error('current rules flagged as old');
+  const setRules = content => fetch('http://127.0.0.1:8080/emulator/v1/projects/demo-tkd:securityRules', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rules: { files: [{ name: 'firestore.rules', content }] } })
+  });
+  // 버전 확인 문서가 없는 예전 규칙
+  const old = rulesFor([EMAIL]).replace(/ {4}\/\/ 규칙 버전 확인용[^\n]*\n {4}match \/meta\/rules-v\d+ \{\n[^\n]*\n {4}\}\n/, '');
+  if (old.indexOf('rules-v') >= 0) throw new Error('could not strip version block');
+  await setRules(old);
+  try {
+    await A.evaluate(() => { Cloud.checkRules(); App.nav('home'); });
+    await A.waitForSelector('text=Firebase 보안 규칙이 예전 것이에요');
+    await shot(A, 'c16-rules-old');
+    await A.click('button:has-text("규칙 보기")');
+    const shown = await (await A.waitForSelector('.modal textarea')).inputValue();
+    if (shown.indexOf('match /meta/rules-v2 ') < 0 || shown.indexOf("'" + EMAIL + "'") < 0) throw new Error('rules text');
+    await A.click('.modal button:has-text("닫기")');
+    await A.waitForSelector('.modal', { state: 'detached' });
+  } finally { await setRules(rulesFor([EMAIL])); }
+  await A.evaluate(() => Cloud.checkRules());
+  await A.waitForSelector('text=Firebase 보안 규칙이 예전 것이에요', { state: 'detached' });
 });
 
 // ---------- 앱 푸시 켜기 ----------
@@ -295,8 +445,10 @@ await t('새 개별 알림장 푸시는 그 아이 학부모에게만, 아이 �
   if (theirs.length) throw new Error('pushed to wrong parent');
 });
 await t('오늘 출석하면 그 아이 학부모에게 출석 푸시가 간다', async () => {
-  const sid = await A.evaluate(ids => { const id = ids.find(x => !DB.day(U.today())[x]); if (id) DB.checkIn(id, null, null, 'admin'); return id; }, kids);
-  if (!sid) throw new Error('all siblings already checked in');
+  // 샘플 자료나 앞의 출석 시험으로 형제가 모두 출석했으면 한 명을 지웠다가 다시 출석해요
+  let sid = await A.evaluate(ids => ids.find(x => !DB.day(U.today())[x]) || null, kids);
+  if (!sid) { sid = kids[0]; await A.evaluate(id => DB.uncheck(id, U.today()), sid); await new Promise(r => setTimeout(r, 2500)); }
+  await A.evaluate(id => DB.checkIn(id, null, null, 'admin'), sid);
   const hit = await waitPush(l => l.tag === 'att-' + sid);
   if (!hit.uids.includes(pUid) || !/^출석했어요 · 오[전후] \d+:\d\d$/.test(hit.body)) throw new Error(JSON.stringify(hit));
 });

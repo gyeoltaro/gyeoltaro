@@ -33,6 +33,36 @@
   }
 
   // ---------- 홈 ----------
+  // 처음 한 번: 홈 화면에 추가 · 알림 받기를 큰 버튼으로 (서버에 연결된 학부모 기기에서, 다 하면 사라져요)
+  function setupCard() {
+    if (preview() || !Cloud.enabled || DB.device.hideSetup) return '';
+    var ios = U.isIOS(), home = U.standalone();
+    function row(done, title, desc, btn) { return { done: done, title: title, desc: desc, btn: btn }; }
+    var homeRow = home ? row(true, '홈 화면 앱으로 쓰고 있어요')
+      : App.installed ? row(true, '홈 화면에 추가했어요', '다음부터는 홈 화면 아이콘으로 여세요.')
+      : ios ? row(false, '홈 화면에 추가', '화면 아래 <b>공유</b> ' + UI.icon('iosShare') + ' → <b>홈 화면에 추가</b> → <b>추가</b>를 눌러요. ' +
+          (Cloud.transferUrl ? '홈 화면 아이콘을 열면 <b>저절로 연결</b>돼요.' : '아이콘에서 처음 열 때는 도장에 새 초대 코드를 받아 연결해요.'))
+      : App.installPrompt ? row(false, '홈 화면에 추가', '앱처럼 바로 열 수 있어요.', '<button class="btn primary" type="button" data-act="install">추가</button>')
+      : row(false, '홈 화면에 추가', '크롬 오른쪽 위 메뉴(⋮) → <b>홈 화면에 추가</b>(또는 앱 설치)를 눌러요.');
+    var pushRow = null;
+    if (Cloud.pushEnabled()) {
+      var st = Cloud.pushState();
+      pushRow = st === 'on' ? row(true, '알림을 받고 있어요')
+        : st === 'off' ? row(false, '알림 받기', '새 알림장과 출석을 휴대폰 알림으로 받아요.', '<button class="btn primary" type="button" data-act="push-on">알림 받기</button>')
+        : st === 'ios-home' ? row(false, '알림 받기', '홈 화면 아이콘으로 열면 여기서 켤 수 있어요.')
+        : st === 'denied' ? row(false, '알림 받기', '알림이 차단되어 있어요. 휴대폰 설정에서 이 앱(브라우저)의 알림을 허용해 주세요.')
+        : null;
+    }
+    // 아이폰 사파리는 홈 화면 추가가 먼저(알림은 아이콘에서만), 나머지는 알림이 먼저
+    var rows = (ios && !home ? [homeRow, pushRow] : [pushRow, homeRow]).filter(Boolean);
+    if (rows.every(function (r) { return r.done; })) return '';
+    return '<div class="card setup-card"><div class="setup-head"><b>처음 한 번만 해 주세요</b><button class="link-btn" type="button" data-act="hide-setup">나중에 하기</button></div>' +
+      rows.map(function (r, i) {
+        return '<div class="setup-row' + (r.done ? ' done' : '') + '"><span class="mark">' + (r.done ? UI.icon('ok') : i + 1) + '</span>' +
+          '<div class="txt"><b>' + esc(r.title) + '</b>' + (r.desc ? '<span>' + r.desc + '</span>' : '') + '</div>' + (r.btn || '') + '</div>';
+      }).join('') + '</div>';
+  }
+
   Views.parent.home = {
     render: function (el) {
       var s = kid(), today = U.today(), ym = U.ym();
@@ -46,7 +76,7 @@
       var openEvents = visibleEvents(s).filter(function (e) { return DB.eventOpen(e) && e.date >= today && !DB.appOf(e.id, s.id); })
         .sort(function (a, b) { return a.deadline < b.deadline ? -1 : 1; });
 
-      var h = '<div class="card kid-card"><div class="kid-top">' + UI.av(s, 'lg') + '<div class="stack sm"><h2>' + esc(s.name) + '</h2>' +
+      var h = setupCard() + '<div class="card kid-card"><div class="kid-top">' + UI.av(s, 'lg') + '<div class="stack sm"><h2>' + esc(s.name) + '</h2>' +
         '<div class="hstack small soft">' + UI.belt(s.grade) + '<span>' + esc(s.className) + '</span></div></div></div>' +
         '<div class="today-state' + (r ? ' on' : '') + '">' + UI.icon(r ? 'check' : 'smile') + '<div><b>' + (r ? '오늘 ' + esc(r.t ? U.fmtTime(r.t) : '') + ' 도장에 왔어요' : '오늘은 아직 출석 전이에요') + '</b>' +
         '<span>' + esc(U.fmtMD(today)) + '</span></div></div>' +
@@ -54,19 +84,6 @@
         '<div><small>' + esc(U.fmtM(ym)) + ' 회비</small><b class="' + (fee ? 'good' : billed ? 'bad' : '') + '">' + (fee ? (fee.method === '면제' ? '면제' : '납부') : billed ? '미납' : '-') + '</b></div>' +
         '<div><small>새 알림장</small><b class="' + (unread ? 'bad' : '') + '">' + unread + '개</b></div></div></div>';
 
-      // 앱 푸시 알림 켜기 안내 (도장이 푸시를 켰을 때만)
-      var pst = Cloud.pushEnabled() && !preview() && !DB.device.hidePushTip ? Cloud.pushState() : 'on';
-      if (pst !== 'on' && pst !== 'unsupported') {
-        var pl = Cloud.pushLine('새 알림장·출석');
-        h += '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' +
-          (pl.act ? '<button class="btn sm primary" type="button" data-act="' + pl.act + '">' + pl.label + '</button>' : '') +
-          '<button class="btn sm quiet" type="button" data-act="hide-push">닫기</button></div>';
-      }
-      // 홈 화면에 추가 안내 (브라우저가 추가 기능을 알려 줄 때만)
-      if (App.installPrompt && !preview() && !DB.device.hideInstallTip) {
-        h += '<div class="notice-bar">' + UI.icon('smile') + '<span>홈 화면에 추가하면 앱처럼 바로 열 수 있어요.</span>' +
-          '<button class="btn sm primary" type="button" data-act="install">추가</button><button class="btn sm quiet" type="button" data-act="hide-install">닫기</button></div>';
-      }
       if (openEvents.length) {
         h += '<section class="section"><div class="section-head"><h2>신청 받는 중</h2></div><div class="stack">' + openEvents.slice(0, 2).map(function (e) { return eventCard(e, s); }).join('') + '</div></section>';
       }
@@ -88,8 +105,7 @@
         'copy-acc': copyAcc,
         install: function () { App.install(); },
         'push-on': function () { Cloud.pushToggle(true); },
-        'hide-push': function () { DB.device.hidePushTip = true; DB.saveDevice(); App.refresh(); },
-        'hide-install': function () { DB.device.hideInstallTip = true; DB.saveDevice(); App.refresh(); }
+        'hide-setup': function () { DB.device.hideSetup = true; DB.saveDevice(); App.refresh(); }
       });
     }
   };

@@ -334,6 +334,18 @@ table.t td.wrap{ white-space:normal; min-width:140px; }
 .notice-bar svg{ width:18px; height:18px; flex:none; margin-top:2px; }
 .notice-bar .btn{ margin-left:auto; }
 .notice-bar .btn + .btn{ margin-left:0; }
+/* 학부모 홈: 처음 한 번 하는 설정 (홈 화면 추가, 알림) */
+.setup-card{ padding:14px 16px; display:grid; gap:4px; border-color:var(--accent); margin-bottom:14px; }
+.setup-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:6px; }
+.setup-head b{ font-size:15.5px; }
+.setup-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); }
+.setup-row .mark{ width:30px; height:30px; flex:none; border-radius:50%; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent-ink); font-weight:700; font-size:15px; }
+.setup-row .mark svg{ width:17px; height:17px; }
+.setup-row.done .mark{ background:var(--good-soft); color:var(--good); }
+.setup-row .txt{ flex:1; min-width:0; display:grid; gap:2px; }
+.setup-row .txt span{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+.setup-row .txt svg{ width:16px; height:16px; vertical-align:-3px; }
+.setup-row .btn{ flex:none; }
 
 /* ---------- avatar & belt ---------- */
 .av{

@@ -25,6 +25,9 @@
     var st = DB.settings(), g = guardianOf(s) || {};
     var h = '<div class="stack">';
     h += '<p class="soft">' + esc(st.dojangName) + '은(는) <b>' + esc(s.name) + '</b> 원생의 수련 관리를 위해 아래와 같이 개인정보를 처리합니다. 항목마다 읽고 동의해 주세요.</p>';
+    // 한 번에 모두 체크 (선택 항목은 다시 풀 수 있어요: 항목별 구분 동의는 그대로)
+    h += '<div class="stack sm"><button class="btn primary block" type="button" data-allagree>' + UI.icon('ok') + '모두 동의하기</button>' +
+      '<p class="fine" style="margin:0">선택 항목(사진, 건강 정보)은 체크를 풀면 동의하지 않은 것으로 돼요. 동의하지 않아도 수련에는 불이익이 없어요.</p></div>';
 
     h += '<div class="consent-box"><label class="check"><input type="checkbox" id="cReq"><span><b>[필수]</b> 개인정보 수집·이용에 동의합니다</span></label>' +
       box('', [
@@ -65,6 +68,12 @@
   Parts.bindConsent = function (root, s, by, phone) {
     var pad = UI.signaturePad(root.querySelector('#cSig'));
     root.querySelector('[data-sigclear]').onclick = function () { pad.clear(); };
+    root.querySelector('[data-allagree]').onclick = function () {
+      ['#cReq', '#cPhoto', '#cHealth', '#cSelf', '#cGuardian'].forEach(function (sel) { var el = root.querySelector(sel); if (el) el.checked = true; });
+      var sig = root.querySelector('#cSig');
+      if (sig && sig.scrollIntoView) sig.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      UI.toast('모두 체크했어요. 이름을 확인하고 서명해 주세요.');
+    };
     root.querySelector('[data-policy]').onclick = function () { Parts.openPrivacy(); };
     return function read() {
       if (!root.querySelector('#cReq').checked) return '[필수] 개인정보 수집·이용 동의에 체크해 주세요';

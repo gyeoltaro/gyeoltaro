@@ -138,6 +138,33 @@ await t('관리자는 관리자 알림 주소를 저장한다', assertSucceeds(s
 await t('로그인 안 하면 알림 주소를 못 넣는다', assertFails(setDoc(doc(nobody, 'push/x'), TOKEN)));
 await t('자기 알림 주소를 지운다', assertSucceeds(deleteDoc(doc(parent, 'push/parentUid'))));
 
+console.log('아이폰 기기 옮기기 코드');
+const WEEK = Date.now() + 7 * 86400000;
+const TR = { studentIds: ['s1'], phone: '01011112222', createdAt: 1, expiresAt: WEEK, usedBy: null, usedAt: null, by: 'transfer' };
+await t('연결된 학부모는 자기 아이 몫 옮기기 코드를 만든다', assertSucceeds(setDoc(doc(parent, 'invites/TRANS001'), TR)));
+await t('다른 아이를 넣은 옮기기 코드는 못 만든다', assertFails(setDoc(doc(parent, 'invites/TRANS002'), { ...TR, studentIds: ['s1', 's2'] })));
+await t('빈 옮기기 코드는 못 만든다', assertFails(setDoc(doc(parent, 'invites/TRANS003'), { ...TR, studentIds: [] })));
+await t('다른 전화번호로는 못 만든다', assertFails(setDoc(doc(parent, 'invites/TRANS004'), { ...TR, phone: '01099998888' })));
+await t('기한을 8일보다 길게 못 한다', assertFails(setDoc(doc(parent, 'invites/TRANS005'), { ...TR, expiresAt: Date.now() + 9 * 86400000 })));
+await t('옮기기 코드에 다른 내용을 못 넣는다', assertFails(setDoc(doc(parent, 'invites/TRANS006'), { ...TR, note: 'x' })));
+await t('학부모는 일반 초대 코드를 못 만든다', assertFails(setDoc(doc(parent, 'invites/TRANS007'), { ...TR, by: 'admin' })));
+await t('이미 쓴 것처럼 만들 수 없다', assertFails(setDoc(doc(parent, 'invites/TRANS008'), { ...TR, usedBy: 'parentUid', usedAt: 1 })));
+await t('있는 코드를 덮어쓰지 못한다', assertFails(setDoc(doc(parent, 'invites/TRANS001'), { ...TR, createdAt: 2 })));
+await t('연결 안 된 사람은 옮기기 코드를 못 만든다', assertFails(setDoc(doc(other, 'invites/TRANS009'), TR)));
+await t('학부모는 초대 코드를 못 지운다', assertFails(deleteDoc(doc(parent, 'invites/TRANS001'))));
+await t('홈 화면 아이콘(새 기기)이 옮기기 코드로 연결된다', assertSucceeds((() => {
+  const b = writeBatch(other);
+  b.set(doc(other, 'parents/otherUid'), { studentIds: ['s1'], code: 'TRANS001', phone: '01011112222', createdAt: 1 });
+  b.update(doc(other, 'invites/TRANS001'), { usedBy: 'otherUid', usedAt: 1 });
+  return b.commit();
+})()));
+await t('관리자는 옮기기 코드를 지운다', assertSucceeds(deleteDoc(doc(admin, 'invites/TRANS001'))));
+
+console.log('규칙 버전 확인');
+await t('관리자는 규칙 버전 문서를 확인한다', assertSucceeds(getDoc(doc(admin, 'meta/rules-v2'))));
+await t('학부모는 규칙 버전 문서를 못 본다', assertFails(getDoc(doc(parent, 'meta/rules-v2'))));
+await t('예전 버전 문서는 관리자도 못 본다(예전 규칙과 구별)', assertFails(getDoc(doc(admin, 'meta/rules-v1'))));
+
 await testEnv.cleanup();
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

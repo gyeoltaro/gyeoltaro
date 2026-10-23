@@ -78,7 +78,7 @@
   // 서버 모드: 초대 코드로 연결된 학부모 기기
   function parentAppRow(s) {
     var list = Cloud.parentsOf(s.id);
-    var waiting = (DB.state.invites || []).filter(function (i) { return !i.usedBy && i.expiresAt > Date.now() && i.studentIds.indexOf(s.id) >= 0; });
+    var waiting = (DB.state.invites || []).filter(function (i) { return !i.usedBy && i.by !== 'transfer' && i.expiresAt > Date.now() && i.studentIds.indexOf(s.id) >= 0; });
     return (list.length ? UI.pill('기기 ' + list.length + '대 연결', 'good') : UI.pill('연결 안 됨', '')) +
       (waiting.length ? ' ' + UI.pill('초대 코드 ' + waiting.length + '개 대기', 'info') : '') +
       ' <button class="link-btn" type="button" data-act="invite">초대 코드 보내기</button>' +

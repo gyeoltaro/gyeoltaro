@@ -455,6 +455,7 @@
         if (active.offsetLeft < nav.scrollLeft || active.offsetLeft + active.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = active.offsetLeft - 16;
       }
     } else if (s.role === 'parent') {
+      if (!s.preview) Cloud.applyTransferUrl();
       var kid = DB.student(s.cur);
       if (!kid) return;
       var head = root.querySelector('#pHead');
@@ -502,10 +503,13 @@
   // 도장이 보낸 링크로 열었을 때: 다른 도장 서버면 바꿀지 묻고, 초대 코드가 있으면 바로 연결 화면을 엽니다
   function fromLink() {
     var code = U.param('c'), next = Server.pending;
-    // 읽은 값은 화면을 열기 전에 주소에서 지워요(뒤로가기 기록에 남지 않게).
-    // 아이폰 사파리는 "홈 화면에 추가"가 지금 주소를 그대로 쓰므로 초대 코드를 남겨 둬요.
+    // 읽은 값은 화면을 열기 전에 주소에서 지워요(뒤로가기 기록에 남지 않게). 초대 코드는 바로 연결에 써요.
+    // t 는 아이폰 사파리가 연결된 뒤 주소에 넣어 두는 "기기 옮기기 코드"(Cloud.applyTransferUrl)예요.
+    // 그 주소로 만든 홈 화면 아이콘에서만 써요. 주소가 공유돼 다른 사람이 브라우저로 열어도 연결되지 않아요.
+    var transfer = U.param('t');
+    if (!code && transfer && U.isIOS() && U.standalone()) code = transfer;
     if (next) U.dropParam('s');
-    if (!(code && !next && U.isIOS() && !U.standalone())) U.dropParam('c');
+    U.dropParam('c'); U.dropParam('t');
     if (next) {
       UI.confirm({
         title: '다른 서버로 연결할까요?',
@@ -515,7 +519,7 @@
       return;
     }
     if (!code || !Cloud.enabled) return;
-    if (Cloud.role === 'parent' || App.session) { U.dropParam('c'); return; }
+    if (Cloud.role === 'parent' || App.session) return;
     Cloud.inviteEntry(function () { App.setSession(Cloud.parentSession()); }, code);
   }
 
@@ -530,8 +534,9 @@
     if (!p) return;
     App.installPrompt = null;
     p.prompt();
-    p.userChoice.then(function () { App.softRefresh(); }, function () {});
+    p.userChoice.then(function (c) { if (c && c.outcome === 'accepted') App.installed = true; App.softRefresh(); }, function () {});
   };
+  window.addEventListener('appinstalled', function () { App.installed = true; if (App.session) App.softRefresh(); });
   // 인터넷이 끊겼을 때도 앱을 다시 열 수 있게 화면 파일을 기기에 보관합니다
   if ('serviceWorker' in navigator && !Server.preset && /^(https:|http:\/\/(localhost|127\.0\.0\.1)[:/])/.test(location.href)) {
     navigator.serviceWorker.register('sw.js').catch(function () {});

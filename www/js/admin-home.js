@@ -49,6 +49,7 @@
 
       var setting = DB.settings();
       var todos = [];
+      if (Cloud.enabled && Cloud.rulesOutdated) todos.push(['Firebase 보안 규칙이 예전 것이에요. 새 규칙을 붙여 넣어야 학부모 아이폰 자동 연결 같은 새 기능이 동작해요.', '규칙 보기', 'rules', '']);
       if (setting.adminPin.length < 6) todos.push(['관리자 비밀번호가 ' + setting.adminPin.length + '자리예요. 6자리로 바꿔 주세요.', '설정', 'go', 'settings']);
       if (!(setting.privacy || {}).officer) todos.push(['개인정보 처리방침에 보호책임자 이름과 연락처를 넣어 주세요.', '설정', 'go', 'settings']);
       var pendN = DB.consentPending().length, smsN = DB.smsPending().length, healthN = DB.healthWithdrawn().length;
@@ -149,6 +150,7 @@
         go: function (b) { App.nav(b.getAttribute('data-v')); },
         kiosk: function () { App.openKiosk(); },
         purge: function () { Views.admin.settings.purge(); },
+        rules: function () { Cloud.rulesView(DB.settings().adminEmails, '아래 규칙을 복사해 Firebase 콘솔 → Firestore Database → 규칙에 붙여 넣고 게시해 주세요. 1분쯤 뒤 이 알림이 사라져요.'); },
         consent: function () { Parts.consentPendingModal(); },
         sms: function () { Parts.smsPendingModal(); },
         health: function () { App.go('students', { id: DB.healthWithdrawn()[0].id }); },

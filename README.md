@@ -117,8 +117,8 @@ tools/deploy.mjs     웹 주소용 저장소에 화면 파일만 올리기
 
 ```bash
 npm install
-npm run test:rules   # 보안 규칙 61가지 경우
-npm run test:e2e     # 관장님 PC·도장 태블릿·학부모 휴대폰(초대 링크 포함) 브라우저 + 푸시 서버 프로그램으로 서버 모드 통합 테스트
+npm run test:rules   # 보안 규칙 77가지 경우
+npm run test:e2e     # 관장님 PC·도장 태블릿·학부모 휴대폰(초대 링크, 아이폰 홈 화면 아이콘 포함) 브라우저 + 푸시 서버 프로그램으로 서버 모드 통합 테스트
 ```
 
 ## 다음 단계
