@@ -79,6 +79,10 @@ dl.faq dd{ margin:4px 0 0; color:var(--ink-soft); }
 .parents-box h2{ border-top:0; }
 footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); margin-top:56px; padding-top:16px; }
 .print-only{ display:none; }
+.card.cmd{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.card.cmd code{ flex:1; min-width:0; font-size:13px; word-break:break-all; background:none; padding:0; }
+details.dev{ margin:10px 0; color:var(--ink-soft); font-size:14.5px; }
+details.dev summary{ cursor:pointer; font-weight:600; }
 /* 차례 없이 한 줄로 읽는 페이지 (학부모용) */
 .wrap.single{ grid-template-columns:1fr; max-width:780px; }
 .chips{ display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 0; }
@@ -115,6 +119,8 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
   .parents-box{ padding:2px 18px 10px; }
   .wrap.single{ max-width:none; }
   .chips{ display:none; }
+  .card.cmd .btn{ display:none; }
+  details.dev{ display:none; }
   #screens, #menu{ break-before:page; }
   .single figure.phones img{ max-width:175px; }
   main a[href^="http"]:not(.raw)::after{ content:" (" attr(href) ")"; font-size:.85em; color:var(--muted); word-break:break-all; }

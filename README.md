@@ -110,7 +110,7 @@ tools/deploy.mjs     웹 주소용 저장소에 화면 파일만 올리기
 
 - **보내는 쪽**: `functions/` (Firebase Cloud Functions 2세대, 서울 리전). 새 알림장·오늘 출석 → 그 아이 학부모 기기, 학부모 참가신청·답글 → 관리자 기기. 도장 설정의 "앱 푸시 사용"이 켜져 있을 때만, 아이 이름 없이 보냅니다.
 - **받는 쪽**: 학부모·관리자가 앱에서 "알림 켜기"를 누르면 기기의 알림 주소(FCM 토큰)를 `push/{uid}`에 저장합니다(보안 규칙: 자기 것만). `www/sw.js`가 알림을 보여 줍니다. 아이폰은 홈 화면 아이콘에서만(iOS 16.4+).
-- **설치**: Firebase를 Blaze 요금제로 바꾸고(예산 알림), `npm run deploy:push -- --project 프로젝트ID`. 다른 도장은 앱 주소 저장소의 `push-server/`를 받아 같은 명령으로 올립니다.
+- **설치**: Firebase를 Blaze 요금제로 바꾸고(예산 알림), Google Cloud Shell에서 `curl -fsSL https://awoolimtkd.github.io/push-server/install.sh | bash` 한 줄(`tools/push-install.sh`, 첫 설치 때 나는 Eventarc 권한 준비 오류는 자동 재시도). 개발 PC에서는 `npm run deploy:push -- --project 프로젝트ID`.
 - `firebase.json`에는 functions와 에뮬레이터만 있습니다. `firebase deploy`가 실수로 보안 규칙(예시 이메일)을 덮어쓰지 않게 하려는 것입니다.
 
 ## 개발자용 테스트

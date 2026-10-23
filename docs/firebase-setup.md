@@ -76,7 +76,7 @@
 ## 10. 앱 푸시 (선택)
 
 1. Firebase 콘솔 → **업그레이드** → Blaze 요금제, 예산 알림(예: 월 1,000원).
-2. 저장소에서 `npm run deploy:push -- --project 프로젝트ID` (처음엔 `npx firebase-tools login`). 함수 4개가 서울(asia-northeast3)에 올라갑니다.
+2. Google Cloud Shell(https://shell.cloud.google.com)에서 `curl -fsSL https://awoolimtkd.github.io/push-server/install.sh | bash` 한 줄로 설치합니다(`tools/push-install.sh`). 프로젝트 고르기, Blaze 확인, 첫 설치 실패 시 자동 재시도까지 해요. 개발 PC에서는 `npm run deploy:push -- --project 프로젝트ID`. 함수 4개가 서울(asia-northeast3)에 올라갑니다.
 3. 앱 **설정 → 앱 푸시 알림 → 앱 푸시 사용**을 켭니다. 학부모 앱 홈에 "알림 켜기"가 나타납니다.
 4. 웹 푸시 인증서 키 쌍은 선택입니다(비워 두면 Firebase 기본 키).
 5. 처음 올릴 때 "Permission denied while using the Eventarc Service Agent"가 나오면 3~5분 뒤 다시 올리면 됩니다(2세대 함수 첫 사용 시 권한 준비).

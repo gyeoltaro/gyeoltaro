@@ -38,6 +38,7 @@ writeFileSync(join(dir, '.nojekyll'), '');
 mkdirSync(join(dir, 'push-server', 'functions'), { recursive: true });
 cpSync(join(root, 'firebase.json'), join(dir, 'push-server', 'firebase.json'));
 for (const f of ['index.js', 'package.json', 'package-lock.json']) cpSync(join(root, 'functions', f), join(dir, 'push-server', 'functions', f));
+cpSync(join(root, 'tools', 'push-install.sh'), join(dir, 'push-server', 'install.sh'));
 const src = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const srcBranch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 writeFileSync(join(dir, 'README.md'), `# 태권도 통합 관리 (배포용)
@@ -47,11 +48,10 @@ writeFileSync(join(dir, 'README.md'), `# 태권도 통합 관리 (배포용)
 
 \`push-server/\` 는 앱 푸시를 보내는 서버 프로그램(Firebase Cloud Functions)이에요. 각 도장이 자기 Firebase 프로젝트에 설치합니다.
 
+Google Cloud Shell(https://shell.cloud.google.com)에서 한 줄로 설치해요:
+
 \`\`\`bash
-cd push-server
-npm --prefix functions install
-npx firebase-tools login
-npx firebase-tools deploy --only functions --project 프로젝트ID
+curl -fsSL https://awoolimtkd.github.io/push-server/install.sh | bash
 \`\`\`
 
 마지막 배포: ${src}
