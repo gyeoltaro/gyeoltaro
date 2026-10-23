@@ -28,6 +28,7 @@
 npm start            # http://localhost:8090 에서 열립니다
 npm run build        # dist/taekwondo.html 한 파일로 묶기
 npm run deploy       # www/ 를 웹 주소용 저장소(GitHub Pages)에 올리기 (tools/deploy.mjs 의 SITE)
+npm run manual:pdf   # 사용설명서 PDF(www/manual.pdf) 다시 만들기. manual.html 을 고치면 같이 돌려 주세요
 ```
 
 처음 열면 체험용 샘플 데이터(원생 100명)가 들어 있습니다.
@@ -89,7 +90,7 @@ www/                 앱 본체 (나중에 APK로 포장할 폴더)
     parent.js        학부모 화면
     app.js           화면 이동, 뒤로가기(안드로이드 뒤로 버튼 포함)
   firebase-config.js 이 기기가 어느 도장 서버에 붙을지 (연결 링크·붙여 넣은 설정값)
-  manual.html        사용설명서 (관장님용, 학부모 안내 포함), manual/ 화면 사진
+  manual.html        사용설명서 (관장님용, 학부모 안내 포함), manual/ 화면 사진, manual.pdf 인쇄용
   manifest.webmanifest, icons/, sw.js   홈 화면에 추가, 인터넷이 끊겼을 때 다시 열기
 tools/build.mjs      한 파일 HTML로 묶기
 tools/deploy.mjs     웹 주소용 저장소에 화면 파일만 올리기

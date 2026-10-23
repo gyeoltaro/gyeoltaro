@@ -89,13 +89,35 @@ dl.faq dd{ margin:4px 0 0; color:var(--ink-soft); }
 .parents-box{ background:var(--surface); border:2px solid var(--accent); border-radius:16px; padding:6px 22px 18px; margin-top:20px; }
 .parents-box h2{ border-top:0; }
 footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); margin-top:56px; padding-top:16px; }
+.print-only{ display:none; }
+/* 인쇄·PDF: 차례와 앱 주소를 첫 장에, 큰 장은 새 쪽에서 시작, 색 상자는 그대로 */
 @media print{
+  @page{ size:A4; }
+  :root{ --bg:#ffffff; }
+  html, body{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   nav.toc, .actions{ display:none; }
-  .wrap{ display:block; }
-  body{ background:#fff; font-size:13px; }
-  section{ break-inside:auto; }
+  .print-only{ display:block; }
+  .wrap{ display:block; padding:0; }
+  body{ background:#fff; font-size:12.5px; line-height:1.7; }
+  header.top{ padding-top:8px; }
+  h1{ font-size:34px; }
+  .print-toc{ list-style:none; border:1px solid var(--line); border-radius:12px; padding:10px 18px; margin-top:18px; columns:2; column-gap:28px; }
+  .print-toc a{ color:var(--ink); text-decoration:none; }
+  .print-toc li{ margin:2px 0; }
+  .print-addr{ font-size:13px; color:var(--ink-soft); }
+  section{ padding-top:18px; }
+  #server, #daily, #push, #parents{ break-before:page; }
+  h2, h3{ break-after:avoid; }
+  h2{ padding-top:0; border-top:0; }
+  ol.steps > li, .note, .warn, .tip, .card, dl.faq dt, dl.faq dd{ break-inside:avoid; }
   figure{ break-inside:avoid; }
-  figure img{ max-width:70%; }
+  figure img{ max-width:62%; }
+  figure.small, footer{ display:none; }
+  figure.phones img{ max-width:132px; }
+  #parents ol.steps > li{ padding-top:3px; padding-bottom:3px; }
+  #parents figure{ margin:8px 0; }
+  .parents-box{ padding:2px 18px 10px; }
+  main a[href^="http"]:not(.raw)::after{ content:" (" attr(href) ")"; font-size:.85em; color:var(--muted); word-break:break-all; }
 }
 </style>
 </head>
@@ -129,7 +151,25 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <a class="btn primary" href="./">앱 열기</a>
     <a class="btn" href="#server">서버 만들기부터</a>
     <a class="btn" href="#parents">학부모님 안내</a>
+    <a class="btn" href="manual.pdf" download>PDF로 받기</a>
   </div>
+  <p class="print-only print-addr">앱 주소 <b>https://awoolimtkd.github.io</b> · 최신 설명서 <b>https://awoolimtkd.github.io/manual.html</b></p>
+  <p class="print-only print-addr">무료 배포판이에요. 도장 자료는 각 도장의 Firebase 서버에만 저장되고, 앱을 만든 사람은 볼 수 없어요. 프로그램 오류로 생긴 손해는 책임질 수 없으니 정기적으로 백업해 주세요.</p>
+  <ol class="print-only print-toc">
+    <li><a href="#about">1. 이 앱은요</a></li>
+    <li><a href="#trial">2. 체험 모드로 둘러보기</a></li>
+    <li><a href="#server">3. 우리 도장 서버 만들기</a></li>
+    <li><a href="#connect">4. 앱 연결과 관리자 계정</a></li>
+    <li><a href="#devices">5. 도장 태블릿과 다른 기기</a></li>
+    <li><a href="#students">6. 원생 등록과 보호자 동의</a></li>
+    <li><a href="#invite">7. 학부모 초대</a></li>
+    <li><a href="#daily">8. 매일 쓰는 기능</a></li>
+    <li><a href="#push">9. 앱 푸시 알림 (선택)</a></li>
+    <li><a href="#backup">10. 백업과 개인정보 관리</a></li>
+    <li><a href="#duty">11. 관장님이 꼭 지킬 것</a></li>
+    <li><a href="#faq">12. 자주 묻는 질문</a></li>
+    <li><a href="#parents">13. 학부모님 안내</a></li>
+  </ol>
 </header>
 
 <section id="about">
@@ -157,7 +197,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <li><span class="ui">학부모 화면 바로 보기</span>로 학부모님이 보는 화면도 볼 수 있어요.</li>
     <li>체험 모드에 입력한 자료는 서버를 연결할 때 <b>같은 기기에서</b> 서버로 옮길 수 있어요.</li>
   </ul>
-  <figure><img src="manual/start.jpg" width="1200" height="760" alt="앱 시작 화면. 출석체크, 관장·사범님, 학부모 세 가지 카드와 체험 모드 안내, 우리 도장 서버 연결 버튼" loading="lazy"><figcaption>시작 화면 (체험 모드)</figcaption></figure>
+  <figure class="small"><img src="manual/start.jpg" width="1200" height="760" alt="앱 시작 화면. 출석체크, 관장·사범님, 학부모 세 가지 카드와 체험 모드 안내, 우리 도장 서버 연결 버튼" loading="lazy"><figcaption>시작 화면 (체험 모드)</figcaption></figure>
 </section>
 
 <section id="server">
