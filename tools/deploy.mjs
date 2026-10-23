@@ -34,12 +34,25 @@ if (dry) {
 for (const f of readdirSync(dir)) if (f !== '.git') rmSync(join(dir, f), { recursive: true, force: true });
 cpSync(join(root, 'www'), dir, { recursive: true });
 writeFileSync(join(dir, '.nojekyll'), '');
+// 앱 푸시 서버 프로그램도 같이 올려서, 다른 도장도 이 저장소를 받아 자기 Firebase에 설치할 수 있게 해요
+mkdirSync(join(dir, 'push-server', 'functions'), { recursive: true });
+cpSync(join(root, 'firebase.json'), join(dir, 'push-server', 'firebase.json'));
+for (const f of ['index.js', 'package.json', 'package-lock.json']) cpSync(join(root, 'functions', f), join(dir, 'push-server', 'functions', f));
 const src = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const srcBranch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 writeFileSync(join(dir, 'README.md'), `# 태권도 통합 관리 (배포용)
 
-이 저장소는 앱 화면 파일만 올려 두는 곳입니다. 여기서 직접 고치지 마세요.
+이 저장소는 앱 화면 파일을 올려 두는 곳입니다. 여기서 직접 고치지 마세요.
 원본은 https://github.com/gyeoltaro/gyeoltaro 의 \`${srcBranch}\` 브랜치 \`www/\` 폴더이고, \`node tools/deploy.mjs\` 로 올립니다.
+
+\`push-server/\` 는 앱 푸시를 보내는 서버 프로그램(Firebase Cloud Functions)이에요. 각 도장이 자기 Firebase 프로젝트에 설치합니다.
+
+\`\`\`bash
+cd push-server
+npm --prefix functions install
+npx firebase-tools login
+npx firebase-tools deploy --only functions --project 프로젝트ID
+\`\`\`
 
 마지막 배포: ${src}
 `);

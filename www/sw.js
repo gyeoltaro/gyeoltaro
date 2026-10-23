@@ -20,3 +20,20 @@ self.addEventListener('fetch', function (e) {
     });
   }));
 });
+
+// 앱 푸시: 서버(functions/)가 보낸 알림을 보여 줘요. 알림 내용은 {title, body, tag} 이고 아이 이름은 들어 있지 않아요.
+self.addEventListener('push', function (e) {
+  var d = {};
+  try { var j = e.data ? e.data.json() : {}; d = j.data || j.notification || j; } catch (err) {}
+  e.waitUntil(self.registration.showNotification(d.title || '태권도 관리', {
+    body: d.body || '', icon: 'icons/icon-192.png', tag: d.tag || undefined, renotify: !!d.tag, lang: 'ko'
+  }));
+});
+// 알림을 누르면 열려 있는 앱으로 가고, 없으면 새로 열어요
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) if ('focus' in list[i]) return list[i].focus();
+    return self.clients.openWindow(self.registration.scope);
+  }));
+});

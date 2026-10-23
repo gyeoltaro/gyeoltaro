@@ -407,12 +407,18 @@
       html: '<div class="hstack">' + UI.av(kid, 'sm') + '<b>' + esc(kid.name) + '</b><span class="small muted">' + esc(UI.studentSub(kid)) + '</span></div>' +
         '<dl class="kv"><dt>출석번호</dt><dd class="mono">' + esc(kid.pin) + '</dd><dt>급수</dt><dd>' + UI.belt(kid.grade) + '</dd></dl>' +
         '<p class="fine">알림장 답글로 관장님께 언제든 연락할 수 있어요.</p>' +
+        (Cloud.pushEnabled() && !s.preview ? (function () {
+          var pl = Cloud.pushLine('새 알림장·출석');
+          return '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-push="' + (pl.act === 'push-on' ? 1 : 0) + '">' + pl.label + '</button>' : '') + '</div>';
+        })() : '') +
         '<div class="hstack">' + (DB.hasConsent(kid) ? '<button class="btn" type="button" data-consent>' + UI.icon('check') + '개인정보 동의 내역</button>' : '') +
         '<button class="btn" type="button" data-privacy>' + UI.icon('lock') + '개인정보 처리방침</button></div>',
       onMount: function (m, close) {
         m.querySelector('[data-privacy]').onclick = function () { Parts.openPrivacy(); };
         var cb = m.querySelector('[data-consent]');
         if (cb) cb.onclick = function () { close(); Parts.consentManage(kid); };
+        var pb = m.querySelector('[data-push]');
+        if (pb) pb.onclick = function () { var on = pb.getAttribute('data-push') === '1'; close(); Cloud.pushToggle(on); };
       },
       actions: s.preview ? [{ label: '관리자로 돌아가기', kind: 'primary', onClick: exitPreview }]
         : Cloud.enabled ? [{ label: '이 기기 연결 끊기', kind: 'danger', onClick: function () {

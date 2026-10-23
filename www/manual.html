@@ -112,6 +112,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <li><a href="#students">원생 등록과 보호자 동의</a></li>
     <li><a href="#invite">학부모 초대</a></li>
     <li><a href="#daily">매일 쓰는 기능</a></li>
+    <li><a href="#push">앱 푸시 알림 (선택)</a></li>
     <li><a href="#backup">백업과 개인정보 관리</a></li>
     <li><a href="#duty">관장님이 꼭 지킬 것</a></li>
     <li><a href="#faq">자주 묻는 질문</a></li>
@@ -368,8 +369,37 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
   <figure><img src="manual/admin-exams.jpg" width="1200" height="760" alt="승급심사 화면. 심사일별 대상 인원, 채점 완료 수, 원생별 급수와 상태" loading="lazy"><figcaption>승급심사</figcaption></figure>
 </section>
 
+<section id="push">
+  <h2><span class="n">09</span>앱 푸시 알림 (선택)</h2>
+  <p class="sub">문자 대신 휴대폰 알림으로 보내요. 건당 비용이 없어요. 없어도 앱의 다른 기능은 모두 쓸 수 있어요.</p>
+  <ul>
+    <li><b>학부모님께</b>: 새 알림장, 오늘 출석(“출석했어요 · 오후 3:02”)</li>
+    <li><b>관장·사범님께</b>: 새 참가신청, 학부모 답글</li>
+    <li>잠금 화면에도 보이는 글이라 <b>아이 이름은 넣지 않아요</b>. 개별 알림장은 “우리 아이 소식이 왔어요”로만 보내요.</li>
+  </ul>
+
+  <h3>9-1. 요금제 바꾸기 (Blaze)</h3>
+  <ol class="steps">
+    <li>Firebase 콘솔 왼쪽 아래 <span class="ui">업그레이드</span> → <b>Blaze(종량제)</b> → 결제 카드 등록</li>
+    <li>예산 알림을 꼭 걸어 두세요. 예: 월 1,000원. 원생 100명 규모는 무료 사용량 안이라 보통 0원이에요.</li>
+  </ol>
+
+  <h3>9-2. 알림 서버 프로그램 올리기 (한 번만)</h3>
+  <p>알림을 보내는 작은 프로그램을 우리 도장 Firebase에 올려야 해요. 컴퓨터에서 명령어 몇 줄이 필요해서, <b>이 앱을 전해 준 분께 부탁</b>하는 게 편해요. 직접 하려면 Node.js를 설치한 컴퓨터에서:</p>
+  <div class="card"><code>git clone https://github.com/awoolimtkd/awoolimtkd.github.io tkd</code><br><code>cd tkd/push-server</code><br><code>npm --prefix functions install</code><br><code>npx firebase-tools login</code><br><code>npx firebase-tools deploy --only functions --project 프로젝트ID</code></div>
+  <p class="note"><b>프로젝트ID</b>Firebase 콘솔 → 프로젝트 설정 → 일반의 “프로젝트 ID”예요. 이 프로그램은 서울(asia-northeast3)에서 돌고, 도장 자료를 밖으로 보내지 않아요.</p>
+
+  <h3>9-3. 앱에서 켜기</h3>
+  <ol class="steps">
+    <li><span class="ui">설정</span> → <b>앱 푸시 알림</b> → <span class="ui">앱 푸시 사용</span>을 체크해요.</li>
+    <li>관장님 휴대폰에서도 같은 화면의 <span class="ui">알림 켜기</span>를 누르면 새 참가신청·답글 알림을 받아요.</li>
+    <li>학부모님 앱 홈에 <span class="ui">알림 켜기</span>가 나타나요. 학부모님이 누르고 “허용”하면 끝이에요.</li>
+  </ol>
+  <p class="tip"><b>아이폰은 홈 화면 아이콘에서만</b>아이폰(iOS 16.4 이상)은 사파리에서 <span class="ui">홈 화면에 추가</span>한 아이콘으로 열어야 알림을 받을 수 있어요. 앱이 안내 문구를 보여 줘요.</p>
+</section>
+
 <section id="backup">
-  <h2><span class="n">09</span>백업과 개인정보 관리</h2>
+  <h2><span class="n">10</span>백업과 개인정보 관리</h2>
   <ul>
     <li><b>한 달에 한 번 백업</b>: <span class="ui">설정</span> → 데이터 → <span class="ui">백업 파일 만들기</span>. 관장님이 정한 비밀번호(8자 이상)로 잠겨서 저장돼요. 비밀번호를 잊으면 아무도 열 수 없으니 따로 적어 두세요.</li>
     <li><b>보관 기간 정리</b>: 퇴원 후 1년, 행사가 끝나고 1년이 지나면 홈에 알림이 떠요. <span class="ui">정리하기</span>를 누르면 이름·연락처·기록을 지우고, 회비 금액만 이름 없이 남겨요.</li>
@@ -379,7 +409,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
 </section>
 
 <section id="duty">
-  <h2><span class="n">10</span>관장님이 꼭 지킬 것</h2>
+  <h2><span class="n">11</span>관장님이 꼭 지킬 것</h2>
   <p>원생 정보에 대한 책임은 <b>정보를 모으는 도장(관장님)</b>에게 있어요. 앱을 만든 사람은 자료를 볼 수 없고 책임을 대신 질 수 없어요. 아래만 지키면 개인정보 보호법이 요구하는 기본을 갖출 수 있어요.</p>
   <ul class="check">
     <li>Firebase 주인 구글 계정에 <b>2단계 인증</b></li>
@@ -396,10 +426,10 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
 </section>
 
 <section id="faq">
-  <h2><span class="n">11</span>자주 묻는 질문</h2>
+  <h2><span class="n">12</span>자주 묻는 질문</h2>
   <dl class="faq">
     <dt>돈이 드나요?</dt>
-    <dd>앱은 무료예요. 서버는 Firebase 무료 요금제(Spark)로 원생 100명 규모를 충분히 써요. 카드를 등록하지 않아서 요금이 나올 수 없고, 하루 한도를 넘으면 다음 날까지 잠시 멈춰요.</dd>
+    <dd>앱은 무료예요. 서버는 Firebase 무료 요금제(Spark)로 원생 100명 규모를 충분히 써요. 카드를 등록하지 않아서 요금이 나올 수 없고, 하루 한도를 넘으면 다음 날까지 잠시 멈춰요. 앱 푸시를 쓰려면 Blaze 요금제로 바꿔야 하는데, 이 규모는 보통 0원이고 예산 알림을 걸어 두면 돼요.</dd>
     <dt>인터넷이 끊기면요?</dt>
     <dd>출석과 입력한 내용은 기기에 적어 두었다가, 다시 연결되면 자동으로 서버에 올라가요.</dd>
     <dt>관리자 비밀번호(6자리)를 잊었어요.</dt>
@@ -411,7 +441,9 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <dt>앱 업데이트는 어떻게 하나요?</dt>
     <dd>주소가 같아서 자동으로 새 버전이 열려요. 따로 할 일이 없어요.</dd>
     <dt>앱 푸시 알림이 오나요?</dt>
-    <dd>아직은 없어요. 학부모님이 앱을 열면 새 알림장 수가 숫자로 보여요. 급한 안내는 지금처럼 문자로 보내 주세요.</dd>
+    <dd>도장이 <a href="#push">9장</a>대로 켜 두면 와요. 켜지 않았으면 학부모님이 앱을 열 때 새 알림장 수가 숫자로 보여요. 꼭 봐야 하는 급한 안내는 문자도 함께 보내 주세요.</dd>
+    <dt>알림이 안 와요.</dt>
+    <dd>학부모님 휴대폰 설정에서 브라우저(또는 홈 화면 앱)의 알림이 허용되어 있는지, 아이폰이면 홈 화면 아이콘으로 열었는지 확인해 주세요. 앱 메뉴(☰)에서 알림을 껐다가 다시 켜도 돼요.</dd>
     <dt>태블릿을 바꿔요.</dt>
     <dd>새 태블릿에서 연결 링크를 열고 로그인하면 돼요. 옛 태블릿은 <span class="ui">설정</span> → <span class="ui">이 기기 서버 연결 해제</span>를 누르면 로그인과 기기에 남은 사본이 지워져요.</dd>
     <dt>아이폰도 되나요?</dt>
@@ -423,7 +455,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
 
 <section id="parents">
   <div class="parents-box">
-  <h2><span class="n">12</span>학부모님 안내</h2>
+  <h2><span class="n">13</span>학부모님 안내</h2>
   <p class="sub">도장 학부모 앱으로 우리 아이 출석, 알림장, 참가신청서, 성장기록을 볼 수 있어요. 따로 설치할 것은 없어요.</p>
   <ol class="steps">
     <li>도장에서 받은 문자의 <b>링크</b>를 눌러요.</li>
@@ -431,6 +463,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <li>초대 코드가 채워져 있으면 <span class="ui">연결하기</span>를 눌러요. 코드는 7일 안에 한 번만 쓸 수 있어요.</li>
     <li><b>보호자 동의서</b>가 나오면 항목마다 읽고 체크한 뒤 서명하고 <span class="ui">동의서 제출</span>을 눌러요. 사진·건강 정보는 선택이라 동의하지 않아도 돼요.</li>
     <li><b>안드로이드</b>는 앱에 <span class="ui">추가</span> 버튼이 보이면 누르거나, 크롬 메뉴(⋮) → <span class="ui">홈 화면에 추가</span>를 하면 앱처럼 열려요.</li>
+    <li>홈에 <span class="ui">알림 켜기</span>가 보이면 누르고 <b>허용</b>을 눌러요. 새 알림장과 출석을 휴대폰 알림으로 받아요. 메뉴(☰)에서 언제든 끌 수 있어요.</li>
   </ol>
   <figure class="phones">
     <img src="manual/parent-consent.jpg" width="390" height="760" alt="학부모 앱의 보호자 동의서 화면" loading="lazy">
@@ -442,7 +475,7 @@ footer{ color:var(--muted); font-size:13px; border-top:1px solid var(--line); ma
     <li><b>알림장</b>: 도장 공지와 우리 아이 소식. 답글로 관장님께 연락할 수 있어요.</li>
     <li><b>참가신청</b>: 대회·승급심사·캠프 신청서를 손글씨 서명으로 내요.</li>
     <li><b>성장기록</b>: 체력측정 결과와 승급심사 결과증</li>
-    <li>오른쪽 위 메뉴(☰): 개인정보 동의 내역(선택 동의 철회), 개인정보 처리방침, 이 기기 연결 끊기</li>
+    <li>오른쪽 위 메뉴(☰): 휴대폰 알림 켜기·끄기, 개인정보 동의 내역(선택 동의 철회), 개인정보 처리방침, 이 기기 연결 끊기</li>
   </ul>
   <p class="note"><b>휴대폰을 바꾸면</b>도장에 새 초대 코드를 부탁해 주세요. 형제·자매는 한 번에 함께 연결돼요.</p>
   </div>

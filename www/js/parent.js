@@ -54,6 +54,14 @@
         '<div><small>' + esc(U.fmtM(ym)) + ' 회비</small><b class="' + (fee ? 'good' : billed ? 'bad' : '') + '">' + (fee ? (fee.method === '면제' ? '면제' : '납부') : billed ? '미납' : '-') + '</b></div>' +
         '<div><small>새 알림장</small><b class="' + (unread ? 'bad' : '') + '">' + unread + '개</b></div></div></div>';
 
+      // 앱 푸시 알림 켜기 안내 (도장이 푸시를 켰을 때만)
+      var pst = Cloud.pushEnabled() && !preview() && !DB.device.hidePushTip ? Cloud.pushState() : 'on';
+      if (pst !== 'on' && pst !== 'unsupported') {
+        var pl = Cloud.pushLine('새 알림장·출석');
+        h += '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' +
+          (pl.act ? '<button class="btn sm primary" type="button" data-act="' + pl.act + '">' + pl.label + '</button>' : '') +
+          '<button class="btn sm quiet" type="button" data-act="hide-push">닫기</button></div>';
+      }
       // 홈 화면에 추가 안내 (브라우저가 추가 기능을 알려 줄 때만)
       if (App.installPrompt && !preview() && !DB.device.hideInstallTip) {
         h += '<div class="notice-bar">' + UI.icon('smile') + '<span>홈 화면에 추가하면 앱처럼 바로 열 수 있어요.</span>' +
@@ -79,6 +87,8 @@
         'cal-next': function () { ps.calYm = U.addMonths(ps.calYm, 1); App.refresh(); },
         'copy-acc': copyAcc,
         install: function () { App.install(); },
+        'push-on': function () { Cloud.pushToggle(true); },
+        'hide-push': function () { DB.device.hidePushTip = true; DB.saveDevice(); App.refresh(); },
         'hide-install': function () { DB.device.hideInstallTip = true; DB.saveDevice(); App.refresh(); }
       });
     }

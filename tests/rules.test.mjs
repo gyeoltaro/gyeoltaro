@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 
 const require = createRequire(import.meta.url);
 const { rulesFor } = require('../www/js/cloud-rules.js');
@@ -124,6 +124,19 @@ await t('알림장을 쓰지 못한다', assertFails(setDoc(doc(parent, 'notices
 await t('회비 기록을 못 고친다', assertFails(updateDoc(doc(parent, 'payments/p1'), { amount: 0 })));
 await t('출석을 못 넣는다', assertFails(setDoc(doc(parent, 'att/s1_2026-11'), { sid: 's1', ym: '2026-11', days: {} })));
 await t('자기 기기 연결을 끊는다', assertSucceeds(getDoc(doc(parent, 'parents/parentUid'))));
+
+console.log('앱 푸시 알림 주소');
+const TOKEN = { token: 'fcm-token-abc', role: 'parent', at: 1 };
+await t('학부모는 자기 기기 알림 주소를 저장한다', assertSucceeds(setDoc(doc(parent, 'push/parentUid'), TOKEN)));
+await t('자기 알림 주소를 다시 읽고 고친다', assertSucceeds(getDoc(doc(parent, 'push/parentUid'))));
+await t('다른 사람 알림 주소는 못 읽는다', assertFails(getDoc(doc(other, 'push/parentUid'))));
+await t('다른 사람 이름으로 알림 주소를 못 넣는다', assertFails(setDoc(doc(other, 'push/parentUid'), TOKEN)));
+await t('알림 주소 목록은 아무도 못 본다', assertFails(getDocs(collection(admin, 'push'))));
+await t('알림 주소에 다른 내용을 못 넣는다', assertFails(setDoc(doc(other, 'push/otherUid'), { ...TOKEN, studentIds: ['s2'] })));
+await t('학부모가 관리자 알림을 받겠다고 못 한다', assertFails(setDoc(doc(other, 'push/otherUid'), { ...TOKEN, role: 'admin' })));
+await t('관리자는 관리자 알림 주소를 저장한다', assertSucceeds(setDoc(doc(admin, 'push/adminUid'), { ...TOKEN, role: 'admin' })));
+await t('로그인 안 하면 알림 주소를 못 넣는다', assertFails(setDoc(doc(nobody, 'push/x'), TOKEN)));
+await t('자기 알림 주소를 지운다', assertSucceeds(deleteDoc(doc(parent, 'push/parentUid'))));
 
 await testEnv.cleanup();
 console.log(`\n${pass} passed, ${fail} failed`);

@@ -6,6 +6,7 @@
   'use strict';
   var esc = U.esc;
   var SDK = ['vendor/firebase/firebase-app-compat.js', 'vendor/firebase/firebase-auth-compat.js', 'vendor/firebase/firebase-firestore-compat.js'];
+  var MSG_SDK = 'vendor/firebase/firebase-messaging-compat.js';
   var SIMPLE = ['students', 'payments', 'fitness', 'exams', 'events', 'applications', 'parents', 'invites'];
   var CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -284,7 +285,7 @@
     if (!me) {
       // 도장에서 이 기기 연결을 끊었을 때
       stop();
-      auth.signOut().then(function () {
+      dropPush().then(function () { return auth.signOut(); }).then(function () {
         Cloud.role = 'none'; Cloud.parentDoc = null; remember();
         if (window.App) { App.setSession(null); UI.toast('도장에서 이 기기의 학부모 앱 연결을 끊었어요'); }
       });
@@ -350,6 +351,7 @@
       ready = true;
       Cloud.started = true;
       if (dirty) flushNow();
+      refreshPush();
     });
   };
 
@@ -587,13 +589,13 @@
   Cloud.unlinkSelf = function () {
     var u = auth.currentUser;
     stop();
-    return db.doc('parents/' + u.uid).delete().catch(function () {}).then(function () { return auth.signOut(); }).then(function () {
+    return dropPush().then(function () { return db.doc('parents/' + u.uid).delete().catch(function () {}); }).then(function () { return auth.signOut(); }).then(function () {
       Cloud.role = 'none'; Cloud.parentDoc = null; DB._replaceState(null); remember();
     });
   };
   Cloud.signOut = function () {
     stop();
-    return auth.signOut().then(function () {
+    return dropPush().then(function () { return auth.signOut(); }).then(function () {
       Cloud.role = 'none'; Cloud.hasData = false; DB._replaceState(null); remember();
     });
   };
@@ -613,7 +615,7 @@
   Cloud.disconnect = function (next, code) {
     stop();
     var u = auth && auth.currentUser;
-    var leave = u && u.isAnonymous ? db.doc('parents/' + u.uid).delete().catch(function () {}) : Promise.resolve();
+    var leave = dropPush().then(function () { return u && u.isAnonymous ? db.doc('parents/' + u.uid).delete().catch(function () {}) : null; });
     return leave.then(function () { return u ? auth.signOut() : null; }).catch(function () {}).then(function () {
       return db ? db.terminate().then(function () { return db.clearPersistence(); }) : null;
     }).catch(function () {}).then(function () {
@@ -657,6 +659,66 @@
         { label: '닫기', kind: 'primary' }
       ]
     });
+  };
+
+  // ---------- 앱 푸시 (알림 받기) ----------
+  // 도장이 서버 프로그램(functions/)을 올리고 설정에서 "앱 푸시 사용"을 켰을 때만 보여요.
+  // 이 기기의 알림 주소(토큰)는 push/{로그인ID}에 저장하고, 보내기는 서버가 해요.
+  Cloud.pushEnabled = function () { return Cloud.enabled && Cloud.started && !!DB.settings().push; };
+  // 'ios-home'(아이폰은 홈 화면 아이콘에서만) | 'unsupported' | 'denied' | 'on' | 'off'
+  Cloud.pushState = function () {
+    if (U.isIOS() && !U.standalone()) return 'ios-home';
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsupported';
+    if (Notification.permission === 'denied') return 'denied';
+    return Notification.permission === 'granted' && DB.device.pushToken ? 'on' : 'off';
+  };
+  function pushToken() {
+    return (fb.messaging ? Promise.resolve() : loadScript(MSG_SDK)).then(function () {
+      return navigator.serviceWorker.register('sw.js');
+    }).then(function (reg) {
+      var opts = { serviceWorkerRegistration: reg }, key = DB.settings().pushKey;
+      if (key) opts.vapidKey = key;
+      return fb.messaging().getToken(opts);
+    });
+  }
+  function savePush(token) {
+    DB.device.pushToken = token; DB.saveDevice();
+    return db.doc('push/' + auth.currentUser.uid).set({ token: token, role: Cloud.role === 'admin' ? 'admin' : 'parent', at: Date.now() });
+  }
+  // 기기에 기록이 없어도(브라우저 저장소를 지운 경우 등) 서버의 알림 주소는 지워요
+  function dropPush() {
+    var u = auth && auth.currentUser, had = DB.device.pushToken;
+    DB.device.pushToken = null; DB.saveDevice();
+    if (!u) return Promise.resolve();
+    return db.doc('push/' + u.uid).delete().catch(function () {}).then(function () {
+      return had && fb.messaging ? fb.messaging().deleteToken().catch(function () {}) : null;
+    });
+  }
+  // 알림 허용은 버튼을 누른 바로 그때 물어야 해서(특히 아이폰), 버튼 처리에서 곧바로 부릅니다
+  Cloud.enablePush = function () {
+    return Notification.requestPermission().then(function (p) {
+      if (p !== 'granted') throw new Error(p === 'denied' ? '알림이 차단되어 있어요. 휴대폰 설정에서 이 앱(브라우저)의 알림을 허용해 주세요.' : '알림을 허용해야 받을 수 있어요');
+      return pushToken();
+    }).then(savePush).catch(function (e) { throw new Error(e && e.code ? '알림을 켜지 못했어요 (' + e.code + ')' : (e && e.message) || '알림을 켜지 못했어요'); });
+  };
+  Cloud.disablePush = dropPush;
+  // 앱을 열 때마다 알림 주소가 바뀌었는지 확인해요
+  function refreshPush() {
+    if (!Cloud.pushEnabled() || Cloud.pushState() !== 'on') return;
+    pushToken().then(function (t) { if (t && t !== DB.device.pushToken) return savePush(t); }).catch(function (e) { console.warn('push refresh', e); });
+  }
+  // 학부모·관리자 화면에서 쓰는 알림 켜기/끄기 안내 한 줄
+  Cloud.pushLine = function (who) {
+    var st = Cloud.pushState();
+    if (st === 'on') return { text: '이 기기에서 ' + who + ' 알림을 받고 있어요.', act: 'push-off', label: '알림 끄기' };
+    if (st === 'off') return { text: who + ' 알림을 휴대폰 알림으로 받을 수 있어요.', act: 'push-on', label: '알림 켜기' };
+    if (st === 'denied') return { text: '이 기기에서 알림이 차단되어 있어요. 휴대폰 설정에서 브라우저(또는 홈 화면 앱)의 알림을 허용한 뒤 다시 열어 주세요.' };
+    if (st === 'ios-home') return { text: '아이폰은 사파리 공유 버튼 → "홈 화면에 추가"를 한 뒤, 홈 화면 아이콘으로 열어야 알림을 받을 수 있어요(iOS 16.4 이상).' };
+    return { text: '이 브라우저는 알림을 지원하지 않아요. 크롬이나 사파리 최신 버전에서 열어 주세요.' };
+  };
+  Cloud.pushToggle = function (on) {
+    var p = on ? Cloud.enablePush() : Cloud.disablePush();
+    return p.then(function () { UI.toast(on ? '알림을 켰어요' : '알림을 껐어요'); }, function (e) { UI.toast(e.message); }).then(function () { if (window.App) App.refresh(); });
   };
 
   // 같은 보호자 번호를 쓰는 형제가 새로 등록되면 이미 연결된 학부모 기기에도 보이게 합니다

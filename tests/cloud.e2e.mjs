@@ -1,5 +1,6 @@
 // 서버 모드 통합 테스트: 관장님 PC · 도장 태블릿 · 학부모 휴대폰 세 브라우저를 Firebase 에뮬레이터에 붙여 실제로 주고받는지 확인합니다.
-// 실행: npm run test:e2e   (firebase emulators:exec --project demo-tkd --only auth,firestore "node tests/cloud.e2e.mjs")
+// 실행: npm run test:e2e   (firebase emulators:exec --project demo-tkd --only auth,firestore,functions "node tests/cloud.e2e.mjs")
+// 앱 푸시 서버 프로그램(functions/)도 에뮬레이터에서 돌려요. 처음 한 번 npm --prefix functions install
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
@@ -27,7 +28,8 @@ if (!put.ok) throw new Error('rules load failed ' + put.status);
 const server = spawn('npx', ['http-server', join(root, 'www'), '-p', String(PORT), '-s', '-c-1'], { stdio: 'ignore' });
 for (let i = 0; i < 50; i++) { try { if ((await fetch(BASE)).ok) break; } catch (e) {} await new Promise(r => setTimeout(r, 200)); }
 
-const browser = await chromium.launch();
+// 알림 허용(grantPermissions)이 먹히는 전체 Chromium을 화면 없이 띄워요 (헤드리스 셸은 알림이 늘 '차단')
+const browser = await chromium.launch({ channel: 'chromium' });
 const errors = [];
 let pass = 0, fail = 0;
 async function t(name, fn) {
@@ -68,6 +70,19 @@ async function sign(page) {
   await page.mouse.move(box.x + 160, box.y + 90, { steps: 6 }); await page.mouse.up();
 }
 const until = (page, fn, arg, ms = 15000) => page.waitForFunction(fn, arg, { timeout: ms, polling: 200 });
+
+// 앱 푸시: 에뮬레이터의 서버 프로그램(functions)은 실제로 보내지 않고 _pushlog 에 남겨요
+async function pushLog() {
+  const r = await fetch('http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/_pushlog?pageSize=300', { headers: { Authorization: 'Bearer owner' } });
+  const j = await r.json();
+  return (j.documents || []).map(d => ({ tag: d.fields.tag.stringValue, body: d.fields.body.stringValue, uids: ((d.fields.uids.arrayValue || {}).values || []).map(v => v.stringValue) }));
+}
+async function waitPush(pred, ms = 30000) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { const hit = (await pushLog()).find(pred); if (hit) return hit; await new Promise(r => setTimeout(r, 500)); }
+  throw new Error('push not sent: ' + JSON.stringify(await pushLog()));
+}
+const uidOf = page => page.evaluate(() => firebase.auth().currentUser.uid);
 const SHOTS = process.env.E2E_SHOTS;
 const shot = async (page, name) => { if (SHOTS) { await page.waitForTimeout(350); await page.screenshot({ path: `${SHOTS}/${name}.png` }); } };
 
@@ -240,6 +255,26 @@ await t('이 기기 서버 연결 해제를 하면 체험 모드로 돌아가고
   await L.context().close();
 });
 
+// ---------- 앱 푸시 켜기 ----------
+let pUid, aUid;
+await t('관장님이 앱 푸시를 켜면 학부모 화면에 알림 켜기가 보이고, 알림 주소를 저장한다', async () => {
+  // 학부모가 알림 허용을 누른 상태 (헤드리스 브라우저는 기본이 '차단')
+  await P.context().grantPermissions(['notifications']);
+  await A.evaluate(() => { DB.settings().push = true; DB.save(); });
+  try { await P.waitForSelector('[data-act="push-on"]', { timeout: 20000 }); }
+  catch (e) {
+    const d = await P.evaluate(() => ({ enabled: Cloud.pushEnabled(), state: Cloud.pushState(), push: DB.settings().push, perm: window.Notification && Notification.permission, view: App.view, gate: document.getElementById('app').className }));
+    const cfg = await (await fetch('http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/config/public', { headers: { Authorization: 'Bearer owner' } })).json();
+    throw new Error('상태: ' + JSON.stringify(d) + ' 서버 push=' + JSON.stringify(cfg.fields && cfg.fields.push));
+  }
+  pUid = await uidOf(P); aUid = await uidOf(A);
+  // 실제 알림 주소는 휴대폰 브라우저에서만 받을 수 있어서, 테스트는 주소를 직접 넣어요(보안 규칙은 그대로 적용)
+  await P.evaluate(() => firebase.firestore().doc('push/' + firebase.auth().currentUser.uid).set({ token: 'test-token-parent', role: 'parent', at: Date.now() }));
+  await A.evaluate(() => firebase.firestore().doc('push/' + firebase.auth().currentUser.uid).set({ token: 'test-token-admin', role: 'admin', at: Date.now() }));
+  const policy = await A.evaluate(() => Parts.privacyPolicy());
+  if (!/Firebase Cloud Messaging/.test(policy) || !/기기 토큰/.test(policy)) throw new Error('privacy policy missing push');
+});
+
 // ---------- 알림장·신청서 주고받기 ----------
 await t('개별 알림장은 받는 아이 보호자에게만 간다', async () => {
   await A.evaluate(([mine, theirs]) => {
@@ -251,12 +286,28 @@ await t('개별 알림장은 받는 아이 보호자에게만 간다', async () 
   const leaked = await P.evaluate(() => DB.state.notices.some(n => n.id === 'nTheirs'));
   if (leaked) throw new Error('other child notice leaked');
 });
+await t('새 개별 알림장 푸시는 그 아이 학부모에게만, 아이 이름 없이 간다', async () => {
+  const hit = await waitPush(l => l.tag === 'notice-nMine');
+  if (!hit.uids.includes(pUid) || hit.uids.includes(aUid)) throw new Error(JSON.stringify(hit));
+  if (hit.body !== '우리 아이 소식이 왔어요') throw new Error('body: ' + hit.body);
+  await new Promise(r => setTimeout(r, 1500));
+  const theirs = (await pushLog()).filter(l => l.tag === 'notice-nTheirs' && l.uids.includes(pUid));
+  if (theirs.length) throw new Error('pushed to wrong parent');
+});
+await t('오늘 출석하면 그 아이 학부모에게 출석 푸시가 간다', async () => {
+  const sid = await A.evaluate(ids => { const id = ids.find(x => !DB.day(U.today())[x]); if (id) DB.checkIn(id, null, null, 'admin'); return id; }, kids);
+  if (!sid) throw new Error('all siblings already checked in');
+  const hit = await waitPush(l => l.tag === 'att-' + sid);
+  if (!hit.uids.includes(pUid) || !/^출석했어요 · 오[전후] \d+:\d\d$/.test(hit.body)) throw new Error(JSON.stringify(hit));
+});
 await t('학부모가 읽고 답글을 쓰면 관리자에게 보인다', async () => {
   await P.evaluate(() => App.go('notices', { id: 'nMine' }));
   await P.click('[data-act="quick"] >> nth=0');
   await until(A, id => { const n = DB.byId('notices', 'nMine'); return n && n.reads[id] && n.replies.length === 1 && n.replies[0].seen === false; }, kids[0]);
   const badge = await A.evaluate(() => DB.unseenReplies());
   if (badge < 1) throw new Error('reply badge ' + badge);
+  const hit = await waitPush(l => l.tag === 'reply');
+  if (!hit.uids.includes(aUid) || hit.uids.includes(pUid)) throw new Error(JSON.stringify(hit));
 });
 await t('학부모 참가신청서가 관리자에게 실시간으로 들어온다', async () => {
   const ev = await A.evaluate(() => DB.state.events.find(e => DB.eventOpen(e) && e.date >= U.today() && e.kind === '캠프' || (DB.eventOpen(e) && e.date >= U.today() && !e.thirdParty)).id);
@@ -272,6 +323,8 @@ await t('학부모 참가신청서가 관리자에게 실시간으로 들어온�
   await P.mouse.move(box.x + 30, box.y + 40); await P.mouse.down(); await P.mouse.move(box.x + 150, box.y + 80, { steps: 5 }); await P.mouse.up();
   await P.click('[data-act="submit"]');
   await until(A, ([id, sid]) => DB.state.applications.some(a => a.eventId === id && a.studentId === sid && a.seen === false && a.consents && a.signature), [ev, kids[0]]);
+  const hit = await waitPush(l => l.tag === 'application');
+  if (!hit.uids.includes(aUid) || hit.uids.includes(pUid)) throw new Error(JSON.stringify(hit));
 });
 await t('원생 정보에 연결된 학부모 기기가 보인다', async () => {
   await A.evaluate(id => App.go('students', { id }), kids[0]);
@@ -284,6 +337,8 @@ await t('원생 정보에 연결된 학부모 기기가 보인다', async () => 
 await t('관리자가 연결을 끊으면 학부모 기기는 처음 화면으로 돌아간다', async () => {
   await A.evaluate(id => { Cloud.parentsOf(id).forEach(p => Cloud.unlinkParent(p.id)); }, kids[0]);
   await P.waitForSelector('.start-card', { timeout: 20000 });
+  const left = await fetch(`http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/push/${pUid}`, { headers: { Authorization: 'Bearer owner' } });
+  if (left.status !== 404) throw new Error('push token left behind: ' + left.status);
 });
 
 await t('관리자 비밀번호를 잊으면 계정 비밀번호로 다시 정하고 태블릿에도 반영된다', async () => {

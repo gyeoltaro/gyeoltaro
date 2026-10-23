@@ -35,6 +35,16 @@
       '<button class="btn danger" type="button" data-act="signout">' + UI.icon('logout') + '이 기기에서 로그아웃</button>' +
       (Server.preset ? '' : '<button class="btn danger" type="button" data-act="disconnect">' + UI.icon('x') + '이 기기 서버 연결 해제</button>') + '</div>');
   }
+  // ---------- 앱 푸시 ----------
+  function pushSection(st) {
+    var pl = Cloud.pushLine('새 참가신청·학부모 답글');
+    return section('앱 푸시 알림', '새 알림장·출석은 학부모님께, 새 참가신청·답글은 관장님께',
+      '<p class="soft">푸시를 보내려면 Firebase 요금제를 <b>Blaze</b>로 바꾸고 알림 서버 프로그램을 한 번 올려야 해요. 방법은 <a href="manual.html#push" target="_blank" rel="noopener">사용설명서</a>에 있어요. 잠금 화면에도 보이는 글이라 알림에는 아이 이름을 넣지 않아요.</p>' +
+      '<label class="check"><input type="checkbox" id="sPush"' + (st.push ? ' checked' : '') + '>앱 푸시 사용 (서버 프로그램을 올린 뒤 켜세요)</label>' +
+      '<div class="field"><label for="sPushKey">웹 푸시 인증서 공개 키 (선택)</label><div class="hstack" style="flex-wrap:nowrap"><input class="input mono" id="sPushKey" value="' + esc(st.pushKey || '') + '" placeholder="비워 두면 기본 키를 써요" autocomplete="off"><button class="btn" type="button" data-act="save-pushkey">저장</button></div>' +
+      '<span class="hint">Firebase 콘솔 → 프로젝트 설정 → 클라우드 메시징 → 웹 푸시 인증서에서 만든 키 쌍이에요.</span></div>' +
+      (st.push ? '<div class="notice-bar">' + UI.icon('bell') + '<span>' + esc(pl.text) + '</span>' + (pl.act ? '<button class="btn sm" type="button" data-act="' + pl.act + '">' + pl.label + '</button>' : '') + '</div>' : ''));
+  }
   // 체험 모드: 아직 서버에 연결하지 않았을 때
   function serverSection() {
     return section('도장 서버 연결', '지금은 체험 모드예요',
@@ -191,7 +201,7 @@
       h += section('출석 화면', '', '<label class="check"><input type="checkbox" id="sSound"' + (st.kioskSound !== false ? ' checked' : '') + '>출석할 때 "띵동" 소리 내기</label>' +
         (App.installPrompt ? '<div class="hstack"><button class="btn" type="button" data-act="install">' + UI.icon('tablet') + '이 기기 홈 화면에 앱 추가</button><span class="hint">도장 태블릿에서 주소창 없이 앱처럼 열려요.</span></div>' : ''));
 
-      if (Cloud.enabled) h += cloudSection(st);
+      if (Cloud.enabled) h += cloudSection(st) + pushSection(st);
       else if (!Server.preset) h += serverSection();
       h += section('데이터', '저장 위치: ' + where + ' · 약 ' + (size / 1024 / 1024).toFixed(2) + 'MB',
         (window.Cloud && Cloud.enabled
@@ -216,6 +226,13 @@
         st.autoLockMin = +e.target.value;
         DB.save();
         UI.toast(st.autoLockMin ? st.autoLockMin + '분 동안 안 쓰면 잠가요' : '자동 잠금을 껐어요');
+      };
+      var sPush = el.querySelector('#sPush');
+      if (sPush) sPush.onchange = function (e) {
+        st.push = e.target.checked;
+        DB.save();
+        UI.toast(st.push ? '앱 푸시를 켰어요. 학부모님 앱에 "알림 켜기"가 보여요.' : '앱 푸시를 껐어요');
+        App.refresh();
       };
       el.querySelector('#sSound').onchange = function (e) { st.kioskSound = e.target.checked; DB.save(); UI.toast(e.target.checked ? '출석 소리를 켰어요' : '출석 소리를 껐어요'); };
       var restoreFile = el.querySelector('#restoreFile');
@@ -328,6 +345,15 @@
           rulesView(st.adminEmails);
         },
         'share-link': function () { Cloud.shareLinkModal(); },
+        'push-on': function () { Cloud.pushToggle(true); },
+        'push-off': function () { Cloud.pushToggle(false); },
+        'save-pushkey': function () {
+          var v = el.querySelector('#sPushKey').value.trim();
+          if (v && !/^[A-Za-z0-9_-]{80,100}={0,2}$/.test(v)) { UI.toast('공개 키 모양이 맞지 않아요. "키 쌍" 값을 그대로 복사해 주세요.'); return; }
+          st.pushKey = v;
+          DB.save();
+          UI.toast(v ? '웹 푸시 키를 저장했어요' : '기본 키를 써요');
+        },
         connect: function () { Cloud.connectModal(); },
         install: function () { App.install(); },
         disconnect: function () {
