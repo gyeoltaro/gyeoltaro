@@ -79,6 +79,8 @@
 2. 저장소에서 `npm run deploy:push -- --project 프로젝트ID` (처음엔 `npx firebase-tools login`). 함수 4개가 서울(asia-northeast3)에 올라갑니다.
 3. 앱 **설정 → 앱 푸시 알림 → 앱 푸시 사용**을 켭니다. 학부모 앱 홈에 "알림 켜기"가 나타납니다.
 4. 웹 푸시 인증서 키 쌍은 선택입니다(비워 두면 Firebase 기본 키).
+5. 처음 올릴 때 "Permission denied while using the Eventarc Service Agent"가 나오면 3~5분 뒤 다시 올리면 됩니다(2세대 함수 첫 사용 시 권한 준비).
+6. 원격 기기에서 `firebase login`이 "Unable to verify client"로 막히면, `gcloud auth application-default login --no-launch-browser`로 로그인(허용 화면에서 Google Cloud 항목 체크)하고 `gcloud auth application-default set-quota-project 프로젝트ID` 뒤 같은 명령으로 올립니다. 끝나면 `gcloud auth application-default revoke`.
 
 ## 무엇이 어디에 저장되나요
 
