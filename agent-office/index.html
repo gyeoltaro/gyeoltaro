@@ -25,7 +25,7 @@
     --ok-soft: #dcefe2;
     --warn: #995e06;
     --warn-soft: #f5e9d2;
-    --a0: #2f47c6; --a1: #0a7183; --a2: #b9285d; --a3: #b64708; --a4: #23803a; --a5: #806000;
+    --a0: #2f47c6; --a1: #0a7183; --a2: #b9285d; --a3: #b64708; --a4: #23803a; --a5: #806000; --a6: #5b3fd0; --a7: #85582b;
     --shadow: 0 1px 2px rgba(24,32,30,.06), 0 12px 32px -14px rgba(24,32,30,.28);
     --f-display: "Orbit", "IBM Plex Sans KR", system-ui, sans-serif;
     --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -37,7 +37,7 @@
       --ink: #e4e9ec; --ink-2: #9ca7b0; --ink-3: #6e7984; --line: #26303b;
       --accent: #8d9eff; --accent-ink: #0b1030; --accent-soft: #1d2549;
       --ok: #6fcf98; --ok-soft: #14301f; --warn: #e5b55e; --warn-soft: #33270f;
-      --a0: #97a8ff; --a1: #52c8d9; --a2: #f27ba7; --a3: #ff9b5e; --a4: #72d48c; --a5: #f1cc4b;
+      --a0: #97a8ff; --a1: #52c8d9; --a2: #f27ba7; --a3: #ff9b5e; --a4: #72d48c; --a5: #f1cc4b; --a6: #b7a5ff; --a7: #dcae7c;
       --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -14px rgba(0,0,0,.75);
       color-scheme: dark;
     }
@@ -47,7 +47,7 @@
     --ink: #e4e9ec; --ink-2: #9ca7b0; --ink-3: #6e7984; --line: #26303b;
     --accent: #8d9eff; --accent-ink: #0b1030; --accent-soft: #1d2549;
     --ok: #6fcf98; --ok-soft: #14301f; --warn: #e5b55e; --warn-soft: #33270f;
-    --a0: #97a8ff; --a1: #52c8d9; --a2: #f27ba7; --a3: #ff9b5e; --a4: #72d48c; --a5: #f1cc4b;
+    --a0: #97a8ff; --a1: #52c8d9; --a2: #f27ba7; --a3: #ff9b5e; --a4: #72d48c; --a5: #f1cc4b; --a6: #b7a5ff; --a7: #dcae7c;
     --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -14px rgba(0,0,0,.75);
     color-scheme: dark;
   }
@@ -292,8 +292,8 @@
     font: 400 15px/1 var(--f-display);
   }
   .who{ grid-area: who; display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-  .who b{ font-size: 14px; font-weight: 600; }
-  .who .role{ font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who b{ font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+  .who .role{ font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 100 auto; }
   .st{
     grid-area: st; align-self: center;
     font-size: 11.5px; font-weight: 500;
@@ -335,11 +335,73 @@
 
   /* log */
   .log{ list-style: none; margin: 0; padding: 0; font-size: 13px; }
-  .log li{ display: grid; grid-template-columns: 42px minmax(0,1fr); gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .log li{ display: grid; grid-template-columns: minmax(42px, auto) minmax(0,1fr); gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
   .log time{ font: 400 11.5px/1.6 var(--f-mono); color: var(--ink-3); font-variant-numeric: tabular-nums; }
   .log p{ margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
   .log .n{ font-weight: 600; }
   .log .ok{ color: var(--ok); font-weight: 600; }
+
+  /* data source */
+  .seg-src{ display: flex; width: 100%; }
+  .seg-src button{ flex: 1; font: 500 13px/1 var(--f-body); padding: 9px 8px; }
+  .src-card{ margin-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--ink-2); }
+  .src-card p{ margin: 0; }
+  .src-status{ display: flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; }
+  .src-status.bad{ color: var(--warn); }
+  .dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+  .dot.ok{ background: var(--ok); }
+  .dot.run{ background: var(--accent); animation: blink 1.4s infinite; }
+  .dot.bad{ background: var(--warn); }
+  .src-actions{ display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-sm{
+    font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--raised); color: var(--ink); cursor: pointer;
+  }
+  .btn-sm:hover{ border-color: var(--accent); }
+  .btn-sm.primary{ background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn-sm:disabled{ opacity: .55; cursor: default; }
+  .dim{ color: var(--ink-3); }
+  .how{ margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  code{ font: 400 12px/1.4 var(--f-mono); background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .src-card .bar{ height: 4px; }
+
+  /* live dispatch */
+  .repo-row{ display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+  .repo-row select{
+    flex: 1; min-width: 0; font-size: 13px; background: var(--raised); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+  }
+  .confirm{ margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+  .confirm p{ margin: 0; }
+  .d-msg{ margin: 10px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .d-msg.bad{ color: var(--warn); }
+
+  /* session cards */
+  .t-sub{ margin: 4px 0 0; font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .t-link{ display: inline-block; margin-top: 8px; font-size: 12px; color: var(--accent); text-decoration: none; }
+  .t-link:hover{ text-decoration: underline; }
+  .badge.run{ color: var(--accent); background: var(--accent-soft); box-shadow: none; }
+  .badge.warn{ color: var(--warn); background: var(--warn-soft); box-shadow: none; }
+  .badge.bad{ color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); }
+  .log .dim{ color: var(--ink-3); }
+  .log .bad{ color: var(--warn); font-weight: 600; }
+  .roster-empty{ padding: 14px 8px; color: var(--ink-3); font-size: 13px; border-bottom: 1px solid var(--line); }
+  .bar.pulse i{ animation: blink 1.6s infinite; }
+  .live[data-mode="sim"]{ color: var(--ink-2); }
+  .live[data-mode="sim"] i{ background: var(--ink-3); animation: none; }
+  .live[data-mode="file"]{ color: var(--accent); }
+  .live[data-mode="file"] i{ background: var(--accent); }
+  .insp-link{ margin: 0; font-size: 12.5px; }
+  .insp-link a{ color: var(--accent); text-decoration: none; }
+  .insp-link a:hover{ text-decoration: underline; }
+  .stage.drop::after{
+    content: "로그 파일을 놓으면 바로 재생해요";
+    position: absolute; inset: 12px; z-index: 5;
+    display: grid; place-items: center;
+    border: 2px dashed var(--accent); border-radius: 14px;
+    background: color-mix(in srgb, var(--paper) 80%, transparent);
+    color: var(--ink); font-weight: 600; pointer-events: none;
+  }
 
   @keyframes blink{ 0%,100%{ opacity: 1; } 50%{ opacity: .3; } }
 
@@ -381,11 +443,12 @@
       <p class="insp-desc" id="inDesc"></p>
       <dl class="insp-grid">
         <div><dt>상태</dt><dd id="inState"></dd></div>
-        <div><dt>대기 중인 작업</dt><dd class="num" id="inQueue"></dd></div>
+        <div><dt id="inQueueL">대기 중인 작업</dt><dd class="num" id="inQueue"></dd></div>
         <div class="wide"><dt>지금 하는 일</dt><dd id="inJob"></dd></div>
-        <div><dt>끝낸 단계</dt><dd class="num" id="inDone"></dd></div>
+        <div><dt id="inDoneL">끝낸 단계</dt><dd class="num" id="inDone"></dd></div>
         <div><dt>사용 토큰</dt><dd class="num" id="inTok"></dd></div>
       </dl>
+      <p class="insp-link" id="inLinkRow" hidden><a id="inLink" href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai에서 세션 열기 ↗</a></p>
       <label class="switch" for="followToggle"><input type="checkbox" id="followToggle"><span class="track"></span>카메라로 따라가기</label>
     </aside>
     <p class="hint">드래그로 회전 · 오른쪽 드래그로 이동 · 휠로 확대 · 에이전트를 누르면 자세히 보여요</p>
@@ -395,48 +458,71 @@
     <header class="brand">
       <div class="brand-row">
         <h1>에이전트 오피스</h1>
-        <span class="live"><i></i>근무 중</span>
+        <span class="live" id="modePill" data-mode="sim"><i></i><span>시뮬레이션</span></span>
       </div>
-      <p class="lede">여섯 AI 에이전트가 작업을 받아 단계별로 나누고, 서로 넘겨 가며 끝까지 처리해요. 처음 보이는 작업 세 개는 예시예요.</p>
+      <p class="lede" id="lede">가상의 에이전트 여섯 명이 작업을 나눠 받고, 서로 넘겨 가며 끝까지 처리하는 시뮬레이션이에요.</p>
       <dl class="stats">
-        <div><dt>진행 중</dt><dd id="stActive">0</dd></div>
-        <div><dt>완료</dt><dd id="stDone">0</dd></div>
-        <div><dt>가동률</dt><dd id="stUtil">0%</dd></div>
-        <div><dt>사용 토큰</dt><dd id="stTok">0</dd></div>
+        <div><dt id="stL1">진행 중</dt><dd id="st1">0</dd></div>
+        <div><dt id="stL2">완료</dt><dd id="st2">0</dd></div>
+        <div><dt id="stL3">가동률</dt><dd id="st3">0%</dd></div>
+        <div><dt id="stL4">사용 토큰</dt><dd id="st4">0</dd></div>
       </dl>
     </header>
 
-    <section class="block" aria-labelledby="hDispatch">
-      <h2 id="hDispatch">작업 지시 <span class="sub">마루가 받아서 단계와 담당자를 정해요</span></h2>
+    <section class="block" aria-labelledby="hSource">
+      <h2 id="hSource">데이터 소스</h2>
+      <div class="seg seg-src" id="srcSeg" role="group" aria-label="데이터 소스">
+        <button type="button" data-src="live" aria-pressed="true">실시간</button>
+        <button type="button" data-src="sim" aria-pressed="false">시뮬레이션</button>
+        <button type="button" data-src="file" aria-pressed="false">로그 파일</button>
+      </div>
+      <div class="src-card" id="srcCard" aria-live="polite"></div>
+      <input type="file" id="fileInput" accept=".jsonl,.json,.txt,.log,application/json" hidden>
+    </section>
+
+    <section class="block" id="dispatchBlock" aria-labelledby="hDispatch">
+      <h2 id="hDispatch"><span id="hDispatchText">작업 지시</span> <span class="sub" id="dispatchSub">마루가 받아서 단계와 담당자를 정해요</span></h2>
       <form id="dispatch" class="dispatch" autocomplete="off">
         <label class="sr" for="taskInput">맡길 작업</label>
-        <input id="taskInput" type="text" maxlength="60" placeholder="예: 회원가입 화면 개선">
-        <button type="submit" class="btn-primary">지시하기</button>
+        <input id="taskInput" type="text" maxlength="300" placeholder="예: 회원가입 화면 개선">
+        <button type="submit" class="btn-primary" id="dispatchBtn">지시하기</button>
       </form>
+      <div class="repo-row" id="repoRow" hidden>
+        <label for="repoSel">저장소</label>
+        <select id="repoSel"><option value="">저장소 없이</option></select>
+      </div>
+      <div class="confirm" id="confirmRow" hidden>
+        <p id="confirmText"></p>
+        <div class="src-actions">
+          <button type="button" class="btn-sm primary" id="confirmYes">세션 만들기</button>
+          <button type="button" class="btn-sm" id="confirmNo">취소</button>
+        </div>
+      </div>
+      <p class="d-msg" id="dispatchMsg" hidden></p>
       <div class="chips" id="chips" aria-label="예시 작업"></div>
-      <div class="controls">
-        <div class="seg" role="group" aria-label="진행 속도">
+      <div class="controls" id="controls">
+        <div class="seg" id="speedSeg" role="group" aria-label="진행 속도">
           <span class="seg-label">속도</span>
           <button type="button" data-speed="1" aria-pressed="true">1×</button>
           <button type="button" data-speed="2" aria-pressed="false">2×</button>
           <button type="button" data-speed="4" aria-pressed="false">4×</button>
         </div>
-        <label class="switch" for="autoToggle"><input type="checkbox" id="autoToggle" checked><span class="track"></span>새 요청 자동 유입</label>
+        <label class="switch" for="autoToggle" id="autoWrap"><input type="checkbox" id="autoToggle" checked><span class="track"></span>새 요청 자동 유입</label>
       </div>
     </section>
 
     <section class="block" aria-labelledby="hRoster">
-      <h2 id="hRoster">에이전트 <span class="sub">6명 · 누르면 그 자리로 카메라가 가요</span></h2>
+      <h2 id="hRoster">에이전트 <span class="sub" id="rosterSub"></span></h2>
       <ul class="roster" id="roster"></ul>
     </section>
 
     <section class="block" aria-labelledby="hTasks">
-      <h2 id="hTasks">작업 현황</h2>
+      <h2 id="hTasks"><span id="hTasksText">작업 현황</span></h2>
       <div class="tasks" id="tasks"></div>
     </section>
 
     <section class="block" aria-labelledby="hLog">
-      <h2 id="hLog">활동 기록 <span class="sub">시간은 시뮬레이션 경과 시간</span></h2>
+      <h2 id="hLog">활동 기록 <span class="sub">최근 120건</span></h2>
       <ol class="log" id="log"></ol>
     </section>
   </aside>
@@ -747,9 +833,8 @@ function makeDesk(x, z, rot, opts = {}) {
   B(g, 0.22, 0.015, 0.16, MAT.monitor, 0, 0.758, -0.2);
   B(g, 0.05, 0.28, 0.04, MAT.monitor, 0, 0.89, -0.25);
   B(g, 0.8, 0.48, 0.035, MAT.monitor, 0, 1.13, -0.22);
-  let screen = null;
-  if (!opts.spare) screen = makeScreen();
-  const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.42), screen ? new THREE.MeshBasicMaterial({ map: screen.t }) : MAT.monitor);
+  const screen = makeScreen();
+  const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.42), new THREE.MeshBasicMaterial({ map: screen.t }));
   sm.position.set(0, 1.13, -0.2015);
   g.add(sm);
   if (opts.lead) {
@@ -758,14 +843,10 @@ function makeDesk(x, z, rot, opts = {}) {
   }
   B(g, 0.46, 0.018, 0.15, MAT.keyboard, 0, 0.759, 0.12);
   B(g, 0.06, 0.02, 0.09, MAT.keyboard, 0.33, 0.76, 0.14);
-  if (!opts.spare) {
-    cyl(g, 0.045, 0.04, 0.1, std(new THREE.Color(opts.color || '#ffffff'), 0.5), -w / 2 + 0.2, 0.8, 0.06, 14);
-    const p = B(g, 0.22, 0.008, 0.3, MAT.paper, w / 2 - 0.25, 0.754, -0.08);
-    p.rotation.y = 0.2;
-  } else {
-    makePlant(local(-0.55, -0.1).x, local(-0.55, -0.1).z, 0.45, 0.75);
-  }
-  makeChair(g, 0, opts.spare ? 0.55 : 0.78, 0);
+  cyl(g, 0.045, 0.04, 0.1, std(new THREE.Color(opts.color || '#d9d4ca'), 0.5), -w / 2 + 0.2, 0.8, 0.06, 14);
+  const p = B(g, 0.22, 0.008, 0.3, MAT.paper, w / 2 - 0.25, 0.754, -0.08);
+  p.rotation.y = 0.2;
+  makeChair(g, 0, 0.78, 0);
   rectObs(x, z, rot % Math.PI === 0 ? w : 0.8, rot % Math.PI === 0 ? 0.8 : w);
   lampSpots.push({ x, z });
   const deskH = rot + Math.PI;
@@ -792,20 +873,11 @@ function makePlant(x, z, s = 1, y0 = 0) {
   if (!y0) circObs(x, z, 0.25 * s + 0.05);
 }
 
-const DESK_LAYOUT = {
-  maru: { x: 2.5, z: -5.25, rot: Math.PI, lead: true },
-  sori: { x: -8, z: -3.6, rot: 0 },
-  miru: { x: -5, z: -3.6, rot: 0 },
-  koda: { x: -2, z: -3.6, rot: 0 },
-  bareun: { x: -8, z: -0.4, rot: 0 },
-  haesol: { x: -5, z: -0.4, rot: 0 },
-};
-const desks = {};
-for (const def of AGENT_DEFS) {
-  const L = DESK_LAYOUT[def.id];
-  desks[def.id] = makeDesk(L.x, L.z, L.rot, { lead: L.lead, color: def.hex });
-}
-makeDesk(-2, -0.4, 0, { spare: true });
+// 자리 목록: 창가 리드 책상 하나와 두 줄로 놓인 업무 책상 여섯 개. 시뮬레이션에서는 앞의 여섯 자리를 순서대로 써요
+const SLOTS = [
+  { x: 2.5, z: -5.25, rot: Math.PI, lead: true }, { x: -8, z: -3.6, rot: 0 }, { x: -5, z: -3.6, rot: 0 }, { x: -2, z: -3.6, rot: 0 },
+  { x: -8, z: -0.4, rot: 0 }, { x: -5, z: -0.4, rot: 0 }, { x: -2, z: -0.4, rot: 0 },
+].map((L, i) => ({ ...makeDesk(L.x, L.z, L.rot, { lead: L.lead, color: AGENT_DEFS[i] ? AGENT_DEFS[i].hex : null }), kind: 'desk', owner: null }));
 
 // whiteboard (task board)
 const boardTex = canvasTex(1024, 512, () => {});
@@ -832,8 +904,24 @@ for (let k = 0; k < 6; k++) {
   const x = MEET.x + 1.72 * Math.sin(a), z = MEET.z + 1.72 * Math.cos(a);
   makeChair(scene, x, z, a);
   MEET_SEATS.push({ x, z, h: a + Math.PI });
+  // 책상이 모자라면 회의 테이블 의자도 자리로 써요
+  SLOTS.push({ seat: { x, z }, h: a + Math.PI, handoff: { x: MEET.x + 2.35 * Math.sin(a), z: MEET.z + 2.35 * Math.cos(a) }, screen: null, kind: 'meet', owner: null });
 }
 lampSpots.push({ x: MEET.x, z: MEET.z, big: true });
+
+// 입구: 서브에이전트가 들어오고 일을 마치면 나가는 곳
+const DOOR = { x: -6.5, z: 6.45 };
+{
+  const matTex = canvasTex(512, 256, (g, w, h) => {
+    g.fillStyle = '#4f5f5a'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(255,255,255,0.25)'; g.lineWidth = 6; g.strokeRect(14, 14, w - 28, h - 28);
+    g.fillStyle = 'rgba(255,255,255,0.78)'; g.textAlign = 'center';
+    g.font = '400 64px "Orbit", sans-serif'; g.fillText('ENTRANCE', w / 2, 130);
+    g.font = `500 40px ${CANVAS_FONT}`; g.fillText('입구', w / 2, 200);
+  });
+  const doorMat = add(scene, new THREE.PlaneGeometry(1.8, 0.9), new THREE.MeshStandardMaterial({ map: matTex.t, roughness: 1 }), DOOR.x, 0.014, 6.5, { cast: false });
+  doorMat.rotation.x = -Math.PI / 2;
+}
 
 // lounge
 {
@@ -1035,7 +1123,11 @@ const POIS = [
 ];
 
 /* ================= agents ================= */
-const pickables = [];
+let pickables = [];
+const agents = [];
+let byId = {};
+let rosterDirty = true;
+
 function buildAgentModel(def) {
   const g = new THREE.Group();
   const col = new THREE.Color(def.hex);
@@ -1045,6 +1137,7 @@ function buildAgentModel(def) {
   const visorMat = std(0x161b22, 0.2, 0.3);
   const eyeMat = new THREE.MeshBasicMaterial({ color: col.clone().lerp(new THREE.Color(0xffffff), 0.45) });
   const tipMat = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.4 });
+  const docMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: col, emissiveIntensity: 0.3 });
 
   const legGeo = new THREE.CapsuleGeometry(0.075, 0.3, 4, 8);
   const mkLimb = (geo, mat, x, y, len) => {
@@ -1066,16 +1159,17 @@ function buildAgentModel(def) {
   for (const ex of [-0.065, 0.065]) add(eyes, new THREE.SphereGeometry(0.028, 10, 8), eyeMat, ex, 0, 0, { cast: false });
   add(head, new THREE.CylinderGeometry(0.012, 0.012, 0.14, 6), MAT.metal, 0, 0.27, 0);
   const tip = add(head, new THREE.SphereGeometry(0.036, 12, 10), tipMat, 0, 0.35, 0);
-  const doc = B(g, 0.24, 0.32, 0.02, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: col, emissiveIntensity: 0.3 }), 0, 0.98, 0.3);
+  const doc = add(g, new THREE.BoxGeometry(0.24, 0.32, 0.02), docMat, 0, 0.98, 0.3);
   doc.rotation.x = -0.35; doc.visible = false;
-  return { g, legL, legR, armL, armR, torso, head, eyes, tip, tipMat, doc };
+  return { g, legL, legR, armL, armR, torso, head, eyes, tip, tipMat, doc, mats: [bodyMat, legMat, headMat, visorMat, eyeMat, tipMat, docMat] };
 }
 
-const agents = AGENT_DEFS.map((def, i) => {
-  const desk = desks[def.id];
+function createAgent(def, slot, opts = {}) {
   const m = buildAgentModel(def);
-  m.g.position.set(desk.seat.x, 0, desk.seat.z);
-  m.g.rotation.y = desk.h;
+  const start = opts.at || slot.seat;
+  const h0 = opts.at ? angleTo(opts.at, slot.seat) : slot.h;
+  m.g.position.set(start.x, 0, start.z);
+  m.g.rotation.y = h0;
   scene.add(m.g);
 
   const label = document.createElement('div');
@@ -1084,7 +1178,10 @@ const agents = AGENT_DEFS.map((def, i) => {
   bubble.className = 'bubble'; bubble.hidden = true;
   const tag = document.createElement('button');
   tag.type = 'button'; tag.className = 'tag'; tag.tabIndex = -1;
-  tag.innerHTML = `<i style="background:${def.hex}"></i><b>${def.name}</b><span class="tag-st">대기</span>`;
+  const dot = document.createElement('i'); dot.style.background = def.hex;
+  const nameEl = document.createElement('b'); nameEl.textContent = def.name;
+  const stEl = document.createElement('span'); stEl.className = 'tag-st'; stEl.textContent = '대기';
+  tag.append(dot, nameEl, stEl);
   label.append(bubble, tag);
   const lobj = new CSS2DObject(label);
   lobj.position.set(0, 1.98, 0);
@@ -1092,33 +1189,67 @@ const agents = AGENT_DEFS.map((def, i) => {
   m.g.add(lobj);
 
   const a = {
-    def, i, ...m, desk, screen: desk.screen,
-    pos: m.g.position, heading: desk.h, headingTarget: desk.h,
-    seated: true, moving: false, typing: false,
+    def, ...m, desk: slot,
+    pos: m.g.position, heading: h0, headingTarget: h0,
+    seated: !opts.at, moving: false, typing: false,
     action: null, actionKind: null, queue: [],
     inbox: [], job: null, outbox: [],
-    tokens: 0, doneCount: 0, lastBreak: -rand(0, 20), atMeeting: false, poi: null,
-    walkPhase: 0, animT: rand(0, 10), blinkT: rand(2, 5), bubbleT: 0, scrT: 0,
-    bubble, tag, tagSt: tag.querySelector('.tag-st'), lastSt: '',
+    tokens: 0, doneCount: 0, toolCount: 0, lastBreak: simTime - rand(0, 20), atMeeting: false, poi: null,
+    walkPhase: 0, animT: rand(0, 10), blinkT: rand(2, 5), bubbleT: 0,
+    bubble, tag, tagName: nameEl, tagSt: stEl, lastSt: '', label: lobj,
+    removed: false, lastAct: 0, cur: null, deliver: null, leaving: false, done: false, isChild: false, session: null,
   };
   tag.addEventListener('click', () => select(a, true));
   m.g.traverse((o) => { if (o.isMesh) { o.userData.agent = a; pickables.push(o); } });
+  slot.owner = a;
+  agents.push(a);
+  byId[def.id] = a;
+  rosterDirty = true;
   return a;
-});
-const byId = Object.fromEntries(agents.map((a) => [a.def.id, a]));
+}
+function removeAgent(a) {
+  if (a.removed) return;
+  a.removed = true;
+  releasePoi(a);
+  if (a.desk.owner === a) a.desk.owner = null;
+  if (selected === a) select(null);
+  // 그룹만 빼면 CSS2D 이름표가 화면에 남아서, 이름표를 먼저 떼어 내요
+  a.label.removeFromParent();
+  a.label.element.remove();
+  scene.remove(a.g);
+  a.g.traverse((o) => { if (o.isMesh) o.geometry.dispose(); });
+  a.mats.forEach((mt) => mt.dispose());
+  pickables = pickables.filter((p) => p.userData.agent !== a);
+  agents.splice(agents.indexOf(a), 1);
+  if (byId[a.def.id] === a) delete byId[a.def.id];
+  rosterDirty = true;
+}
+function renameAgent(a, full) {
+  a.def.full = full;
+  a.def.name = cut(full, 9);
+  a.tagName.textContent = a.def.name;
+  rosterDirty = true;
+}
+const freeSlot = () => SLOTS.find((s) => !s.owner && s.kind === 'desk') || SLOTS.find((s) => !s.owner) || null;
 
 let speed = 1;
 function say(a, text, d = 2.6) {
+  if (a.removed) return;
   a.bubble.textContent = text;
   a.bubble.hidden = false;
   a.bubble.style.animation = 'none'; void a.bubble.offsetWidth; a.bubble.style.animation = '';
   a.bubbleT = Math.max(1.5, d / Math.max(1, speed * 0.6));
 }
 
-/* ================= simulation ================= */
+/* ================= mode ================= */
+let mode = 'sim';          // 'sim' 시뮬레이션 | 'live' 실시간 | 'file' 로그 재생
+let liveSrc = null;        // 'ccr' (claude.ai 커넥터) | 'bridge' (로컬 브리지)
+let warming = false;
+
+/* ================= simulation (demo) ================= */
 let simTime = 0, taskSeq = 0, totalTokens = 0, doneTotal = 0;
 const tasks = [];
-const meeting = { active: false, phase: '', t: 0, turn: 0 };
+const meeting = { active: false, phase: '', t: 0, turn: 0, order: [] };
 let boardDirty = true, tasksDirty = true;
 
 const KW = {
@@ -1143,7 +1274,7 @@ const makeJob = (task, idx) => ({ task, idx, stage: task.stages[idx], progress: 
 
 function dispatch(rawTitle, opts = {}) {
   const title = String(rawTitle).trim().replace(/\s+/g, ' ').slice(0, 60);
-  if (!title) return false;
+  if (!title || !byId.maru) return false;
   const task = { id: ++taskSeq, title, stages: planStages(title), stageIdx: 0, status: 'open', createdAt: simTime, tokens: 0, example: !!opts.example, reworked: false };
   tasks.push(task);
   byId.maru.inbox.push(makeJob(task, 0));
@@ -1163,7 +1294,7 @@ function finishJob(a) {
   a.doneCount++;
   const q = `‘${esc(cut(task.title, 16))}’`;
   if (st.kind === 'plan') {
-    const chain = task.stages.slice(1, -1).map((s) => byId[s.a].def.name).join(' → ');
+    const chain = task.stages.slice(1, -1).map((s) => AGENT_DEFS.find((d) => d.id === s.a).name).join(' → ');
     log(`${nameHTML(a, '이/가')} ${q}${josa(task.title, '을/를')} ${task.stages.length}단계로 나눴어요 · ${chain}`);
   } else if (st.kind === 'review') {
     const producer = task.stages.slice(0, job.idx).reverse().find((s) => s.a === 'koda' || s.a === 'miru');
@@ -1200,6 +1331,7 @@ function completeTask(task, a) {
 
 function receive(h) {
   const to = h.to;
+  if (!to || to.removed) return;
   to.inbox.push(makeJob(h.task, h.idx));
   say(to, pick(['받았어요!', '바로 볼게요', '네, 시작할게요']), 2.2);
   log(`${nameHTML(h.from)} → ${nameHTML(to)} · ‘${esc(cut(h.task.title, 14))}’ ${h.task.stages[h.idx].label}`);
@@ -1207,7 +1339,7 @@ function receive(h) {
   boardDirty = tasksDirty = true;
 }
 
-/* ---- per-agent behaviour: a queue of small actions, refilled by think() ---- */
+/* ---- per-agent behaviour: a queue of small actions, refilled by think() / thinkLive() ---- */
 const walk = (x, z, h) => ({ t: 'walk', x, z, h });
 const atSeat = (a) => Math.hypot(a.pos.x - a.desk.seat.x, a.pos.z - a.desk.seat.z) < 0.08;
 function plan(a, kind, ...acts) {
@@ -1217,33 +1349,28 @@ function releasePoi(a) { if (a.poi) { a.poi.by = null; a.poi = null; } }
 function interrupt(a, why) {
   if (!a.action && !a.queue.length) return;
   if (why === 'job' && a.actionKind !== 'idle') return;
-  if (why === 'meeting' && (a.actionKind === 'meeting' || a.action?.t === 'deliver')) return;
+  if (why === 'meeting' && (a.actionKind === 'meeting' || a.actionKind === 'leave' || a.action?.t === 'deliver' || a.action?.t === 'give')) return;
   a.action = null; a.queue.length = 0;
   releasePoi(a);
 }
-function think(a) {
-  if (meeting.active) {
-    if (!a.atMeeting) {
-      const s = MEET_SEATS[a.i];
-      plan(a, 'meeting', walk(s.x, s.z, s.h), { t: 'sit', h: s.h }, { t: 'call', fn: () => { a.atMeeting = true; } }, { t: 'meet' });
-    } else plan(a, 'meeting', { t: 'meet' });
-    return;
-  }
-  a.atMeeting = false;
+function meetSpot(a) {
+  const idx = agents.indexOf(a);
+  if (idx >= 0 && idx < MEET_SEATS.length) return { ...MEET_SEATS[idx], sit: true };
+  const ang = (idx - MEET_SEATS.length) * 0.62 + 0.3, r = 2.45;
+  const x = MEET.x + r * Math.sin(ang), z = MEET.z + r * Math.cos(ang);
+  return { x, z, h: ang + Math.PI, sit: false };
+}
+function goMeeting(a) {
+  if (!a.atMeeting) {
+    const s = meetSpot(a);
+    plan(a, 'meeting', walk(s.x, s.z, s.h), s.sit ? { t: 'sit', h: s.h } : null, { t: 'call', fn: () => { a.atMeeting = true; } }, { t: 'meet' });
+  } else plan(a, 'meeting', { t: 'meet' });
+}
+function planIdle(a, breakChance) {
   const seat = a.desk.seat;
-  if (a.outbox.length) {
-    const h = a.outbox[0], sp = h.to.desk.handoff;
-    plan(a, 'handoff', walk(sp.x, sp.z, angleTo(sp, h.to.desk.seat)), { t: 'deliver', h });
-    return;
-  }
-  if (a.job || a.inbox.length) {
-    if (!a.job) { a.job = a.inbox.shift(); a.job.stage.started = true; boardDirty = tasksDirty = true; }
-    plan(a, 'work', atSeat(a) ? null : walk(seat.x, seat.z, a.desk.h), { t: 'sit', h: a.desk.h }, { t: 'work' });
-    return;
-  }
   if (!atSeat(a)) { plan(a, 'idle', walk(seat.x, seat.z, a.desk.h), { t: 'sit', h: a.desk.h }); return; }
   if (!a.seated) { plan(a, 'idle', { t: 'sit', h: a.desk.h }); return; }
-  if (simTime - a.lastBreak > 24 && Math.random() < 0.4) {
+  if (simTime - a.lastBreak > 24 && Math.random() < breakChance) {
     const free = POIS.filter((p) => !p.by);
     if (free.length) {
       const p = pick(free);
@@ -1258,12 +1385,47 @@ function think(a) {
   }
   plan(a, 'idle', { t: 'wait', d: rand(2.5, 6) });
 }
+function think(a) {
+  if (meeting.active) { goMeeting(a); return; }
+  a.atMeeting = false;
+  const seat = a.desk.seat;
+  if (a.outbox.length) {
+    const h = a.outbox[0], sp = h.to.desk.handoff;
+    plan(a, 'handoff', walk(sp.x, sp.z, angleTo(sp, h.to.desk.seat)), { t: 'deliver', h });
+    return;
+  }
+  if (a.job || a.inbox.length) {
+    if (!a.job) { a.job = a.inbox.shift(); a.job.stage.started = true; boardDirty = tasksDirty = true; }
+    plan(a, 'work', atSeat(a) ? null : walk(seat.x, seat.z, a.desk.h), { t: 'sit', h: a.desk.h }, { t: 'work' });
+    return;
+  }
+  planIdle(a, 0.4);
+}
+function thinkLive(a) {
+  if (meeting.active && !a.leaving) { goMeeting(a); return; }
+  a.atMeeting = false;
+  if (a.leaving) { plan(a, 'leave', walk(DOOR.x, DOOR.z), { t: 'call', fn: () => removeAgent(a) }); return; }
+  if (a.deliver) {
+    const to = a.deliver.to;
+    if (!to || to.removed) { const d = a.deliver; a.deliver = null; if (d.then === 'leave') a.leaving = true; return; }
+    const sp = to.desk.handoff;
+    plan(a, 'handoff', walk(sp.x, sp.z, angleTo(sp, to.desk.seat)), { t: 'give' });
+    return;
+  }
+  if (liveBusy(a)) {
+    const seat = a.desk.seat;
+    plan(a, 'work', atSeat(a) ? null : walk(seat.x, seat.z, a.desk.h), { t: 'sit', h: a.desk.h }, { t: 'live' });
+    return;
+  }
+  planIdle(a, a.isChild ? 0 : 0.3);
+}
 function startAction(a, act) {
   a.action = act;
   a.actionKind = act.kind;
   if (act.t === 'walk') { a.seated = false; act.path = findPath(a.pos.x, a.pos.z, act.x, act.z); }
   else if (act.t === 'wait') act.left = act.d;
   else if (act.t === 'deliver') { act.left = 1.2; say(a, `${act.h.task.stages[act.h.idx].label} 부탁해요`, 2.2); }
+  else if (act.t === 'give') { act.left = 1.3; say(a, a.deliver?.say || '전달할게요', 2.2); }
   else if (act.t === 'work') act.chat = rand(2, 6);
 }
 function runAction(a, act, dt) {
@@ -1292,6 +1454,21 @@ function runAction(a, act, dt) {
       a.outbox.shift();
       receive(act.h);
       return true;
+    case 'give': {
+      act.left -= dt;
+      if (act.left > 0) return false;
+      const d = a.deliver;
+      a.deliver = null;
+      if (d) {
+        if (d.to && !d.to.removed) say(d.to, d.reply || '받았어요!', 2.2);
+        if (d.then === 'leave') a.leaving = true;
+      }
+      return true;
+    }
+    case 'live':
+      if (!liveBusy(a) || a.deliver || a.leaving || meeting.active) return true;
+      a.typing = true;
+      return false;
     case 'work': {
       const job = a.job;
       if (!job) return true;
@@ -1310,11 +1487,11 @@ function runAction(a, act, dt) {
 function updateAgent(a, dt) {
   a.moving = false; a.typing = false;
   if (!a.action) {
-    if (!a.queue.length) think(a);
+    if (!a.queue.length) (mode === 'sim' ? think : thinkLive)(a);
     if (a.queue.length) startAction(a, a.queue.shift());
   }
   if (a.action && runAction(a, a.action, dt)) a.action = null;
-  pose(a, dt);
+  if (!a.removed) pose(a, dt);
 }
 function wrapAngle(x) { return Math.atan2(Math.sin(x), Math.cos(x)); }
 function pose(a, dt) {
@@ -1324,7 +1501,7 @@ function pose(a, dt) {
   let swing = 0, bob = 0;
   if (a.moving) { a.walkPhase += dt * 9.5; swing = Math.sin(a.walkPhase) * 0.55; bob = Math.abs(Math.sin(a.walkPhase)) * 0.035; }
   a.pos.y = bob;
-  const carrying = a.outbox.length > 0 && !a.seated;
+  const carrying = (a.outbox.length > 0 || !!a.deliver) && !a.seated;
   a.doc.visible = carrying;
   if (a.seated) { a.legL.rotation.x = -1.45; a.legR.rotation.x = -1.45; }
   else { a.legL.rotation.x = swing; a.legR.rotation.x = -swing; }
@@ -1344,15 +1521,16 @@ function pose(a, dt) {
 function updateMeeting(dt) {
   if (!meeting.active) return;
   meeting.t += dt;
+  const present = agents.filter((a) => !a.leaving);
   if (meeting.phase === 'gather') {
-    if (agents.every((a) => a.atMeeting) || meeting.t > 30) {
-      meeting.phase = 'talk'; meeting.t = 0; meeting.turn = 0;
+    if (present.every((a) => a.atMeeting) || meeting.t > 30) {
+      meeting.phase = 'talk'; meeting.t = 0; meeting.turn = 0; meeting.order = present;
       log('회의를 시작했어요 · 한 명씩 진행 상황을 공유해요');
     }
   } else if (meeting.phase === 'talk' && meeting.t >= meeting.turn * 2.8) {
-    if (meeting.turn < agents.length) {
-      const s = agents[meeting.turn++];
-      if (s.atMeeting) say(s, standupLine(s), 2.8);
+    if (meeting.turn < meeting.order.length) {
+      const s = meeting.order[meeting.turn++];
+      if (!s.removed && s.atMeeting) say(s, standupLine(s), 2.8);
     } else {
       meeting.active = false;
       $('#btnMeet').disabled = false;
@@ -1361,6 +1539,13 @@ function updateMeeting(dt) {
   }
 }
 function standupLine(a) {
+  if (mode !== 'sim') {
+    if (a.cur) return `${a.cur.label}${a.cur.detail ? ' · ' + cut(a.cur.detail, 16) : ''} 하는 중이에요`;
+    const b = a.session?.bucket;
+    if (b === 'blocked') return '사용자 답을 기다리고 있어요';
+    if (b === 'review_ready') return '검토를 기다리고 있어요';
+    return '지금은 손이 비어요';
+  }
   const job = a.job || a.inbox[0];
   if (a.def.id === 'maru') {
     const open = tasks.filter((t) => t.status !== 'done').length;
@@ -1371,11 +1556,11 @@ function standupLine(a) {
   return '지금은 손이 비어요. 일 주세요!';
 }
 function callMeeting() {
-  if (meeting.active) return;
-  Object.assign(meeting, { active: true, phase: 'gather', t: 0, turn: 0 });
+  if (meeting.active || !agents.length) return;
+  Object.assign(meeting, { active: true, phase: 'gather', t: 0, turn: 0, order: [] });
   agents.forEach((a) => interrupt(a, 'meeting'));
   $('#btnMeet').disabled = true;
-  log(`${nameHTML(byId.maru, '이/가')} 전체 회의를 소집했어요`);
+  log(mode === 'sim' && byId.maru ? `${nameHTML(byId.maru, '이/가')} 전체 회의를 소집했어요` : '전체 회의를 소집했어요');
 }
 
 let autoOn = true, autoT = 75;
@@ -1392,23 +1577,713 @@ function updateAuto(dt) {
 
 function step(dt) {
   simTime += dt;
-  for (const a of agents) updateAgent(a, dt);
+  if (mode === 'file') advanceReplay(dt);
+  for (const a of [...agents]) if (!a.removed) updateAgent(a, dt);
   updateMeeting(dt);
-  updateAuto(dt);
+  if (mode === 'sim') updateAuto(dt);
+}
+
+/* ================= live: real agent logs ================= */
+const PALETTE = [
+  { hex: '#3b55d9', ink: '#ffffff' }, { hex: '#12a0b5', ink: '#ffffff' }, { hex: '#e0447a', ink: '#ffffff' },
+  { hex: '#f06a1d', ink: '#ffffff' }, { hex: '#37a854', ink: '#ffffff' }, { hex: '#f2c12e', ink: '#2a2200' },
+  { hex: '#7a5af0', ink: '#ffffff' }, { hex: '#a0703c', ink: '#ffffff' },
+];
+const BUCKETS = { working: '작업 중', blocked: '입력 대기', review_ready: '검토 대기', completed: '완료', failed: '실패' };
+const live = { sessions: new Map(), childInfo: new Map(), colorIdx: 0, doneTurns: 0, tokens: 0, gen: 0 };
+const liveNow = () => (mode === 'file' ? replay.clock : Date.now());
+
+function getSession(key, init = {}) {
+  let S = live.sessions.get(key);
+  if (!S) {
+    S = {
+      key, title: '', kindLabel: 'Claude Code 세션', bucket: undefined, summary: '', prompt: '', url: '', env: '',
+      usageOut: 0, cost: 0, updatedAt: 0, lastAct: 0, turnOpen: false, turnStart: 0, tools: [], toolCount: 0, tokensSeen: 0,
+      lastResult: null, spawns: new Map(), pendingSide: [], sideMap: new Map(), seenMsg: new Set(), seen: new Set(),
+      cursor: null, nextPoll: 0, inflight: false, loaded: false, hidden: false, agent: null, colorIdx: null, autoTitle: true,
+      ...init,
+    };
+    live.sessions.set(key, S);
+  }
+  return S;
+}
+const sessionBusy = (S) => S.turnOpen && liveNow() - S.lastAct < 90000;
+const sessionBucket = (S) => S.bucket || (sessionBusy(S) ? 'working' : 'completed');
+const visibleSessions = () => [...live.sessions.values()].filter((S) => !S.hidden && (S.agent || S.lastAct));
+
+function liveBusy(a) {
+  if (a.removed || a.leaving) return false;
+  if (a.isChild) return !a.done;
+  const S = a.session;
+  if (!S) return false;
+  const now = liveNow();
+  if (S.bucket === 'working') return true;
+  if (S.bucket) return now - a.lastAct < 6000;
+  return S.turnOpen ? now - S.lastAct < 90000 : now - a.lastAct < 12000;
+}
+
+// ---- normalising transcripts (claude.ai sessions, local Claude Code files, custom JSON) into office events ----
+const SPAWN_TOOLS = new Set(['Agent', 'Task']);
+const TOOL_KO = {
+  Read: '파일 읽기', Write: '파일 작성', Edit: '파일 수정', MultiEdit: '파일 수정', NotebookEdit: '노트북 수정',
+  Bash: '명령 실행', Grep: '코드 검색', Glob: '파일 찾기', WebSearch: '웹 검색', WebFetch: '웹 페이지 읽기',
+  TodoWrite: '할 일 정리', TaskCreate: '할 일 정리', TaskUpdate: '할 일 정리', TaskList: '할 일 확인', Skill: '스킬 사용',
+  Artifact: '페이지 게시', ToolSearch: '도구 찾기', AskUserQuestion: '질문하기', ExitPlanMode: '계획 제출',
+  EnterPlanMode: '계획 세우기', Monitor: '모니터링', ScheduleWakeup: '예약하기', SendUserFile: '파일 보내기', BashOutput: '명령 결과 확인',
+};
+function toolInfo(name, input) {
+  name = String(name || '도구');
+  const inp = input && typeof input === 'object' ? input : {};
+  const base = (p) => String(p || '').split(/[\\/]/).filter(Boolean).pop() || '';
+  let label = TOOL_KO[name] || '', detail = '';
+  if (name.startsWith('mcp__')) {
+    const parts = name.split('__');
+    label = parts.slice(2).join('__') || parts[1] || name;
+    detail = `${(parts[1] || '').replace(/[-_]/g, ' ')} 커넥터`;
+  } else {
+    switch (name) {
+      case 'Read': case 'Write': case 'Edit': case 'MultiEdit': detail = base(inp.file_path || inp.path); break;
+      case 'NotebookEdit': detail = base(inp.notebook_path); break;
+      case 'Bash': detail = inp.description || inp.command || ''; break;
+      case 'Grep': case 'Glob': detail = inp.pattern || ''; break;
+      case 'WebSearch': detail = inp.query || ''; break;
+      case 'WebFetch': try { detail = new URL(inp.url).hostname; } catch { detail = ''; } break;
+      case 'Skill': detail = inp.skill || ''; break;
+      default: detail = inp.description || inp.query || inp.path || '';
+    }
+  }
+  return { tool: name, label: label || name, detail: cut(String(detail).replace(/\s+/g, ' ').trim(), 80) };
+}
+function cleanPrompt(s) {
+  s = String(s || '').trim();
+  if (!s || s.startsWith('<') || s.startsWith('[Request interrupted') || s.startsWith('Caveat:')) return '';
+  return s.replace(/\s+/g, ' ');
+}
+function sideKey(S, agentId) {
+  if (S.sideMap.has(agentId)) return S.sideMap.get(agentId);
+  const k = S.pendingSide.shift() || `${S.key}>side:${agentId}`;
+  S.sideMap.set(agentId, k);
+  return k;
+}
+function remember(S, id) {
+  if (!id) return true;
+  if (S.seen.has(id)) return false;
+  S.seen.add(id);
+  if (S.seen.size > 4000) S.seen = new Set([...S.seen].slice(-2000));
+  return true;
+}
+// t: { role, ts, content, msgId, usage, stop, ptu (claude.ai subagent), side (local subagent id), cli, ok, cost, ms, text }
+function fromTranscript(S, t) {
+  const out = [], ts = t.ts;
+  if (t.role === 'result') { out.push({ k: 'turn_done', who: S.key, ts, ok: t.ok, cost: t.cost, ms: t.ms, text: t.text }); return out; }
+  let who = S.key;
+  if (t.ptu) who = `${S.key}>${t.ptu}`;
+  else if (t.side) who = sideKey(S, t.side);
+  const blocks = typeof t.content === 'string' ? [{ type: 'text', text: t.content }] : Array.isArray(t.content) ? t.content : [];
+  if (t.role === 'assistant') {
+    if (t.msgId && t.usage && !S.seenMsg.has(t.msgId)) {
+      S.seenMsg.add(t.msgId);
+      const n = Number(t.usage.output_tokens) || 0;
+      if (n) out.push({ k: 'tokens', who, ts, n });
+    }
+    let usedTool = false;
+    for (const b of blocks) {
+      if (!b || typeof b !== 'object') continue;
+      if (b.type === 'thinking' || b.type === 'redacted_thinking') out.push({ k: 'think', who, ts });
+      else if (b.type === 'text' && String(b.text || '').trim()) out.push({ k: 'text', who, ts, text: String(b.text) });
+      else if (b.type === 'tool_use') {
+        usedTool = true;
+        const inp = b.input && typeof b.input === 'object' ? b.input : {};
+        if (SPAWN_TOOLS.has(b.name)) {
+          const child = `${S.key}>${b.id}`;
+          S.spawns.set(b.id, child);
+          if (t.cli) S.pendingSide.push(child);
+          out.push({ k: 'spawn', who, ts, child, name: String(inp.subagent_type || ''), desc: String(inp.description || '') });
+        } else out.push({ k: 'tool', who, ts, ...toolInfo(b.name, inp) });
+      }
+    }
+    if (t.cli && !t.side && t.stop === 'end_turn' && !usedTool) out.push({ k: 'turn_done', who: S.key, ts, ok: true });
+  } else if (t.role === 'user') {
+    for (const b of blocks) {
+      if (!b || typeof b !== 'object') continue;
+      if (b.type === 'tool_result') {
+        const child = S.spawns.get(b.tool_use_id);
+        if (child) out.push({ k: 'spawn_done', who: child, ts, ok: !b.is_error });
+        else if (b.is_error) out.push({ k: 'tool_err', who, ts });
+      } else if (b.type === 'text' && who === S.key) {
+        const p = cleanPrompt(b.text);
+        if (p) out.push({ k: 'prompt', who, ts, text: p });
+      }
+    }
+  }
+  return out;
+}
+// claude.ai Claude Code session event (list_events)
+function fromRemote(S, e) {
+  if (!e || typeof e !== 'object') return [];
+  const kind = e.assistant ? 'assistant' : e.user ? 'user' : e.result ? 'result' : null;
+  if (!kind) return [];
+  const rec = e[kind] || {};
+  const inner = rec.internal_anthropic_catchall || rec;
+  if (!remember(S, rec.uuid || inner.uuid)) return [];
+  const ts = toMs(inner.timestamp || e.created_at) || liveNow();
+  if (kind === 'result') {
+    return fromTranscript(S, { role: 'result', ts, ok: !inner.is_error && (!inner.subtype || inner.subtype === 'success'), cost: Number(inner.total_cost_usd) || 0, ms: Number(inner.duration_ms) || 0, text: inner.result });
+  }
+  if (inner.isSynthetic || inner.is_synthetic || inner.isMeta) return [];
+  const msg = inner.message || {};
+  return fromTranscript(S, { role: kind, ts, content: msg.content, msgId: msg.id, usage: msg.usage, stop: msg.stop_reason, ptu: inner.parent_tool_use_id || null });
+}
+// local Claude Code transcript line (~/.claude/projects/**/*.jsonl)
+function fromCli(S, line) {
+  if (!line || typeof line !== 'object') return [];
+  if (line.type === 'last-prompt' && line.lastPrompt) {
+    const lp = cleanPrompt(line.lastPrompt);
+    if (lp && S.autoTitle && !S.titleFromPrompt) { S.title = cut(lp, 40); if (!S.prompt) S.prompt = lp; if (S.agent) renameAgent(S.agent, S.title); }
+    return [];
+  }
+  if (line.cwd && !S.cwdSet) {
+    S.cwdSet = true;
+    const dir = String(line.cwd).split(/[\\/]/).filter(Boolean).pop() || 'Claude Code';
+    S.kindLabel = `로컬 · ${dir}`;
+    if (!S.title) { S.title = `${dir} 세션`; if (S.agent) renameAgent(S.agent, S.title); }
+  }
+  if (line.type !== 'user' && line.type !== 'assistant') return [];
+  if (line.isMeta || !remember(S, line.uuid)) return [];
+  const msg = line.message || {};
+  return fromTranscript(S, {
+    role: line.type, ts: toMs(line.timestamp) || liveNow(), content: msg.content, msgId: msg.id, usage: msg.usage, stop: msg.stop_reason,
+    side: line.isSidechain ? String(line.agentId || 'side') : null, cli: true,
+  });
+}
+// custom agent log: {"agent":"리서처","type":"tool","tool":"web_search","text":"경쟁사 요금제"}
+const CUSTOM_TYPES = {
+  prompt: 'prompt', task: 'prompt', start: 'prompt', think: 'think', thinking: 'think', tool: 'tool', action: 'tool',
+  message: 'text', say: 'text', text: 'text', log: 'text', handoff: 'handoff', delegate: 'handoff',
+  done: 'turn_done', finish: 'turn_done', complete: 'turn_done', error: 'error', fail: 'error',
+};
+function fromCustom(e) {
+  const name = cut(String(e.agent || e.name || '에이전트'), 40);
+  const S = getSession(`x:${name}`, { title: name, kindLabel: e.role ? cut(String(e.role), 24) : '에이전트', autoTitle: false });
+  if (e.role && S.kindLabel !== cut(String(e.role), 24)) {
+    S.kindLabel = cut(String(e.role), 24);
+    if (S.agent) { S.agent.def.role = S.kindLabel; rosterDirty = true; }
+  }
+  const ts = toMs(e.ts ?? e.timestamp) || liveNow();
+  const k = CUSTOM_TYPES[String(e.type || 'message').toLowerCase()] || 'text';
+  const text = e.text != null ? String(e.text) : e.message != null ? String(e.message) : '';
+  const who = S.key;
+  if (k === 'tool') {
+    const info = toolInfo(e.tool || '도구', e.input);
+    if (text) info.detail = cut(text.replace(/\s+/g, ' '), 80);
+    return [S, [{ k, who, ts, ...info }]];
+  }
+  if (k === 'handoff') return [S, [{ k, who, ts, to: e.to ? cut(String(e.to), 40) : '', text }]];
+  if (k === 'error') return [S, [{ k: 'tool_err', who, ts }, { k: 'turn_done', who, ts, ok: false, text }]];
+  if (k === 'prompt') return [S, [{ k, who, ts, text: text || '새 작업' }]];
+  if (k === 'text' && !text) return [S, []];
+  return [S, [{ k, who, ts, text, ok: true }]];
+}
+function toMs(v) {
+  if (v == null || v === '') return 0;
+  if (typeof v === 'number') return v < 1e12 ? v * 1000 : v;
+  const t = Date.parse(v);
+  return Number.isNaN(t) ? 0 : t;
+}
+
+// ---- who sits where ----
+function removeSessionAgents(S) {
+  for (const x of [...agents]) if (x.session === S) removeAgent(x);
+  S.agent = null;
+}
+function ensureSessionAgent(S, quiet, at) {
+  if (S.agent && !S.agent.removed) return S.agent;
+  if (S.hidden) return null;
+  let slot = freeSlot();
+  if (!slot) {
+    const idle = agents.filter((x) => !x.isChild && x.session && x.session !== S && !liveBusy(x)).sort((p, q) => p.lastAct - q.lastAct)[0];
+    if (idle) { removeSessionAgents(idle.session); slot = freeSlot(); }
+  }
+  if (!slot) return null;
+  if (S.colorIdx == null) S.colorIdx = live.colorIdx++ % PALETTE.length;
+  const pal = PALETTE[S.colorIdx];
+  const full = S.title || '세션';
+  const def = { id: S.key, name: cut(full, 9), full, role: S.kindLabel, hex: pal.hex, ink: pal.ink, css: `var(--a${S.colorIdx})`, desc: '' };
+  const a = createAgent(def, slot, !quiet && at ? { at } : {});
+  a.session = S;
+  a.lastAct = S.lastAct || 0;
+  S.agent = a;
+  return a;
+}
+function ensureChild(S, key, quiet) {
+  const have = byId[key];
+  if (have && !have.removed) return have;
+  const parent = ensureSessionAgent(S, quiet);
+  const slot = freeSlot();
+  if (!slot) return parent;
+  const info = live.childInfo.get(key) || {};
+  const base = parent ? parent.def : { hex: PALETTE[0].hex, css: 'var(--a0)' };
+  const c = new THREE.Color(base.hex).lerp(new THREE.Color(0xffffff), 0.22);
+  const full = info.desc || info.name || '서브에이전트';
+  const def = {
+    id: key, name: cut(full, 9), full, role: info.name ? `서브에이전트 · ${info.name}` : '서브에이전트',
+    hex: `#${c.getHexString()}`, ink: (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) > 0.42 ? '#1c2420' : '#ffffff', css: base.css, desc: info.desc || '',
+  };
+  const a = createAgent(def, slot, quiet ? {} : { at: DOOR });
+  a.session = S;
+  a.isChild = true;
+  a.lastAct = liveNow();
+  return a;
+}
+function nm(a, S) {
+  if (a) return `<span class="n" style="color:${a.def.css}">${esc(a.def.name)}</span>`;
+  return `<span class="n">${esc(cut((S && S.title) || '세션', 9))}</span>`;
+}
+
+function applyEv(S, ev, quiet) {
+  const ts = ev.ts || liveNow();
+  S.lastAct = Math.max(S.lastAct || 0, ts);
+  if (ev.k === 'tokens') {
+    live.tokens += ev.n; S.tokensSeen += ev.n;
+    const t = byId[ev.who] || S.agent;
+    if (t) t.tokens += ev.n;
+    return;
+  }
+  if (ev.k === 'spawn') live.childInfo.set(ev.child, { name: ev.name, desc: ev.desc });
+  const a = ev.k === 'spawn_done' ? (byId[ev.who] && !byId[ev.who].removed ? byId[ev.who] : null)
+    : ev.who === S.key ? ensureSessionAgent(S, quiet) : ensureChild(S, ev.who, quiet);
+  const host = a || S.agent;
+  if (host && ev.k !== 'spawn_done') host.lastAct = Math.max(host.lastAct, ts);
+  switch (ev.k) {
+    case 'prompt':
+      S.prompt = ev.text; S.turnOpen = true; S.turnStart = ts; S.tools = [];
+      if (S.bucket !== undefined) S.bucket = 'working';
+      if (S.autoTitle && !S.titleFromPrompt) { S.titleFromPrompt = true; S.title = cut(ev.text, 40); if (S.agent) renameAgent(S.agent, S.title); }
+      if (host) { host.cur = { k: 'think', label: '요청 읽는 중', detail: '' }; if (!quiet) say(host, '새 요청 받았어요', 2.4); }
+      log(`${nm(host, S)} 새 요청 · “${esc(cut(ev.text, 80))}”`, ts);
+      break;
+    case 'think':
+      S.turnOpen = true;
+      if (host) host.cur = { k: 'think', label: '생각하는 중', detail: '' };
+      break;
+    case 'tool':
+      S.turnOpen = true; S.toolCount++;
+      S.tools.push({ label: ev.label, hex: host ? host.def.hex : '#888888' });
+      if (S.tools.length > 8) S.tools.shift();
+      if (host) {
+        host.cur = { k: 'tool', label: ev.label, detail: ev.detail };
+        host.toolCount++;
+        if (!quiet && ts - (host.lastToolSay || 0) > 6000) { host.lastToolSay = ts; say(host, ev.detail ? `${ev.label} · ${cut(ev.detail, 22)}` : ev.label, 2.4); }
+      }
+      log(`${nm(host, S)} ${esc(ev.label)}${ev.detail ? ` <span class="dim">· ${esc(cut(ev.detail, 70))}</span>` : ''}`, ts);
+      break;
+    case 'text': {
+      const flat = ev.text.replace(/\s+/g, ' ').trim();
+      if (host && !quiet) say(host, cut(flat, 46), 3.6);
+      log(`${nm(host, S)} “${esc(cut(flat, 110))}”`, ts);
+      break;
+    }
+    case 'spawn': {
+      const child = ensureChild(S, ev.child, quiet);
+      if (child && host && child !== host && !quiet) host.deliver = { to: child, say: '이거 부탁해요', reply: '맡겨 주세요!' };
+      if (host && !quiet) interrupt(host, 'job');
+      log(`${nm(host, S)} → ${child && child !== host ? nm(child, S) : '서브에이전트'} 호출 · ${esc(cut(ev.desc || ev.name || '', 60))}`, ts);
+      break;
+    }
+    case 'spawn_done': {
+      const parent = S.agent;
+      if (a) {
+        a.done = true; a.cur = null;
+        if (quiet) removeAgent(a);
+        else if (parent && parent !== a && !parent.removed) { a.deliver = { to: parent, say: '결과 가져왔어요', reply: '고마워요!', then: 'leave' }; interrupt(a, 'job'); }
+        else a.leaving = true;
+      }
+      log(`${a ? nm(a, S) : '서브에이전트'} → ${nm(parent, S)} 결과 전달${ev.ok === false ? ' <span class="bad">(실패)</span>' : ''}`, ts);
+      break;
+    }
+    case 'tool_err':
+      if (host && !quiet) say(host, '오류가 났어요. 다시 볼게요', 2.4);
+      break;
+    case 'handoff': {
+      const S2 = getSession(`x:${ev.to}`, { title: ev.to, kindLabel: '에이전트', autoTitle: false });
+      S2.lastAct = Math.max(S2.lastAct, ts);
+      const to = ev.to ? ensureSessionAgent(S2, quiet) : null;
+      if (to && host && to !== host && !quiet) host.deliver = { to, say: cut(ev.text || '이거 넘겨요', 18), reply: '받았어요!' };
+      log(`${nm(host, S)} → ${to ? nm(to, S2) : esc(ev.to || '?')}${ev.text ? ` · ${esc(cut(ev.text, 70))}` : ''}`, ts);
+      break;
+    }
+    case 'turn_done': {
+      const ok = ev.ok !== false;
+      S.turnOpen = false;
+      if (S.bucket !== undefined) S.bucket = ok ? 'completed' : 'failed';
+      S.lastResult = { ok, cost: ev.cost, ms: ev.ms, ts };
+      live.doneTurns++;
+      if (host) {
+        host.cur = null; host.doneCount++;
+        if (!quiet) { say(host, ok ? (ev.text && !ev.cost ? cut(ev.text.replace(/\s+/g, ' '), 40) : '완료!') : '여기서 멈췄어요', 2.8); if (ok) burst(host.pos); }
+      }
+      for (const c of [...agents]) {
+        if (c.isChild && c.session === S && !c.leaving && !c.deliver) { if (quiet) removeAgent(c); else { c.done = true; c.leaving = true; interrupt(c, 'job'); } }
+      }
+      const extra = [ev.ms ? fmtDur(ev.ms / 1000) : '', ev.cost ? `$${Number(ev.cost).toFixed(2)}` : ''].filter(Boolean).join(' · ');
+      log(`<span class="${ok ? 'ok' : 'bad'}">${ok ? '완료' : '중단'}</span> ${nm(host, S)}${extra ? ' · ' + extra : ''}${!ev.cost && ev.text ? ` <span class="dim">· ${esc(cut(ev.text.replace(/\s+/g, ' '), 60))}</span>` : ''}`, ts);
+      break;
+    }
+  }
+  if (host && !quiet && liveBusy(host)) interrupt(host, 'job');
+  tasksDirty = boardDirty = true;
+}
+
+/* ---- source 1: claude.ai Claude Code sessions through the Claude Code Remote connector ---- */
+const CCR = 'Claude Code Remote';
+const ccr = { mcp: null, active: false, err: null, lastOk: 0, nextSessions: 0, envId: '', repos: [], timer: 0, everLoaded: false, shown: 0, busy: false };
+const sources = { checked: false, ccr: false, bridge: false };
+
+function parsePayload(r) {
+  let p = r ? r.payload : null;
+  if (p == null || typeof p === 'string') {
+    const txt = typeof p === 'string' ? p : ((r && r.content) || []).filter((b) => b && b.type === 'text').map((b) => b.text).join('\n');
+    const i = txt.indexOf('{'), j = txt.lastIndexOf('}');
+    p = null;
+    if (i >= 0 && j > i) { try { p = JSON.parse(txt.slice(i, j + 1)); } catch { p = null; } }
+  }
+  return p && typeof p === 'object' && p.ccr ? p.ccr : p;
+}
+async function ccrCall(tool, input) {
+  return parsePayload(await ccr.mcp.callTool(CCR, tool, input, { cache: false }));
+}
+function bucketOf(s) {
+  const b = String(s.status_bucket || '').replace('SESSION_STATUS_BUCKET_', '').toLowerCase();
+  if (BUCKETS[b]) return b;
+  return String(s.session_status || '').includes('RUNNING') ? 'working' : 'completed';
+}
+async function ccrSessions() {
+  const gen = live.gen;
+  const p = await ccrCall('list_sessions', { limit: 20 });
+  if (gen !== live.gen || liveSrc !== 'ccr') return;
+  const list = Array.isArray(p?.data) ? p.data.filter((s) => s && s.id) : [];
+  if (mode !== 'live') enterLive('ccr');
+  const firstLoad = !ccr.everLoaded;
+  ccr.everLoaded = true;
+  ccr.lastOk = Date.now();
+  ccr.err = null;
+
+  const envCount = new Map(), repos = new Set();
+  for (const s of list) {
+    if (s.environment_id) envCount.set(s.environment_id, (envCount.get(s.environment_id) || 0) + 1);
+    for (const src of s.session_context?.sources || []) if (src?.git_repository?.url) repos.add(String(src.git_repository.url));
+  }
+  ccr.envId = [...envCount.entries()].sort((x, y) => y[1] - x[1])[0]?.[0] || '';
+  const repoList = [...repos].slice(0, 20);
+  if (repoList.join('|') !== ccr.repos.join('|')) { ccr.repos = repoList; renderRepos(); }
+
+  const rank = (s) => ({ working: 0, blocked: 1, review_ready: 2 }[bucketOf(s)] ?? 3);
+  list.sort((x, y) => rank(x) - rank(y) || (Date.parse(y.updated_at) || 0) - (Date.parse(x.updated_at) || 0));
+  const shown = list.slice(0, SLOTS.filter((s) => s.kind === 'desk').length);
+  const ids = new Set(shown.map((s) => s.id));
+  for (const S of live.sessions.values()) if (!ids.has(S.key) && !S.hidden) { S.hidden = true; removeSessionAgents(S); }
+  for (const s of shown) {
+    const S = getSession(s.id, { autoTitle: false });
+    const prevBucket = S.bucket, prevUpd = S.updatedAt;
+    S.hidden = false;
+    S.title = String(s.title || '').trim() || '제목 없는 세션';
+    S.bucket = bucketOf(s);
+    S.updatedAt = Date.parse(s.updated_at) || 0;
+    const em = s.external_metadata || {};
+    const pts = s.post_turn_summary || em.post_turn_summary || {};
+    S.summary = String((S.bucket === 'working' ? (s.task_summary || em.task_summary) : '') || pts.status_detail || pts.recent_action || '');
+    S.usageOut = Number(em.usage?.output_tokens) || 0;
+    S.cost = Number(em.usage?.cost_usd) || 0;
+    S.env = s.environment_id || '';
+    S.url = `https://claude.ai/code/${encodeURIComponent(s.id)}`;
+    S.lastAct = Math.max(S.lastAct, S.updatedAt);
+    const a = ensureSessionAgent(S, firstLoad, DOOR);
+    if (a && a.def.full !== S.title) renameAgent(a, S.title);
+    if (!S.loaded) S.nextPoll = Math.min(S.nextPoll || 0, Date.now());
+    else if (S.bucket === 'working' && (prevBucket !== 'working' || S.updatedAt !== prevUpd)) S.nextPoll = Math.min(S.nextPoll, Date.now());
+    if (a && S.bucket === 'working') interrupt(a, 'job');
+  }
+  ccr.shown = shown.length;
+  tasksDirty = boardDirty = true;
+  applyModeUI();
+}
+async function ccrEvents(S) {
+  const gen = live.gen;
+  S.inflight = true;
+  const first = !S.loaded;
+  const input = { session_id: S.key, kinds: ['user', 'assistant', 'result'], limit: first ? (S.bucket === 'working' ? 30 : 16) : 40 };
+  if (S.cursor) input.after_id = S.cursor;
+  try {
+    const p = await ccrCall('list_events', input);
+    if (gen !== live.gen || S.hidden) return;
+    const data = Array.isArray(p?.data) ? p.data : [];
+    if (p?.last_id) S.cursor = p.last_id;
+    for (const e of data) for (const ev of fromRemote(S, e)) applyEv(S, ev, first);
+    if (first && S.bucket && S.bucket !== 'working') {
+      S.turnOpen = false;
+      if (S.agent) S.agent.cur = null;
+      for (const x of [...agents]) if (x.isChild && x.session === S) removeAgent(x);
+    }
+    S.loaded = true;
+    S.nextPoll = Date.now() + (p?.has_more && !first ? 600 : S.bucket === 'working' ? 4000 : 60000);
+  } catch (e) {
+    if (gen !== live.gen) return;
+    if (e?.code === 'tool_error') { S.loaded = true; S.nextPoll = Date.now() + 60000; }
+    else { ccrFail(e); S.nextPoll = Date.now() + 15000; }
+  } finally { S.inflight = false; }
+}
+async function ccrTick() {
+  if (!ccr.active || liveSrc !== 'ccr' || (ccr.err && ccr.err.fatal)) return;
+  const now = Date.now();
+  if (!ccr.busy && now >= ccr.nextSessions) {
+    ccr.busy = true;
+    try { await ccrSessions(); ccr.nextSessions = Date.now() + 20000; }
+    catch (e) { ccrFail(e); }
+    finally { ccr.busy = false; renderSource(); }
+  }
+  if (mode !== 'live') return;
+  let inflight = 0;
+  for (const S of live.sessions.values()) if (S.inflight) inflight++;
+  for (const S of live.sessions.values()) {
+    if (inflight >= 2) break;
+    if (S.hidden || S.inflight || now < (S.nextPoll || 0)) continue;
+    inflight++;
+    ccrEvents(S);
+  }
+}
+function ccrFail(e) {
+  const code = (e && e.code) || 'upstream_error';
+  const retry = !!(e && e.retryable);
+  ccr.err = { code, fatal: !retry && code !== 'tool_error', e };
+  ccr.nextSessions = Date.now() + (retry ? Math.max(5000, (e && e.retryAfterMs) || 0) + Math.random() * 3000 : 30000);
+  renderSource();
+}
+function errCopy(e) {
+  const code = (e && e.code) || 'upstream_error';
+  const notHere = ['이 화면에서는 커넥터를 쓸 수 없어요.', 'claude.ai에서 이 페이지를 열면 내 세션을 실시간으로 볼 수 있어요.', []];
+  const C = {
+    server_not_connected: ['Claude Code Remote 커넥터를 찾지 못했어요.', 'claude.ai 설정 → 커넥터에서 Claude Code Remote를 추가한 뒤 다시 연결해 주세요.', ['reconnect']],
+    needs_reauth: ['Claude Code Remote 연결이 만료됐어요.', 'claude.ai 설정 → 커넥터에서 다시 연결한 뒤 눌러 주세요.', ['reconnect']],
+    selection_required: ['같은 이름의 커넥터가 여러 개예요.', 'claude.ai가 띄운 선택 창에서 하나를 고른 뒤 다시 연결해 주세요.', ['reconnect']],
+    not_in_manifest: ['이 페이지가 세션 기록을 읽도록 허용되지 않았어요.', '권한 설정에서 Claude Code Remote를 허용하면 내 세션이 보여요.', ['perms', 'reconnect']],
+    approval_required: ['세션 기록을 읽으려면 승인이 필요해요.', '다시 연결을 누르면 승인 창이 떠요.', ['reconnect']],
+    blocked_by_policy: ['조직 정책이 이 도구를 막고 있어요.', '관리자에게 Claude Code Remote 사용 권한을 확인해 주세요.', []],
+    server_unavailable: ['세션 서버가 잠시 응답하지 않아요.', '잠시 뒤 자동으로 다시 시도해요.', []],
+    tool_error: ['세션 목록을 읽지 못했어요.', cut(String((e && e.message) || '알 수 없는 오류'), 160), ['reconnect']],
+    not_granted: notHere, capability_disabled: notHere, capability_removed: notHere,
+  };
+  return C[code] || ['세션 서버와 연결하지 못했어요.', '잠시 뒤 다시 연결해 주세요.', ['reconnect']];
+}
+
+/* ---- source 2: local bridge (node agent-office/bridge.mjs) ---- */
+const bridge = { es: null, ok: false, watching: '', lastId: 0 };
+async function detectBridge() {
+  if (window.claude || !/^https?:$/.test(location.protocol)) return false;
+  try {
+    const r = await fetch('api/hello', { cache: 'no-store' });
+    if (!r.ok) return false;
+    const j = await r.json();
+    if (j && j.agentOffice) { bridge.watching = String(j.watching || ''); return true; }
+  } catch { /* not served by the bridge */ }
+  return false;
+}
+function startBridge() {
+  if (bridge.es) bridge.es.close();
+  const gen = live.gen;
+  const es = new EventSource('events');
+  bridge.es = es;
+  es.onopen = () => { bridge.ok = true; renderSource(); };
+  es.onerror = () => { bridge.ok = false; renderSource(); };
+  es.onmessage = (m) => {
+    if (gen !== live.gen) return;
+    let msg;
+    try { msg = JSON.parse(m.data); } catch { return; }
+    if (msg.id && msg.id <= bridge.lastId) return;
+    if (msg.id) bridge.lastId = msg.id;
+    const quiet = !!msg.backlog;
+    if (msg.src === 'cli' && msg.line) {
+      const S = getSession(`c:${msg.line.sessionId || msg.file || 'local'}`, { kindLabel: '로컬 Claude Code' });
+      for (const ev of fromCli(S, msg.line)) applyEv(S, ev, quiet);
+    } else if (msg.src === 'custom' && msg.event) {
+      const [S, evs] = fromCustom(msg.event);
+      for (const ev of evs) applyEv(S, ev, quiet);
+    }
+  };
+}
+
+/* ---- source 3: log file replay ---- */
+const replay = { items: [], i: 0, vt: 0, clock: 0, name: '', err: '' };
+function parseLogText(text) {
+  const raw = [];
+  const take = (o) => {
+    if (!o || typeof o !== 'object') return;
+    if (Array.isArray(o)) { o.forEach(take); return; }
+    if (o.ccr && Array.isArray(o.ccr.data)) { o.ccr.data.forEach(take); return; }
+    if (!o.type && !o.agent && Array.isArray(o.data)) { o.data.forEach(take); return; }
+    if (!o.type && !o.agent && Array.isArray(o.events)) { o.events.forEach(take); return; }
+    const rk = o.assistant ? 'assistant' : o.user ? 'user' : o.result ? 'result' : null;
+    if (rk && typeof o[rk] === 'object') {
+      const inner = o[rk].internal_anthropic_catchall || o[rk];
+      raw.push({ fmt: 'remote', key: `r:${inner.session_id || 'file'}`, ts: toMs(inner.timestamp || o.created_at), obj: o });
+      return;
+    }
+    if ((o.type === 'user' || o.type === 'assistant') && o.message) { raw.push({ fmt: 'cli', key: String(o.sessionId || 'file'), ts: toMs(o.timestamp), obj: o }); return; }
+    if (o.type === 'last-prompt' && o.lastPrompt) { raw.push({ fmt: 'cli', key: String(o.sessionId || 'file'), ts: 0, obj: o, title: true }); return; }
+    if (o.agent || o.name) raw.push({ fmt: 'custom', ts: toMs(o.ts ?? o.timestamp), obj: o });
+  };
+  const t = text.trim();
+  if (t.startsWith('[') || t.startsWith('{')) { try { take(JSON.parse(t)); } catch { /* JSON Lines */ } }
+  if (!raw.length) {
+    for (const line of text.split('\n')) {
+      const s = line.trim();
+      if (!s.startsWith('{')) continue;
+      try { take(JSON.parse(s)); } catch { /* skip broken line */ }
+    }
+  }
+  let last = (raw.find((r) => r.ts) || {}).ts || Date.now();
+  raw.forEach((r, n) => { if (!r.ts) r.ts = last + 1200; last = r.ts; r.n = n; });
+  raw.sort((x, y) => x.ts - y.ts || x.n - y.n);
+  let at = 400;
+  raw.forEach((r, n) => { if (n) at += clamp(r.ts - raw[n - 1].ts, 0, 2500); r.at = at; });
+  return raw;
+}
+async function loadLogFile(file) {
+  if (!file) return;
+  if (file.size > 60 * 1024 * 1024) { replay.err = '파일이 너무 커요. 60MB 이하 파일을 골라 주세요.'; renderSource(); return; }
+  let items = [];
+  try { items = parseLogText(await file.text()); } catch { items = []; }
+  if (!items.length) {
+    replay.err = '읽을 수 있는 기록이 없어요. Claude Code 대화 기록(.jsonl)이나 작업 로그(JSON Lines) 형식인지 확인해 주세요.';
+    setWant('file');
+    applyModeUI();
+    return;
+  }
+  replay.items = items; replay.name = file.name; replay.err = '';
+  startReplay();
+}
+function startReplay() {
+  stopLiveSources();
+  setWant('file');
+  clearOffice();
+  mode = 'file';
+  replay.i = 0; replay.vt = 0; replay.clock = replay.items.length ? replay.items[0].ts : Date.now();
+  applyModeUI();
+}
+function advanceReplay(dt) {
+  const it = replay.items;
+  if (!it.length) return;
+  replay.vt += dt * 1000;
+  while (replay.i < it.length && it[replay.i].at <= replay.vt) {
+    const item = it[replay.i++];
+    replay.clock = item.ts;
+    if (item.fmt === 'cli') {
+      const S = getSession(`c:${item.key}`, { kindLabel: 'Claude Code 기록' });
+      for (const ev of fromCli(S, item.obj)) applyEv(S, ev, false);
+    } else if (item.fmt === 'remote') {
+      const S = getSession(item.key, { kindLabel: 'Claude Code 세션' });
+      for (const ev of fromRemote(S, item.obj)) applyEv(S, ev, false);
+    } else {
+      const [S, evs] = fromCustom(item.obj);
+      for (const ev of evs) applyEv(S, ev, false);
+    }
+  }
+  const prev = it[replay.i - 1], next = it[replay.i];
+  if (prev) replay.clock = Math.min(prev.ts + (replay.vt - prev.at), next ? next.ts : Infinity);
+}
+
+/* ---- switching between sources ---- */
+let want = 'live';
+try { want = localStorage.getItem('agentOffice.src') === 'sim' ? 'sim' : 'live'; } catch { /* storage blocked */ }
+function setWant(w) {
+  want = w;
+  if (w !== 'file') { try { localStorage.setItem('agentOffice.src', w); } catch { /* storage blocked */ } }
+}
+function clearOffice() {
+  meeting.active = false;
+  $('#btnMeet').disabled = false;
+  for (const a of [...agents]) removeAgent(a);
+  POIS.forEach((p) => { p.by = null; });
+  SLOTS.forEach((s) => { s.owner = null; });
+  tasks.length = 0;
+  simTime = 0; totalTokens = 0; doneTotal = 0; taskSeq = 0;
+  live.sessions.clear(); live.childInfo.clear();
+  live.colorIdx = 0; live.doneTurns = 0; live.tokens = 0;
+  logEl.innerHTML = '';
+  select(null);
+  boardDirty = tasksDirty = rosterDirty = true;
+}
+function stopLiveSources() {
+  live.gen++;
+  liveSrc = null;
+  ccr.active = false;
+  if (bridge.es) { bridge.es.close(); bridge.es = null; bridge.ok = false; }
+}
+function enterLive(src) {
+  clearOffice();
+  mode = 'live';
+  liveSrc = src;
+  speed = 1;
+  document.querySelectorAll('#speedSeg button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.speed === '1')));
+  applyModeUI();
+}
+function startSimMode() {
+  stopLiveSources();
+  clearOffice();
+  mode = 'sim';
+  AGENT_DEFS.forEach((d, i) => createAgent(d, SLOTS[i]));
+  autoT = 75;
+  warming = true;
+  dispatch('신규 랜딩 페이지 시안 만들기', { example: true });
+  dispatch('경쟁사 요금제 비교 분석', { example: true });
+  dispatch('로그인 오류 버그 수정', { example: true });
+  for (let i = 0; i < 760; i++) step(0.05); // 38초를 미리 진행해 첫 화면부터 일하는 모습이 보이게
+  warming = false;
+  agents.forEach((a) => { a.bubble.hidden = true; });
+  applyModeUI();
+}
+function startLive() {
+  if (sources.ccr) {
+    if (liveSrc === 'ccr' && ccr.active && !(ccr.err && ccr.err.fatal)) { renderSource(); return; }
+    live.gen++;
+    liveSrc = 'ccr';
+    ccr.err = null; ccr.active = true; ccr.everLoaded = mode === 'live' && ccr.everLoaded; ccr.nextSessions = 0;
+    if (!ccr.timer) ccr.timer = setInterval(ccrTick, 1000);
+    renderSource();
+    ccrTick();
+    return;
+  }
+  if (sources.bridge) {
+    stopLiveSources();
+    enterLive('bridge');
+    startBridge();
+    return;
+  }
+  renderSource();
+}
+function chooseSource(w) {
+  if (w === 'sim') { setWant('sim'); if (mode !== 'sim' || liveSrc) startSimMode(); else applyModeUI(); return; }
+  if (w === 'file') { setWant('file'); if (replay.items.length && mode !== 'file') startReplay(); else applyModeUI(); return; }
+  setWant('live');
+  applyModeUI();
+  startLive();
 }
 
 /* ================= screens, board, effects ================= */
 const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
 function screenMode(a) {
+  if (!a) return 'empty';
   if (a.typing && a.job) return 'work';
+  if (a.typing) return a.cur && a.cur.k === 'think' ? 'think' : 'live';
   return atSeat(a) ? 'idle' : 'away';
 }
-function drawScreen(a) {
-  const s = a.screen; if (!s) return;
-  const g = s.g, W = 256, H = 146, mode = s.mode;
+function drawScreen(slot, m) {
+  const s = slot.screen, g = s.g, W = 256, H = 146, a = slot.owner;
   g.fillStyle = '#0d131a'; g.fillRect(0, 0, W, H);
   g.textAlign = 'left';
-  if (mode === 'work') {
+  if (m === 'empty') {
+    g.textAlign = 'center'; g.fillStyle = 'rgba(214,224,232,0.22)'; g.font = `500 12px ${CANVAS_FONT}`;
+    g.fillText('빈 자리', W / 2, H / 2 + 4);
+  } else if (m === 'work') {
     const base = Math.floor(s.scroll), frac = s.scroll - base;
     for (let i = 0; i < 11; i++) {
       const row = base + i, y = 24 + i * 11 - frac * 11;
@@ -1422,12 +2297,33 @@ function drawScreen(a) {
     g.fillStyle = '#0d131a'; g.fillRect(0, H - 18, W, 18);
     g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(12, H - 11, W - 24, 4);
     g.fillStyle = a.def.hex; g.fillRect(12, H - 11, (W - 24) * a.job.progress, 4);
-  } else if (mode === 'idle') {
+  } else if (m === 'live' || m === 'think') {
+    g.fillStyle = a.def.hex; g.fillRect(0, 0, W, 18);
+    g.fillStyle = a.def.ink; g.font = `600 11px ${CANVAS_FONT}`;
+    g.fillText(cut((a.cur && a.cur.label) || '작업 중', 22), 8, 13);
+    if (m === 'think') {
+      const n = 1 + (Math.floor(performance.now() / 380) % 3);
+      g.textAlign = 'center'; g.fillStyle = 'rgba(214,224,232,0.8)'; g.font = '400 40px "Orbit", sans-serif';
+      g.fillText('•'.repeat(n).padEnd(3, ' '), W / 2, H / 2 + 14);
+      g.textAlign = 'left';
+    } else {
+      g.fillStyle = 'rgba(214,224,232,0.88)'; g.font = `500 13px ${CANVAS_FONT}`;
+      const lines = wrapText(g, (a.cur && a.cur.detail) || '…', W - 26, 5);
+      lines.forEach((ln, i) => g.fillText(ln, 12, 40 + i * 18));
+      if (Math.floor(performance.now() / 500) % 2) {
+        const lastW = g.measureText(lines[lines.length - 1] || '').width;
+        g.fillStyle = a.def.hex; g.fillRect(14 + lastW, 30 + (lines.length - 1) * 18, 7, 12);
+      }
+    }
+    g.fillStyle = 'rgba(214,224,232,0.4)'; g.font = `400 10px ${CANVAS_FONT}`;
+    g.fillText(cut(a.def.full || a.def.name, 30), 8, H - 8);
+  } else if (m === 'idle') {
     g.textAlign = 'center';
     g.fillStyle = a.def.hex; g.font = '400 52px "Orbit", sans-serif';
-    g.fillText(a.def.name[0], W / 2, H / 2 + 12);
+    g.fillText(Array.from(a.def.name)[0] || '·', W / 2, H / 2 + 12);
+    const b = a.session && a.session.bucket;
     g.fillStyle = 'rgba(214,224,232,0.55)'; g.font = `500 11px ${CANVAS_FONT}`;
-    g.fillText('다음 작업 대기 중', W / 2, H - 16);
+    g.fillText(mode === 'sim' ? '다음 작업 대기 중' : b && b !== 'working' && b !== 'completed' ? BUCKETS[b] : '대기 중', W / 2, H - 16);
   } else {
     g.textAlign = 'center';
     g.fillStyle = 'rgba(214,224,232,0.35)'; g.font = `500 12px ${CANVAS_FONT}`;
@@ -1436,12 +2332,15 @@ function drawScreen(a) {
   s.t.needsUpdate = true;
 }
 function updateScreens(rdt) {
-  for (const a of agents) {
-    const s = a.screen; if (!s) continue;
-    const mode = screenMode(a);
-    a.scrT -= rdt;
-    if (mode === 'work') s.scroll += rdt * 2.2 * speed;
-    if (mode !== s.mode || (mode === 'work' && a.scrT <= 0)) { s.mode = mode; a.scrT = 0.16; drawScreen(a); }
+  for (const slot of SLOTS) {
+    const s = slot.screen;
+    if (!s) continue;
+    const a = slot.owner, m = screenMode(a);
+    s.left = (s.left || 0) - rdt;
+    if (m === 'work') s.scroll += rdt * 2.2 * speed;
+    const key = `${m}|${a ? a.def.id + a.def.name : ''}|${a && a.cur ? a.cur.label + a.cur.detail : ''}`;
+    const animated = m === 'work' || m === 'live' || m === 'think';
+    if (key !== s.key || (animated && s.left <= 0)) { s.key = key; s.left = m === 'work' ? 0.16 : 0.4; drawScreen(slot, m); }
   }
 }
 
@@ -1452,10 +2351,10 @@ function boardKey(t) {
   if (st.a === 'bareun' || st.a === 'haesol') return 'review';
   return 'active';
 }
-function pastel(hex, k = 0.7) { return '#' + new THREE.Color(hex).lerp(new THREE.Color(0xffffff), k).getHexString(); }
+function pastel(hex, k = 0.7) { return `#${new THREE.Color(hex).lerp(new THREE.Color(0xffffff), k).getHexString()}`; }
 function wrapText(g, text, maxW, maxLines) {
   const lines = []; let line = '';
-  for (const ch of text) {
+  for (const ch of String(text)) {
     if (g.measureText(line + ch).width > maxW) {
       lines.push(line); line = ch.trimStart();
       if (lines.length === maxLines) { lines[maxLines - 1] = lines[maxLines - 1].slice(0, -1) + '…'; return lines; }
@@ -1468,33 +2367,67 @@ function drawBoard() {
   const g = boardTex.g, W = 1024, H = 512;
   g.fillStyle = '#fbfcfa'; g.fillRect(0, 0, W, H);
   g.textAlign = 'left';
-  g.fillStyle = '#1d2422'; g.font = `600 32px ${CANVAS_FONT}`; g.fillText('작업 보드', 34, 54);
-  g.fillStyle = '#7a8580'; g.font = `400 19px ${CANVAS_FONT}`;
-  g.fillText(`진행 ${tasks.length - doneTotal}건 · 완료 ${doneTotal}건`, 200, 54);
-  const groups = { queued: [], active: [], review: [], done: [] };
-  for (const t of tasks) groups[boardKey(t)].push(t);
-  groups.done = groups.done.slice(-3).reverse();
-  const cols = [['대기', 'queued'], ['진행 중', 'active'], ['검토·테스트', 'review'], ['완료', 'done']];
+  let title, sub, cols;
+  if (mode === 'sim') {
+    const groups = { queued: [], active: [], review: [], done: [] };
+    for (const t of tasks) groups[boardKey(t)].push(t);
+    const note = (t, key) => {
+      const st = t.stages[t.stageIdx], ag = AGENT_DEFS.find((d) => d.id === st.a);
+      return {
+        title: t.title, color: key === 'done' ? '#dbeee1' : key === 'queued' ? '#eef0ec' : pastel(ag.hex, 0.72),
+        sub: key === 'done' ? `${fmtDur(t.doneAt - t.createdAt)} · ${fmtTok(t.tokens)}` : `${ag.name} · ${st.label}`, seed: t.id,
+      };
+    };
+    title = '작업 보드';
+    sub = `진행 ${tasks.length - doneTotal}건 · 완료 ${doneTotal}건`;
+    cols = [
+      ['대기', groups.queued.map((t) => note(t, 'queued')), groups.queued.length],
+      ['진행 중', groups.active.map((t) => note(t, 'active')), groups.active.length],
+      ['검토·테스트', groups.review.map((t) => note(t, 'review')), groups.review.length],
+      ['완료', groups.done.slice(-3).reverse().map((t) => note(t, 'done')), doneTotal],
+    ];
+  } else {
+    const ss = visibleSessions();
+    const pickB = (...bs) => ss.filter((S) => bs.includes(sessionBucket(S)));
+    const note = (S) => {
+      const a = S.agent, b = sessionBucket(S);
+      return {
+        title: S.title || '세션', seed: S.key.length * 7 + (S.colorIdx || 0),
+        color: b === 'completed' ? '#dbeee1' : b === 'failed' ? '#f4dede' : pastel(a ? a.def.hex : '#8899aa', 0.72),
+        sub: a && a.cur ? `${a.cur.label}${a.cur.detail ? ' · ' + a.cur.detail : ''}` : BUCKETS[b] || '',
+      };
+    };
+    title = '세션 보드';
+    sub = `${mode === 'file' ? '불러온 기록' : '실시간'} · 세션 ${ss.length}개`;
+    const working = pickB('working'), blockedS = pickB('blocked'), review = pickB('review_ready'), done = pickB('completed', 'failed');
+    cols = [
+      ['작업 중', working.map(note), working.length],
+      ['입력 대기', blockedS.map(note), blockedS.length],
+      ['검토 대기', review.map(note), review.length],
+      ['완료', done.map(note), done.length],
+    ];
+  }
+  g.fillStyle = '#1d2422'; g.font = `600 32px ${CANVAS_FONT}`; g.fillText(title, 34, 54);
+  g.fillStyle = '#7a8580'; g.font = `400 19px ${CANVAS_FONT}`; g.fillText(sub, 210, 54);
   const colW = (W - 68) / 4;
-  cols.forEach(([name, key], k) => {
-    const x = 34 + k * colW, items = groups[key];
+  cols.forEach(([name, items, count], k) => {
+    const x = 34 + k * colW;
     g.fillStyle = '#dde3df'; g.fillRect(x, 76, colW - 18, 3);
     g.fillStyle = '#34403c'; g.font = `600 21px ${CANVAS_FONT}`; g.fillText(name, x, 110);
     g.fillStyle = '#8a948f'; g.font = `500 19px ${CANVAS_FONT}`;
-    g.textAlign = 'right'; g.fillText(String(key === 'done' ? doneTotal : items.length), x + colW - 22, 110); g.textAlign = 'left';
-    items.slice(0, 3).forEach((t, i) => {
-      const y = 128 + i * 112, w = colW - 26, st = t.stages[t.stageIdx], ag = byId[st.a];
+    g.textAlign = 'right'; g.fillText(String(count), x + colW - 22, 110); g.textAlign = 'left';
+    items.slice(0, 3).forEach((it, i) => {
+      const y = 128 + i * 112, w = colW - 26;
       g.save();
-      g.translate(x + w / 2, y + 48); g.rotate((hash(t.id * 9.1) - 0.5) * 0.04); g.translate(-(x + w / 2), -(y + 48));
-      g.fillStyle = key === 'done' ? '#dbeee1' : key === 'queued' ? '#eef0ec' : pastel(ag.def.hex, 0.72);
-      g.fillRect(x, y, w, 96);
+      g.translate(x + w / 2, y + 48); g.rotate((hash(it.seed * 9.1) - 0.5) * 0.04); g.translate(-(x + w / 2), -(y + 48));
+      g.fillStyle = it.color; g.fillRect(x, y, w, 96);
       g.fillStyle = '#1f2725'; g.font = `500 18px ${CANVAS_FONT}`;
-      wrapText(g, t.title, w - 22, 2).forEach((ln, li) => g.fillText(ln, x + 11, y + 28 + li * 23));
+      wrapText(g, it.title, w - 22, 2).forEach((ln, li) => g.fillText(ln, x + 11, y + 28 + li * 23));
       g.fillStyle = '#56625e'; g.font = `400 15px ${CANVAS_FONT}`;
-      g.fillText(key === 'done' ? `${fmtDur(t.doneAt - t.createdAt)} · ${fmtTok(t.tokens)}` : `${ag.def.name} · ${st.label}`, x + 11, y + 84);
+      g.fillText(wrapText(g, it.sub, w - 22, 1)[0] || '', x + 11, y + 84);
       g.restore();
     });
-    if (items.length > 3 && key !== 'done') { g.fillStyle = '#7a8580'; g.font = `500 17px ${CANVAS_FONT}`; g.fillText(`+${items.length - 3}건 더`, x, 488); }
+    if (items.length > 3) { g.fillStyle = '#7a8580'; g.font = `500 17px ${CANVAS_FONT}`; g.fillText(`+${items.length - 3}건 더`, x, 488); }
   });
   boardTex.t.needsUpdate = true;
 }
@@ -1503,10 +2436,11 @@ function drawBoard() {
 const CONF_N = 90;
 const conf = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.07, 0.11), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }), CONF_N);
 conf.frustumCulled = false;
+conf.visible = false;
 scene.add(conf);
 const confP = [];
 const dummy = new THREE.Object3D();
-const confColors = AGENT_DEFS.map((d) => new THREE.Color(d.hex));
+const confColors = PALETTE.map((p) => new THREE.Color(p.hex));
 for (let i = 0; i < CONF_N; i++) {
   confP.push({ p: new THREE.Vector3(), v: new THREE.Vector3(), r: new THREE.Vector3(), life: 0 });
   conf.setColorAt(i, confColors[i % confColors.length]);
@@ -1598,7 +2532,7 @@ function tweenCam(p, t, dur = 0.9) {
 function focusAgent(a) {
   const t = new THREE.Vector3(a.pos.x, 0.8, a.pos.z);
   const dir = camera.position.clone().sub(controls.target).normalize();
-  tweenCam(t.clone().addScaledVector(dir, 8), t);
+  tweenCam(t.clone().addScaledVector(dir, 9), t);
 }
 let userMoved = false;
 controls.addEventListener('start', () => { camTween = null; userMoved = true; });
@@ -1648,118 +2582,381 @@ ring.rotation.x = -Math.PI / 2; ring.visible = false;
 /* ================= UI ================= */
 const rosterEl = $('#roster'), tasksEl = $('#tasks'), logEl = $('#log');
 function nameHTML(a, pair) {
-  return `<span class="n" style="color:${a.def.css}">${a.def.name}</span>${pair ? josa(a.def.name, pair) : ''}`;
+  return `<span class="n" style="color:${a.def.css}">${esc(a.def.name)}</span>${pair ? josa(a.def.name, pair) : ''}`;
 }
-function log(html) {
+const pad2 = (n) => String(n).padStart(2, '0');
+const fmtTime = (ts) => { const d = new Date(ts); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+function relTime(ts) {
+  if (!ts) return '';
+  const s = Math.max(0, (liveNow() - ts) / 1000);
+  if (s < 45) return '방금';
+  if (s < 3600) return `${Math.round(s / 60)}분 전`;
+  if (s < 86400) return `${Math.round(s / 3600)}시간 전`;
+  return `${Math.round(s / 86400)}일 전`;
+}
+function log(html, ts) {
+  if (ts == null) ts = mode === 'sim' ? simTime * 1000 : liveNow();
   const li = document.createElement('li');
-  li.innerHTML = `<time>${fmtClock(simTime)}</time><p>${html}</p>`;
-  logEl.prepend(li);
-  while (logEl.children.length > 80) logEl.lastElementChild.remove();
+  li.dataset.ts = String(ts);
+  li.innerHTML = `<time>${mode === 'sim' ? fmtClock(ts / 1000) : fmtTime(ts)}</time><p>${html}</p>`;
+  let ref = logEl.firstElementChild;
+  while (ref && Number(ref.dataset.ts) > ts) ref = ref.nextElementSibling;
+  logEl.insertBefore(li, ref);
+  while (logEl.children.length > 120) logEl.lastElementChild.remove();
 }
 
 const rows = {};
-for (const a of agents) {
-  const li = document.createElement('li');
-  li.className = 'agent-row';
-  li.tabIndex = 0;
-  li.setAttribute('role', 'button');
-  li.setAttribute('aria-label', `${a.def.name}(${a.def.role}) 살펴보기`);
-  li.innerHTML = `
-    <span class="ava" style="background:${a.def.hex};color:${a.def.ink}">${a.def.name[0]}</span>
-    <span class="who"><b style="color:${a.def.css}">${a.def.name}</b><span class="role">${a.def.role}</span></span>
-    <span class="st" data-s="idle">대기</span>
-    <span class="cur"><span class="cur-text"></span><span class="bar" style="--c:${a.def.hex}"><i></i></span></span>
-    <span class="tok"></span>`;
-  li.addEventListener('click', () => select(a, true));
-  li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(a, true); } });
-  rosterEl.append(li);
-  rows[a.def.id] = { li, st: li.querySelector('.st'), cur: li.querySelector('.cur-text'), bar: li.querySelector('.bar i'), tok: li.querySelector('.tok') };
+function renderRoster() {
+  rosterDirty = false;
+  rosterEl.innerHTML = '';
+  for (const k of Object.keys(rows)) delete rows[k];
+  $('#rosterSub').textContent = agents.length ? `${agents.length}명 · 누르면 카메라가 그 자리로 가요` : '';
+  if (!agents.length) {
+    const li = document.createElement('li');
+    li.className = 'roster-empty';
+    li.textContent = mode === 'live' ? '아직 자리에 앉은 에이전트가 없어요. 세션이 일을 시작하면 출근해요.' : mode === 'file' ? '로그 파일을 불러오면 기록 속 에이전트가 출근해요.' : '에이전트가 없어요.';
+    rosterEl.append(li);
+    return;
+  }
+  for (const a of agents) {
+    const li = document.createElement('li');
+    li.className = 'agent-row' + (selected === a ? ' sel' : '');
+    li.tabIndex = 0;
+    li.setAttribute('role', 'button');
+    li.setAttribute('aria-label', `${a.def.full || a.def.name}(${a.def.role}) 살펴보기`);
+    li.innerHTML = `
+      <span class="ava" style="background:${a.def.hex};color:${a.def.ink}">${esc(Array.from(a.def.name)[0] || '·')}</span>
+      <span class="who"><b style="color:${a.def.css}">${esc(a.def.name)}</b><span class="role">${esc(a.def.role)}</span></span>
+      <span class="st" data-s="idle">대기</span>
+      <span class="cur"><span class="cur-text"></span><span class="bar" style="--c:${a.def.hex}"><i></i></span></span>
+      <span class="tok"></span>`;
+    li.addEventListener('click', () => select(a, true));
+    li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(a, true); } });
+    rosterEl.append(li);
+    rows[a.def.id] = { li, st: li.querySelector('.st'), cur: li.querySelector('.cur-text'), bar: li.querySelector('.bar i'), tok: li.querySelector('.tok') };
+  }
 }
 
 function statusOf(a) {
   if (a.actionKind === 'meeting' || a.atMeeting) return ['meeting', '회의 중'];
+  if (a.actionKind === 'leave') return ['walk', '복귀 중'];
   if (a.actionKind === 'handoff') return ['handoff', '전달 중'];
-  if (a.action?.t === 'work') return ['work', '작업 중'];
+  if (a.action && a.action.t === 'work') return ['work', '작업 중'];
+  if (a.action && a.action.t === 'live') return a.cur && a.cur.k === 'think' ? ['work', '생각 중'] : ['work', '작업 중'];
   if (a.actionKind === 'work') return ['walk', '자리로 이동'];
   if (a.poi) return ['break', a.poi.label];
   if (a.moving) return ['walk', '이동 중'];
+  if (a.session && !a.isChild) {
+    const b = a.session.bucket;
+    if (b === 'blocked') return ['handoff', '입력 대기'];
+    if (b === 'review_ready') return ['meeting', '검토 대기'];
+    if (b === 'failed') return ['idle', '멈춤'];
+  }
   return ['idle', '대기'];
 }
 function currentText(a) {
-  if (a.job) return `${a.job.stage.label} · ${a.job.task.title}`;
-  if (a.outbox.length) { const h = a.outbox[0]; return `${h.to.def.name}에게 ‘${h.task.title}’ 전달`; }
-  if (a.inbox.length) return `대기 작업 ${a.inbox.length}건`;
-  return '맡은 작업 없음';
+  if (mode === 'sim') {
+    if (a.job) return `${a.job.stage.label} · ${a.job.task.title}`;
+    if (a.outbox.length) { const h = a.outbox[0]; return `${h.to.def.name}에게 ‘${h.task.title}’ 전달`; }
+    if (a.inbox.length) return `대기 작업 ${a.inbox.length}건`;
+    return '맡은 작업 없음';
+  }
+  if (a.cur) return `${a.cur.label}${a.cur.detail ? ' · ' + a.cur.detail : ''}`;
+  if (a.isChild) return a.def.desc || '서브에이전트';
+  return (a.session && (a.session.summary || a.session.prompt)) || '맡은 작업 없음';
 }
+const agentTokens = (a) => (mode === 'live' && liveSrc === 'ccr' && !a.isChild && a.session && a.session.usageOut ? a.session.usageOut : a.tokens);
 
 function renderUI() {
-  const open = tasks.filter((t) => t.status !== 'done');
-  const busy = agents.filter((a) => a.job || a.outbox.length || a.inbox.length).length;
-  $('#stActive').textContent = open.length;
-  $('#stDone').textContent = doneTotal;
-  $('#stUtil').textContent = Math.round((busy / agents.length) * 100) + '%';
-  $('#stTok').textContent = fmtTok(totalTokens);
+  if (rosterDirty) renderRoster();
+  const busy = agents.filter((a) => (mode === 'sim' ? a.job || a.outbox.length || a.inbox.length : liveBusy(a))).length;
+  const util = agents.length ? Math.round((busy / agents.length) * 100) + '%' : '–';
+  if (mode === 'sim') {
+    $('#st1').textContent = tasks.filter((t) => t.status !== 'done').length;
+    $('#st2').textContent = doneTotal;
+    $('#st4').textContent = fmtTok(totalTokens);
+  } else {
+    const ss = visibleSessions();
+    $('#st1').textContent = ss.filter((S) => sessionBucket(S) === 'working').length;
+    $('#st2').textContent = live.doneTurns;
+    const out = mode === 'live' && liveSrc === 'ccr' ? ss.reduce((n, S) => n + (S.usageOut || S.tokensSeen), 0) : live.tokens;
+    $('#st4').textContent = fmtTok(out);
+  }
+  $('#st3').textContent = util;
   for (const a of agents) {
-    const r = rows[a.def.id], [s, label] = statusOf(a);
+    const r = rows[a.def.id];
+    if (!r) continue;
+    const [s, label] = statusOf(a);
     if (r.st.dataset.s !== s || r.st.textContent !== label) { r.st.dataset.s = s; r.st.textContent = label; }
     const ct = currentText(a);
     if (r.cur.textContent !== ct) r.cur.textContent = ct;
-    r.bar.style.width = a.job ? `${Math.round(a.job.progress * 100)}%` : '0%';
-    r.tok.textContent = fmtTok(a.tokens);
+    r.bar.style.width = a.job ? `${Math.round(a.job.progress * 100)}%` : (mode !== 'sim' && liveBusy(a) ? '100%' : '0%');
+    r.bar.parentElement.classList.toggle('pulse', mode !== 'sim' && liveBusy(a));
+    r.tok.textContent = fmtTok(agentTokens(a));
     if (a.lastSt !== label) { a.lastSt = label; a.tagSt.textContent = label; }
   }
   if (selected) {
-    const a = selected;
+    const a = selected, S = a.session;
     $('#inState').textContent = statusOf(a)[1];
-    $('#inJob').textContent = a.job ? `${a.job.stage.label} · ‘${a.job.task.title}’ (${Math.round(a.job.progress * 100)}%)` : currentText(a);
-    $('#inQueue').textContent = `${a.inbox.length}건`;
-    $('#inDone').textContent = `${a.doneCount}개`;
-    $('#inTok').textContent = fmtTok(a.tokens);
+    $('#inJob').textContent = mode === 'sim' && a.job ? `${a.job.stage.label} · ‘${a.job.task.title}’ (${Math.round(a.job.progress * 100)}%)` : currentText(a);
+    $('#inQueueL').textContent = mode === 'sim' ? '대기 중인 작업' : '도구 호출';
+    $('#inQueue').textContent = mode === 'sim' ? `${a.inbox.length}건` : `${a.toolCount}회`;
+    $('#inDoneL').textContent = mode === 'sim' ? '끝낸 단계' : '끝낸 턴';
+    $('#inDone').textContent = mode === 'sim' ? `${a.doneCount}개` : `${a.doneCount}번`;
+    $('#inTok').textContent = fmtTok(agentTokens(a));
+    const url = S && S.url;
+    $('#inLinkRow').hidden = !url;
+    if (url) $('#inLink').href = url;
   }
 }
 
 function renderTasks() {
-  const open = tasks.filter((t) => t.status !== 'done');
-  const done = tasks.filter((t) => t.status === 'done').slice(-4).reverse();
-  const list = [...open, ...done];
-  if (!list.length) { tasksEl.innerHTML = '<p class="empty">진행 중인 작업이 없어요. 위에서 작업을 지시하면 마루가 바로 받아요.</p>'; return; }
-  tasksEl.innerHTML = list.map((t) => {
-    const isDone = t.status === 'done';
-    const pipe = t.stages.map((s, i) => {
-      const ag = byId[s.a];
-      const cls = s.done ? 'done' : (!isDone && i === t.stageIdx ? 'now' : '');
-      return `<li class="${cls}" style="--c:${ag.def.hex}" title="${ag.def.name} · ${s.label}">${s.label}</li>`;
+  tasksDirty = false;
+  if (mode === 'sim') {
+    const open = tasks.filter((t) => t.status !== 'done');
+    const done = tasks.filter((t) => t.status === 'done').slice(-4).reverse();
+    const list = [...open, ...done];
+    if (!list.length) { tasksEl.innerHTML = '<p class="empty">진행 중인 작업이 없어요. 위에서 작업을 지시하면 마루가 바로 받아요.</p>'; return; }
+    tasksEl.innerHTML = list.map((t) => {
+      const isDone = t.status === 'done';
+      const pipe = t.stages.map((s, i) => {
+        const ag = AGENT_DEFS.find((d) => d.id === s.a);
+        const cls = s.done ? 'done' : (!isDone && i === t.stageIdx ? 'now' : '');
+        return `<li class="${cls}" style="--c:${ag.hex}" title="${ag.name} · ${s.label}">${s.label}</li>`;
+      }).join('');
+      const badge = isDone ? '<span class="badge ok">완료</span>' : t.example ? '<span class="badge">예시</span>' : '';
+      const elapsed = (isDone ? t.doneAt : simTime) - t.createdAt;
+      return `<article class="task" data-status="${isDone ? 'done' : 'open'}">
+        <div class="task-top"><h3>${esc(t.title)}</h3>${badge}</div>
+        <p class="t-meta">${isDone ? '소요' : '경과'} ${fmtDur(elapsed)} · ${fmtTok(t.tokens)} 토큰</p>
+        <ol class="pipe" aria-label="단계">${pipe}</ol>
+      </article>`;
     }).join('');
-    const badge = isDone ? '<span class="badge ok">완료</span>' : t.example ? '<span class="badge">예시</span>' : '';
-    const elapsed = (isDone ? t.doneAt : simTime) - t.createdAt;
-    return `<article class="task" data-status="${isDone ? 'done' : 'open'}">
-      <div class="task-top"><h3>${esc(t.title)}</h3>${badge}</div>
-      <p class="t-meta">${isDone ? '소요' : '경과'} ${fmtDur(elapsed)} · ${fmtTok(t.tokens)} 토큰</p>
-      <ol class="pipe" aria-label="단계">${pipe}</ol>
+    return;
+  }
+  const order = { working: 0, blocked: 1, review_ready: 2, failed: 3, completed: 4 };
+  const ss = visibleSessions().sort((x, y) => (order[sessionBucket(x)] ?? 5) - (order[sessionBucket(y)] ?? 5) || (y.updatedAt || y.lastAct) - (x.updatedAt || x.lastAct)).slice(0, 10);
+  if (!ss.length) {
+    const msg = mode === 'file' ? '파일을 불러오면 기록 속 세션이 여기에 나타나요.'
+      : liveSrc === 'ccr' ? (ccr.everLoaded ? 'Claude Code 세션이 아직 없어요. 위에서 작업을 맡기면 새 세션이 생겨요.' : '세션을 불러오는 중이에요…')
+      : '아직 기록이 없어요. 이 컴퓨터에서 Claude Code를 실행하면 여기에 나타나요.';
+    tasksEl.innerHTML = `<p class="empty">${msg}</p>`;
+    return;
+  }
+  tasksEl.innerHTML = ss.map((S) => {
+    const b = sessionBucket(S);
+    const cls = b === 'working' ? 'run' : b === 'completed' ? 'ok' : b === 'failed' ? 'bad' : 'warn';
+    const meta = [relTime(S.updatedAt || S.lastAct), (S.usageOut || S.tokensSeen) ? `출력 ${fmtTok(S.usageOut || S.tokensSeen)} 토큰` : '', S.cost ? `$${S.cost.toFixed(2)}` : '', S.toolCount ? `도구 ${S.toolCount}회` : ''].filter(Boolean).join(' · ');
+    const subText = S.prompt ? `최근 요청 · “${cut(S.prompt, 90)}”` : S.summary;
+    const pipe = S.tools.map((t) => `<li class="done" style="--c:${t.hex}">${esc(t.label)}</li>`).join('');
+    return `<article class="task" data-status="${b === 'completed' ? 'done' : 'open'}">
+      <div class="task-top"><h3>${esc(S.title || '세션')}</h3><span class="badge ${cls}">${BUCKETS[b] || b}</span></div>
+      ${subText ? `<p class="t-sub">${esc(subText)}</p>` : ''}
+      ${meta ? `<p class="t-meta">${esc(meta)}</p>` : ''}
+      ${pipe ? `<ol class="pipe" aria-label="최근 도구">${pipe}</ol>` : ''}
+      ${S.url ? `<a class="t-link" href="${esc(S.url)}" target="_blank" rel="noopener">세션 열기 ↗</a>` : ''}
     </article>`;
   }).join('');
 }
 
 function select(a, focus) {
-  if (selected) { rows[selected.def.id].li.classList.remove('sel'); selected.tag.classList.remove('sel'); }
+  if (selected && rows[selected.def.id]) rows[selected.def.id].li.classList.remove('sel');
+  if (selected) selected.tag.classList.remove('sel');
   selected = a;
   const insp = $('#inspector');
   if (!a) { insp.hidden = true; ring.visible = false; follow = false; $('#followToggle').checked = false; return; }
-  rows[a.def.id].li.classList.add('sel');
+  if (rows[a.def.id]) rows[a.def.id].li.classList.add('sel');
   a.tag.classList.add('sel');
   ring.visible = true;
   ring.material.color.set(a.def.hex);
   const ava = $('#inAva');
-  ava.textContent = a.def.name[0]; ava.style.background = a.def.hex; ava.style.color = a.def.ink;
-  $('#inName').textContent = a.def.name;
+  ava.textContent = Array.from(a.def.name)[0] || '·'; ava.style.background = a.def.hex; ava.style.color = a.def.ink;
+  $('#inName').textContent = a.def.full || a.def.name;
   $('#inRole').textContent = a.def.role;
-  $('#inDesc').textContent = a.def.desc;
+  const S = a.session;
+  $('#inDesc').textContent = mode === 'sim' ? a.def.desc : (S && S.prompt ? `최근 요청: ${cut(S.prompt, 140)}` : (S && S.summary) || a.def.desc || '');
   insp.hidden = false;
   renderUI();
   if (focus) focusAgent(a);
 }
 
-// controls
+/* ---- source card, dispatch, controls ---- */
+const LEDE = {
+  sim: '가상의 에이전트 여섯 명이 작업을 나눠 받고, 서로 넘겨 가며 끝까지 처리하는 시뮬레이션이에요.',
+  ccr: '내 Claude Code 세션이 책상을 하나씩 맡아요. 도구를 쓰면 모니터와 말풍선에 뜨고, 서브에이전트를 부르면 입구로 새 동료가 들어와요.',
+  bridge: '이 컴퓨터의 Claude Code 기록과 다른 에이전트가 보낸 로그를 실시간으로 보여 줘요.',
+  file: '불러온 로그를 시간 순서대로 다시 재생해요. 긴 공백은 짧게 줄여서 보여 줘요.',
+};
+function applyModeUI() {
+  document.querySelectorAll('#srcSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.src === want)));
+  const ccrLive = mode === 'live' && liveSrc === 'ccr';
+  $('#lede').textContent = mode === 'sim' ? LEDE.sim : mode === 'file' ? LEDE.file : LEDE[liveSrc] || LEDE.ccr;
+  const pill = $('#modePill');
+  pill.dataset.mode = mode;
+  pill.lastChild.textContent = mode === 'sim' ? '시뮬레이션' : mode === 'file' ? '로그 재생' : '실시간';
+  const L = mode === 'sim' ? ['진행 중', '완료', '가동률', '사용 토큰'] : ['작업 중 세션', '끝낸 턴', '가동률', '출력 토큰'];
+  ['stL1', 'stL2', 'stL3', 'stL4'].forEach((id, i) => { $(`#${id}`).textContent = L[i]; });
+  $('#dispatch').hidden = !(mode === 'sim' || ccrLive);
+  $('#chips').hidden = mode !== 'sim';
+  $('#repoRow').hidden = !ccrLive || !ccr.repos.length;
+  $('#controls').hidden = mode === 'live';
+  $('#autoWrap').hidden = mode !== 'sim';
+  $('#dispatchBlock').hidden = mode === 'live' && !ccrLive;
+  $('#hDispatchText').textContent = mode === 'sim' ? '작업 지시' : ccrLive ? '새 세션에 작업 맡기기' : '재생 속도';
+  $('#dispatchSub').textContent = mode === 'sim' ? '마루가 받아서 단계와 담당자를 정해요' : ccrLive ? 'Claude Code 세션이 새로 만들어져 실제로 일해요' : '';
+  $('#taskInput').placeholder = ccrLive ? '예: README에 설치 방법 정리해 줘' : '예: 회원가입 화면 개선';
+  $('#dispatchBtn').textContent = ccrLive ? '맡기기' : '지시하기';
+  if (!ccrLive) { $('#confirmRow').hidden = true; setDispatchMsg(''); }
+  $('#hTasksText').textContent = mode === 'sim' ? '작업 현황' : '세션 현황';
+  $('#btnMeet').disabled = meeting.active;
+  rosterDirty = tasksDirty = boardDirty = true;
+  renderSource();
+}
+function renderRepos() {
+  const sel = $('#repoSel');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">저장소 없이</option>' + ccr.repos.map((u) => {
+    const short = u.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\.git$/, '');
+    return `<option value="${esc(u)}">${esc(short)}</option>`;
+  }).join('');
+  if (ccr.repos.includes(cur)) sel.value = cur;
+  $('#repoRow').hidden = !(mode === 'live' && liveSrc === 'ccr') || !ccr.repos.length;
+}
+function btn(act, label, primary) { return `<button type="button" class="btn-sm${primary ? ' primary' : ''}" data-act="${act}">${label}</button>`; }
+function renderSource() {
+  const card = $('#srcCard');
+  let html = '';
+  if (want === 'sim') {
+    html = `<p>가상의 에이전트 여섯 명이 일하는 시뮬레이션이에요. 실제 작업 기록은 ‘실시간’이나 ‘로그 파일’에서 볼 수 있어요.</p>`;
+  } else if (want === 'file') {
+    if (replay.err) html += `<p class="src-status bad"><i class="dot bad"></i>${esc(replay.err)}</p>`;
+    if (mode === 'file' && replay.items.length) {
+      const pct = Math.round((replay.i / replay.items.length) * 100);
+      html += `<p class="src-status"><i class="dot ${replay.i < replay.items.length ? 'run' : 'ok'}"></i><span id="srcProgress">${esc(cut(replay.name, 40))} · ${replay.i < replay.items.length ? '재생 중' : '재생 끝'} · ${replay.i}/${replay.items.length}</span></p>
+        <div class="bar"><i id="srcBar" style="width:${pct}%"></i></div>
+        <div class="src-actions">${btn('replay', '처음부터')}${btn('pick', '다른 파일')}</div>`;
+    } else {
+      html += `<p>Claude Code 대화 기록(.jsonl)이나 작업 로그 파일을 고르거나 3D 화면에 끌어다 놓으세요.</p>
+        <p class="dim">Claude Code 기록은 내 컴퓨터의 <code>~/.claude/projects/프로젝트/세션.jsonl</code>에 있어요.</p>
+        <div class="src-actions">${btn('pick', '파일 고르기', true)}</div>`;
+    }
+  } else if (!sources.checked) {
+    html = `<p class="src-status"><i class="dot run"></i>실시간 연결을 확인하는 중…</p>`;
+  } else if (liveSrc === 'ccr') {
+    if (ccr.err) {
+      const [t, fix, acts] = errCopy(ccr.err.e);
+      html = `<p class="src-status bad"><i class="dot bad"></i>${esc(t)}</p><p>${esc(fix)}</p>
+        <div class="src-actions">${acts.includes('reconnect') ? btn('reconnect', '다시 연결', true) : ''}${acts.includes('perms') ? btn('perms', '권한 설정') : ''}${mode !== 'sim' ? btn('sim', '시뮬레이션 보기') : ''}</div>
+        ${mode === 'sim' ? '<p class="dim">연결될 때까지 시뮬레이션을 보여 줘요.</p>' : ''}`;
+    } else if (mode !== 'live') {
+      html = `<p class="src-status"><i class="dot run"></i>내 Claude Code 세션을 불러오는 중…</p>
+        <p class="dim">처음 연결할 때 claude.ai가 Claude Code Remote 커넥터를 써도 되는지 물어봐요. 허용하면 세션 목록과 기록을 읽기만 해요.</p>`;
+    } else {
+      html = `<p class="src-status"><i class="dot ok"></i>Claude Code 세션 ${ccr.shown}개 연결됨</p>
+        <p class="dim"><span id="srcAgo">${relTime(ccr.lastOk)}</span> 갱신 · 작업 중인 세션은 4초마다 새 기록을 가져와요</p>
+        <div class="src-actions">${btn('refresh', '지금 새로 고침')}</div>`;
+    }
+  } else if (liveSrc === 'bridge') {
+    html = `<p class="src-status${bridge.ok ? '' : ' bad'}"><i class="dot ${bridge.ok ? 'ok' : 'bad'}"></i>${bridge.ok ? '로컬 브리지 연결됨' : '로컬 브리지에 다시 연결하는 중…'}</p>
+      <p class="dim"><code>${esc(bridge.watching || '~/.claude/projects')}</code>의 Claude Code 기록을 보고 있어요. 다른 에이전트는 <code>POST /events</code>로 로그를 보낼 수 있어요.</p>`;
+  } else {
+    html = `<p>실시간 연결은 두 가지 방법으로 쓸 수 있어요.</p>
+      <ul class="how"><li>claude.ai에서 이 페이지를 열면 내 Claude Code 세션이 바로 보여요.</li>
+      <li>내 컴퓨터에서 <code>node agent-office/bridge.mjs</code>를 실행하고 <code>http://localhost:4545</code>를 열면 로컬 Claude Code 기록과 다른 에이전트 로그가 보여요.</li></ul>
+      <p class="dim">지금은 시뮬레이션을 보여 주고 있어요.</p>`;
+  }
+  card.innerHTML = html;
+}
+$('#srcCard').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pick') $('#fileInput').click();
+  else if (act === 'replay') startReplay();
+  else if (act === 'sim') chooseSource('sim');
+  else if (act === 'reconnect') { ccr.err = null; ccr.active = false; startLive(); }
+  else if (act === 'refresh') { ccr.nextSessions = 0; for (const S of live.sessions.values()) if (!S.hidden) S.nextPoll = 0; ccrTick(); }
+  else if (act === 'perms') {
+    let ok = false;
+    try { const perms = await window.claude.use('permissions'); if (perms) { await perms.manage(); ok = true; } } catch { ok = false; }
+    if (!ok) { const p = document.createElement('p'); p.className = 'dim'; p.textContent = '이 페이지 오른쪽 위 메뉴의 권한 설정에서 Claude Code Remote를 허용해 주세요.'; $('#srcCard').append(p); }
+  }
+});
+document.querySelectorAll('#srcSeg button').forEach((b) => b.addEventListener('click', () => chooseSource(b.dataset.src)));
+$('#fileInput').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; if (f) loadLogFile(f); e.target.value = ''; });
+stage.addEventListener('dragover', (e) => {
+  if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+  e.preventDefault();
+  stage.classList.add('drop');
+});
+stage.addEventListener('dragleave', (e) => { if (!stage.contains(e.relatedTarget)) stage.classList.remove('drop'); });
+stage.addEventListener('drop', (e) => {
+  e.preventDefault();
+  stage.classList.remove('drop');
+  const f = e.dataTransfer && e.dataTransfer.files[0];
+  if (f) loadLogFile(f);
+});
+
+function setDispatchMsg(text, bad) {
+  const m = $('#dispatchMsg');
+  m.textContent = text;
+  m.hidden = !text;
+  m.classList.toggle('bad', !!bad);
+}
+let pendingTask = '';
+async function createSessionFromOffice(text) {
+  const yes = $('#confirmYes');
+  yes.disabled = true;
+  setDispatchMsg('세션을 만드는 중…');
+  try {
+    if (!ccr.envId) { setDispatchMsg('세션을 만들 환경을 찾지 못했어요. Claude Code에서 세션을 한 번 연 뒤 다시 시도해 주세요.', true); return; }
+    const input = { prompt: text, title: cut(text, 60), environment_id: ccr.envId };
+    const repo = $('#repoSel').value;
+    if (repo) input.source_url = repo;
+    const p = await ccrCall('create_session', input);
+    const id = (JSON.stringify(p || '').match(/session_[A-Za-z0-9]{8,}/) || [])[0];
+    $('#taskInput').value = '';
+    setDispatchMsg(id ? '새 세션을 만들었어요. 곧 입구로 들어와요.' : '요청을 보냈어요. 세션 목록을 새로 고칠게요.');
+    log(`새 세션에 작업을 맡겼어요 · “${esc(cut(text, 70))}”`);
+    if (id) {
+      const S = getSession(id, { autoTitle: false });
+      Object.assign(S, { title: cut(text, 60), bucket: 'working', prompt: text, hidden: false, lastAct: Date.now(), url: `https://claude.ai/code/${encodeURIComponent(id)}`, nextPoll: Date.now() + 2500 });
+      ensureSessionAgent(S, false, DOOR);
+    }
+    ccr.nextSessions = Date.now() + 3000;
+  } catch (e) {
+    const code = e && e.code;
+    const M = {
+      approval_required: '세션을 만들려면 승인이 필요해요. 다시 맡기면 승인 창이 떠요.',
+      not_in_manifest: '이 페이지에서 세션 만들기가 허용되지 않았어요. 권한 설정을 확인해 주세요.',
+      tool_error: `세션을 만들지 못했어요: ${cut(String((e && e.message) || ''), 140)}`,
+      server_unavailable: '응답을 받지 못했어요. 세션이 만들어졌을 수도 있으니 잠시 뒤 세션 현황을 확인해 주세요.',
+      upstream_error: '응답이 확실하지 않아요. 세션이 만들어졌을 수도 있으니 잠시 뒤 세션 현황을 확인해 주세요.',
+    };
+    setDispatchMsg(M[code] || errCopy(e)[0], true);
+    if (code === 'server_unavailable' || code === 'upstream_error') ccr.nextSessions = Date.now() + 2000;
+  } finally {
+    yes.disabled = false;
+    $('#confirmRow').hidden = true;
+  }
+}
+$('#dispatch').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = $('#taskInput');
+  const text = input.value.trim().replace(/\s+/g, ' ');
+  if (mode === 'sim') { if (dispatch(text)) input.value = ''; else input.focus(); return; }
+  if (mode === 'live' && liveSrc === 'ccr') {
+    if (!text) { input.focus(); return; }
+    pendingTask = text;
+    $('#confirmText').textContent = `새 Claude Code 세션을 만들어 “${cut(text, 60)}” 작업을 맡길까요? 실제로 실행되고 사용량이 들어요.`;
+    $('#confirmRow').hidden = false;
+    setDispatchMsg('');
+    $('#confirmYes').focus();
+  }
+});
+$('#confirmYes').addEventListener('click', () => { if (pendingTask) createSessionFromOffice(pendingTask); });
+$('#confirmNo').addEventListener('click', () => { $('#confirmRow').hidden = true; $('#taskInput').focus(); });
+
 const chipsEl = $('#chips');
 SAMPLE_TASKS.slice(0, 4).forEach((t) => {
   const b = document.createElement('button');
@@ -1767,15 +2964,9 @@ SAMPLE_TASKS.slice(0, 4).forEach((t) => {
   b.addEventListener('click', () => dispatch(t));
   chipsEl.append(b);
 });
-$('#dispatch').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const input = $('#taskInput');
-  if (dispatch(input.value)) input.value = '';
-  else input.focus();
-});
-document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+document.querySelectorAll('#speedSeg button').forEach((b) => b.addEventListener('click', () => {
   speed = Number(b.dataset.speed);
-  document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  document.querySelectorAll('#speedSeg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
 }));
 $('#autoToggle').addEventListener('change', (e) => { autoOn = e.target.checked; if (autoOn) autoT = Math.min(autoT, 8); });
 $('#btnReset').addEventListener('click', () => { follow = false; $('#followToggle').checked = false; const v = homeView(); tweenCam(v.p, v.t, 1.1); });
@@ -1786,21 +2977,27 @@ $('#followToggle').addEventListener('change', (e) => { follow = e.target.checked
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && selected) select(null); });
 
 /* ================= boot ================= */
-let warming = true;
-dispatch('신규 랜딩 페이지 시안 만들기', { example: true });
-dispatch('경쟁사 요금제 비교 분석', { example: true });
-dispatch('로그인 오류 버그 수정', { example: true });
-for (let i = 0; i < 760; i++) step(0.05); // 38초를 미리 진행해 첫 화면부터 일하는 모습이 보이게
-warming = false;
-agents.forEach((a) => { a.bubble.hidden = true; });
+startSimMode();
 renderTasks(); drawBoard(); renderUI();
-if (document.fonts) document.fonts.ready.then(() => { drawSign(); drawBoard(); agents.forEach((a) => { if (a.screen) a.screen.mode = ''; }); });
+if (document.fonts) document.fonts.ready.then(() => { drawSign(); boardDirty = true; SLOTS.forEach((s) => { if (s.screen) s.screen.key = ''; }); });
+
+(async () => {
+  if (window.claude && typeof window.claude.use === 'function') {
+    try { ccr.mcp = await window.claude.use('mcp'); } catch { ccr.mcp = null; }
+    sources.ccr = !!ccr.mcp;
+  } else {
+    sources.bridge = await detectBridge();
+  }
+  sources.checked = true;
+  if (want === 'live' && (sources.ccr || sources.bridge)) startLive();
+  else renderSource();
+})();
 
 const clock = new THREE.Clock();
-let uiT = 0, taskT = 0;
+let uiT = 0, taskT = 0, srcT = 0;
 function frame() {
   const rdt = Math.min(clock.getDelta(), 0.1);
-  step(rdt * speed);
+  step(rdt * (mode === 'live' ? 1 : speed));
 
   for (const a of agents) {
     if (a.bubbleT > 0) { a.bubbleT -= rdt; if (a.bubbleT <= 0) a.bubble.hidden = true; }
@@ -1830,10 +3027,23 @@ function frame() {
   controls.target.set(clamp(controls.target.x, -12, 12), clamp(controls.target.y, 0, 3), clamp(controls.target.z, -8, 8));
   controls.update();
 
-  uiT -= rdt; taskT -= rdt;
-  if (uiT <= 0) { uiT = 0.25; renderUI(); }
-  if (taskT <= 0 || (tasksDirty && taskT < 0.75)) { taskT = 1; tasksDirty = false; renderTasks(); }
+  uiT -= rdt; taskT -= rdt; srcT -= rdt;
+  if (uiT <= 0 || rosterDirty) { uiT = 0.25; renderUI(); }
+  if (taskT <= 0 || (tasksDirty && taskT < 0.75)) { taskT = 1; renderTasks(); }
   if (boardDirty) { boardDirty = false; drawBoard(); }
+  if (srcT <= 0) {
+    srcT = 0.5;
+    if (mode === 'file' && replay.items.length) {
+      const p = $('#srcProgress'), bar = $('#srcBar');
+      const doneAll = replay.i >= replay.items.length;
+      if (p) p.textContent = `${cut(replay.name, 40)} · ${doneAll ? '재생 끝' : '재생 중'} · ${replay.i}/${replay.items.length}`;
+      if (bar) bar.style.width = `${Math.round((replay.i / replay.items.length) * 100)}%`;
+      if (doneAll && !replay.ended) { replay.ended = true; renderSource(); }
+      if (!doneAll) replay.ended = false;
+    }
+    const ago = $('#srcAgo');
+    if (ago) ago.textContent = relTime(ccr.lastOk);
+  }
 
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
