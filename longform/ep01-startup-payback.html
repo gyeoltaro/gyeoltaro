@@ -755,28 +755,102 @@ window.__exp={
   segs(){return SEGS.map(x=>({id:x.id,t:+x.t.toFixed(2),ind:x.ind||'',ch:x.ch||''}));},
 };
 
-/* ── 썸네일 1280×720 ── */
+/* ── 썸네일 1280×720 ──
+   잘 터지는 창업·자영업 썸네일 공식 (2026.10 조사, docs/longform-ep01.md):
+   화면 가득 장면(가게·셔터·돈) + 아래 2~3줄 큰 글자(흰 + 노랑/빨강, 굵은 검은 테두리) + 구체 숫자 + 믿을 근거 딱지 + 감정 얼굴 */
+function grain(a=.07){
+  const g=document.createElement('canvas');g.width=g.height=256;const gx=g.getContext('2d'),im=gx.createImageData(256,256);
+  for(let i=0;i<im.data.length;i+=4){const v=rnd(i*.731)*255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255;}
+  gx.putImageData(im,0,0);ctx.save();ctx.globalAlpha=a;ctx.globalCompositeOperation='overlay';ctx.fillStyle=ctx.createPattern(g,'repeat');ctx.fillRect(0,0,W,H);ctx.restore();
+}
+function bigLine(str,x,y,size,col,o={}){
+  ctx.save();ctx.font=`400 ${size}px ${FD}`;ctx.textAlign=o.a||'left';ctx.textBaseline='middle';ctx.lineJoin='round';
+  if(o.max){const w=ctx.measureText(str).width;if(w>o.max){size=Math.floor(size*o.max/w);ctx.font=`400 ${size}px ${FD}`;}}
+  ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillText(str,x+6,y+12);
+  ctx.lineWidth=size*.2;ctx.strokeStyle='#000';ctx.strokeText(str,x,y);ctx.fillStyle=col;ctx.fillText(str,x,y);ctx.restore();
+}
+function tagBox(str,x,y,bg,fg='#fff',size=54){
+  ctx.save();ctx.font=`900 ${size}px ${FB}`;const w=ctx.measureText(str).width+50,h=size*1.45;
+  ctx.fillStyle=bg;ctx.translate(x,y);ctx.rotate(-.02);rr(0,-h/2,w,h,10);ctx.fill();ctx.fillStyle=fg;ctx.textBaseline='middle';ctx.fillText(str,25,4);ctx.restore();
+}
+function bottomShade(y0=480){const g=ctx.createLinearGradient(0,y0,0,H);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.45,'rgba(0,0,0,.7)');g.addColorStop(1,'rgba(0,0,0,.92)');ctx.fillStyle=g;ctx.fillRect(0,y0,W,H-y0);}
+function drawTanghulu(x,y,s,rot){
+  group(x,y,s,rot,1,()=>{
+    const sg=ctx.createLinearGradient(-8,0,8,0);sg.addColorStop(0,'#c99a5b');sg.addColorStop(1,'#f1d3a0');ctx.fillStyle=sg;rr(-9,-40,18,560,9);ctx.fill();
+    for(let i=0;i<5;i++){const cy=-300+i*-118+460,r=72-i*2;
+      ctx.save();ctx.translate(0,cy);ctx.rotate(Math.PI);
+      const g=ctx.createRadialGradient(-20,-25,8,0,0,r*1.1);g.addColorStop(0,'#ff6b6b');g.addColorStop(.6,'#d4142a');g.addColorStop(1,'#7a0614');
+      ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,r*1.05);ctx.bezierCurveTo(r*1.25,r*.55,r*1.05,-r*.95,0,-r*.8);ctx.bezierCurveTo(-r*1.05,-r*.95,-r*1.25,r*.55,0,r*1.05);ctx.fill();
+      ctx.fillStyle='rgba(255,226,120,.85)';for(let k=0;k<14;k++){const a=rnd(i*31+k)*6.28,d=rnd(i*17+k*3)*r*.75;ctx.beginPath();ctx.ellipse(Math.cos(a)*d,Math.sin(a)*d*.9,3,5,a,0,7);ctx.fill();}
+      ctx.restore();
+      ctx.save();ctx.translate(0,cy);
+      ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,r*1.08,r*1.02,0,0,7);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.ellipse(-r*.42,-r*.45,r*.22,r*.1,-.7,0,7);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(r*.35,r*.4,r*.1,r*.05,-.7,0,7);ctx.fill();ctx.restore();}
+  });
+}
+function drawShutterShop(){
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2c3242');g.addColorStop(1,'#11131a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // 간판: 반쯤 꺼진 분홍 네온
+  ctx.fillStyle='#0c0d13';rr(90,40,1260,210,16);ctx.fill();ctx.strokeStyle='#2c303c';ctx.lineWidth=6;rr(90,40,1260,210,16);ctx.stroke();
+  ['탕','후','루'].forEach((ch,i)=>{const on=i!==1;ctx.save();ctx.font=`400 160px ${FD}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    if(on){ctx.shadowColor='#ff3d9a';ctx.shadowBlur=45;ctx.fillStyle='#ff8cc6';}else{ctx.fillStyle='#3a2733';}
+    ctx.fillText(ch,480+i*240,150);ctx.restore();});
+  // 셔터
+  const X0=90,X1=1350,Y0=270;
+  for(let y=Y0;y<H;y+=28){const sg=ctx.createLinearGradient(0,y,0,y+28);sg.addColorStop(0,'#c3c8d1');sg.addColorStop(.5,'#959ba6');sg.addColorStop(1,'#646a75');ctx.fillStyle=sg;ctx.fillRect(X0,y,X1-X0,26);ctx.fillStyle='#22252c';ctx.fillRect(X0,y+26,X1-X0,2);}
+  ctx.fillStyle='#2b2f39';ctx.fillRect(X0-30,Y0-20,30,H);ctx.fillRect(X1,Y0-20,30,H);ctx.fillRect(X0-30,Y0-24,X1-X0+60,28);
+  for(let i=0;i<40;i++){const x=X0+rnd(i*7.1)*(X1-X0),y=Y0+rnd(i*3.3)*700;ctx.fillStyle=`rgba(40,30,20,${.06+rnd(i)*.1})`;ctx.beginPath();ctx.ellipse(x,y,30+rnd(i*9)*90,8+rnd(i*5)*20,0,0,7);ctx.fill();}
+  // 임대 종이
+  group(400,400,.82,-.06,1,()=>{ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=20;ctx.shadowOffsetY=8;ctx.fillStyle='#f4f1e8';ctx.fillRect(-190,-200,380,400);ctx.shadowColor='transparent';
+    ctx.fillStyle='rgba(230,220,180,.7)';ctx.fillRect(-60,-215,120,32);ctx.fillRect(-60,184,120,32);
+    text('임 대',0,-70,{f:'D',s:150,c:'#d61f1f'});text('문의',0,70,{s:56,w:900,c:'#222'});text('010-0000-0000',0,140,{s:40,w:800,c:'#333',max:330});});
+  // 오른쪽 거리 빛
+  const lg=ctx.createRadialGradient(1700,80,20,1700,80,900);lg.addColorStop(0,'rgba(255,205,130,.75)');lg.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
+}
+function drawCashPile(){
+  let g=ctx.createRadialGradient(760,420,60,760,420,1200);g.addColorStop(0,'#62845a');g.addColorStop(1,'#131a12');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const bundle=(x,y,s)=>{group(x,y,s,0,1,()=>{for(let k=0;k<6;k++){const yy=-k*14;const bg=ctx.createLinearGradient(0,yy-60,0,yy+60);bg.addColorStop(0,'#cfd9b8');bg.addColorStop(1,'#8fa27a');ctx.fillStyle=bg;rr(-200,yy-70,400,140,8);ctx.fill();ctx.strokeStyle='rgba(60,80,50,.5)';ctx.lineWidth=2;rr(-200,yy-70,400,140,8);ctx.stroke();}
+    ctx.fillStyle='#f4efe2';ctx.fillRect(-40,-150,80,160);ctx.strokeStyle='rgba(60,80,50,.35)';ctx.lineWidth=3;ctx.strokeRect(-188,-138,376,116);
+    ctx.fillStyle='rgba(60,90,60,.35)';ctx.beginPath();ctx.arc(-120,-80,34,0,7);ctx.fill();ctx.beginPath();ctx.arc(120,-80,34,0,7);ctx.fill();});};
+  [[560,620,1.05],[960,620,1.05],[760,520,1.05],[360,700,.95],[1160,700,.95],[760,390,1]].forEach(([x,y,s])=>bundle(x,y,s));
+  const lg=ctx.createRadialGradient(760,200,20,760,200,800);lg.addColorStop(0,'rgba(255,240,190,.35)');lg.addColorStop(1,'rgba(255,240,190,0)');ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
+}
+function drawContractDesk(){
+  let g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#9a6a40');g.addColorStop(1,'#3e2814');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=3;for(let i=0;i<30;i++){ctx.beginPath();const y=i*40+rnd(i)*20;ctx.moveTo(0,y);ctx.bezierCurveTo(600,y+30*rnd(i*2),1200,y-30*rnd(i*3),W,y+10);ctx.stroke();}
+  group(600,330,.8,-.06,1,()=>{ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=40;ctx.shadowOffsetY=20;ctx.fillStyle='#f7f5ef';ctx.fillRect(-440,-370,880,780);ctx.shadowColor='transparent';
+    text('가맹계약서',0,-280,{f:'D',s:100,c:'#1d2433'});
+    for(let i=0;i<5;i++){ctx.fillStyle='rgba(30,36,51,.22)';ctx.fillRect(-360,-170+i*52,620+rnd(i)*80,18);}
+    text('예상 회수 기간: 12개월',-360,150,{a:'left',f:'D',s:66,c:'#d61f1f'});
+    ctx.strokeStyle='rgba(214,31,31,.8)';ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(-30,150,370,62,-.02,0,7);ctx.stroke();
+    ctx.strokeStyle='#d61f1f';ctx.lineWidth=10;ctx.beginPath();ctx.arc(290,300,74,0,7);ctx.stroke();text('계약',290,304,{f:'D',s:58,c:'#d61f1f'});});
+  ctx.save();ctx.translate(1130,380);ctx.rotate(-.7);ctx.fillStyle='#111';rr(-12,-260,24,520,12);ctx.fill();ctx.fillStyle='#c9a227';ctx.fillRect(-12,-200,24,30);ctx.restore();
+  const lg=ctx.createRadialGradient(1500,0,20,1500,0,1100);lg.addColorStop(0,'rgba(255,220,150,.45)');lg.addColorStop(1,'rgba(255,220,150,0)');ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
+}
 function drawThumb(v=0){
   const tc=document.createElement('canvas');tc.width=1920;tc.height=1080;const keep=ctx;ctx=tc.getContext('2d');R=1.3;
-  drawBG(v===2?1:0);
-  const g=ctx.createRadialGradient(1300,540,60,1300,540,900);g.addColorStop(0,v===2?'rgba(255,60,60,.35)':'rgba(255,197,49,.3)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   if(v===0){
-    drawMascot(430,560,1.7,'shock');
-    text('본전 6개월 1등',1250,230,{f:'D',s:150,c:'#fff',st:22});
-    text('현실 넣었더니',1250,440,{f:'D',s:150,c:C.gold,st:22});
-    group(1250,700,1,-.04,1,()=>{ctx.fillStyle=C.red;rr(-480,-120,960,240,36);ctx.fill();text('회수 불가',0,8,{f:'D',s:170,c:'#fff'});});
-    text('창업 8개 업종 계산',1250,920,{f:'D',s:80,c:C.cyan,st:14});
+    drawShutterShop();
+    drawTanghulu(1470,610,1.0,.2);drawMascot(1765,330,.95,'shock');
+    bottomShade(400);grain();
+    tagBox('공정위 자료 · 2024년',50,545,'#e0242c','#fff',62);
+    bigLine('본전 6개월이라던 1등',50,705,152,'#fff',{max:1820});
+    bigLine('817곳 중 431곳 폐업',50,910,196,'#FFD23F',{max:1820});
   }else if(v===1){
-    text('8,300만 원',960,210,{f:'D',s:190,c:C.gold,st:22});
-    text('몇 달 만에 본전?',960,420,{f:'D',s:170,c:'#fff',st:22});
-    [['🍡','6개월',C.green],['☕','83개월',C.orange],['🏪','적자',C.red]].forEach(([ic,v2,col],i)=>{const x=430+i*530;panel(x-230,560,460,400,{bg:'rgba(0,0,0,.45)',bd:col,lw:8});emoji(ic,x,700,170);text(v2,x,880,{f:'D',s:96,c:col});});
+    drawCashPile();drawMascot(1570,400,1.2,'think');
+    bottomShade(420);grain();
+    tagBox('소상공인 평균 창업비 · 2024 실태조사',50,555,'#FFC531','#1d2433',58);
+    bigLine('8,300만 원 넣으면',50,715,165,'#fff',{max:1820});
+    bigLine('몇 달 만에 본전?',50,915,205,'#FFD23F',{max:1820});
   }else{
-    drawMascot(1560,600,1.6,'worry');
-    text('1등 업종이',640,240,{f:'D',s:170,c:'#fff',st:22});
-    text('제일 위험했다',640,470,{f:'D',s:170,c:C.red,st:22});
-    group(640,720,1,-.04,1,()=>{ctx.fillStyle=C.gold;rr(-500,-100,1000,200,36);ctx.fill();text('창업 본전 계산서',0,8,{f:'D',s:120,c:C.ink});});
+    drawContractDesk();drawMascot(1600,410,1.15,'worry');
+    bottomShade(420);grain();
+    bigLine('“1년이면 본전 뽑으세요”',50,645,132,'#fff',{max:1820});
+    tagBox('그런데 매출 20%만 줄어도',50,790,'#FFC531','#1d2433',60);
+    bigLine('8개 중 7개 본전 못 뽑는다',50,945,158,'#FF4D4D',{max:1820});
   }
-  const out=document.createElement('canvas');out.width=1280;out.height=720;out.getContext('2d').drawImage(tc,0,0,1280,720);
+  const out=document.createElement('canvas');out.width=1280;out.height=720;const ox=out.getContext('2d');ox.imageSmoothingQuality='high';ox.drawImage(tc,0,0,1280,720);
   ctx=keep;return out.toDataURL('image/png');
 }
 
