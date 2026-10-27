@@ -117,6 +117,7 @@
       <div class="row">
         <button id="btnMp3" disabled>MP3 저장</button>
         <button id="btnJson" disabled>타이밍 JSON 저장</button>
+        <button id="btnCover">썸네일 PNG 저장</button>
         <button id="btnRecMode">화면만 보기 (H)</button>
       </div>
       <p class="status" id="playStatus">00:00.0 / 00:00.0</p>
@@ -646,13 +647,32 @@ function drawTop(){
   text('비밀의 계산기',292,113,{s:40,w:900,c:C.gold});
   text('EP.01 무인 카페',1020,113,{a:'right',s:40,w:700,c:'rgba(255,255,255,.75)'});
 }
-function drawIdle(){
-  calcLogo(540,560,1.6);
-  text('비밀의 계산기',540,800,{f:'D',s:136,c:C.gold,glow:'rgba(255,197,49,.5)'});
-  text('EP.01 · 무인 카페',540,920,{s:48,w:900,c:C.cyan});
-  text('월 매출 600만 원,',540,1040,{s:64,w:900});
-  text('진짜 남는 돈은?',540,1120,{s:64,w:900});
-  text('콘솔에서 ▶ 재생',540,1330,{s:40,w:800,c:C.gold,alpha:.55+.45*Math.sin(R*3)});
+/* 썸네일 커버 — 영상 맨 앞 0.3초 + 시작 화면 + 썸네일 PNG */
+function drawCover(){
+  drawBG();
+  const g=ctx.createRadialGradient(540,960,40,540,960,820);g.addColorStop(0,'rgba(255,197,49,.24)');g.addColorStop(1,'rgba(255,197,49,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(0,0,0,.35)';rr(60,70,420,84,42);ctx.fill();
+  ctx.strokeStyle=C.gold;ctx.lineWidth=3;rr(60,70,420,84,42);ctx.stroke();
+  calcLogo(112,112,.32);text('비밀의 계산기',292,113,{s:40,w:900,c:C.gold});
+  text('EP.01',1020,113,{a:'right',s:40,w:700,c:'rgba(255,255,255,.75)'});
+  group(540,350,1,-.04,1,()=>text('무인 카페',0,0,{f:'D',s:240,c:'#fff',st:24,sc:'#0a1228'}));
+  group(540,555,1,-.04,1,()=>{ctx.fillStyle=C.gold;rr(-390,-76,780,152,26);ctx.fill();text('월 매출 600만 원',0,8,{f:'D',s:112,c:C.ink});});
+  // 계산기: 화면엔 '???'
+  group(570,985,1,-.08,1,()=>{
+    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=60;ctx.shadowOffsetY=24;
+    ctx.fillStyle='#1d2230';rr(-240,-320,480,640,60);ctx.fill();ctx.shadowColor='transparent';
+    ctx.strokeStyle=C.gold;ctx.lineWidth=14;rr(-240,-320,480,640,60);ctx.stroke();
+    ctx.fillStyle='#c9e6bf';rr(-195,-270,390,170,26);ctx.fill();
+    text('???',170,-182,{a:'right',f:'D',s:150,c:'#d62f2f'});
+    const KEYS=[['7','8','9'],['4','5','6'],['1','2','=']];
+    KEYS.forEach((row,r)=>row.forEach((k,c)=>{const x=-195+c*136,y=-65+r*120;ctx.fillStyle=k==='='?C.gold:'#343d58';rr(x,y,118,100,22);ctx.fill();
+      text(k,x+59,y+52,{s:52,w:900,c:k==='='?C.ink:'#c9d4f0'});}));
+  });
+  drawCup(215,1215,2.0,{rot:-.14});
+  coin(905,1235,72);coin(860,1135,50);
+  group(540,1430,1,-.02,1,()=>{ctx.fillStyle='#E53935';rr(-440,-88,880,176,32);ctx.fill();text('진짜 남는 돈은?',0,8,{f:'D',s:138,c:'#fff'});});
+  vignette();
 }
 /* 캔버스 자막 (녹화 파일에도 그대로 들어감) */
 function drawSubs(){
@@ -963,6 +983,7 @@ $('btnRec').addEventListener('click',()=>{if(rec&&rec.state==='recording'){stop(
 $('btnMp3').addEventListener('click',()=>mp3Blob&&download(mp3Blob,'muin_cafe.mp3'));
 $('btnJson').addEventListener('click',()=>ttsData&&download(new Blob([JSON.stringify(ttsData)],{type:'application/json'}),'muin_cafe_tts.json'));
 $('btnRecMode').addEventListener('click',()=>document.body.classList.toggle('rec'));
+$('btnCover').addEventListener('click',()=>{const keep=R;R=0;drawCover();cv.toBlob(b=>download(b,'secret-calculator_EP01_thumbnail.png'),'image/png');R=keep;});
 $('chkBgm').addEventListener('change',e=>{opt.bgm=e.target.checked;if(phase==='play'){opt.bgm?startBGM():stopBGM();}});
 $('chkSfx').addEventListener('change',e=>{opt.sfx=e.target.checked;});
 addEventListener('keydown',e=>{
@@ -989,7 +1010,7 @@ let activeCue=-1;
 function render(){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;
   drawBG();
-  if(phase==='idle'){drawIdle();vignette();drawTop();return;}
+  if(phase==='idle'){drawCover();text('콘솔에서 ▶ 재생',540,1650,{s:40,w:800,c:C.gold,alpha:.55+.45*Math.sin(R*3)});return;}
   const sh=fxAt(PLAN.shakes);ctx.save();
   if(sh>0){const k=Math.floor(R*60);ctx.translate((rnd(k)-.5)*2*sh,(rnd(k+7)-.5)*2*sh);}
   const si=sceneIndexAt(T),sc=PLAN.scenes[si],lt=T-sc.t,XF=.3;
@@ -1035,6 +1056,7 @@ if(qs.has('export'))window.__exp={
   ready:()=>!!document.fonts&&document.fonts.status==='loaded'&&TL.src==='tts',
   info:()=>({end:TL.end,voiceEnd:TL.voiceEnd,src:TL.src}),
   frame(t,q=.92){phase='seek';T=t;R=t;render();return cv.toDataURL('image/jpeg',q);},
+  cover(q=.92){R=0;drawCover();return cv.toDataURL('image/jpeg',q);},
   async audio(){
     const sr=48000,oc=new OfflineAudioContext(2,Math.ceil((TL.end+.2)*sr),sr);
     const saved=[ac,master,voiceBus,sfxBus,bgmBus,NOISE,t0];

@@ -15,13 +15,17 @@ const fs = require('fs');
   const wav = await page.evaluate(() => window.__exp.audio());
   fs.writeFileSync(require('path').join(require('os').tmpdir(), 'mix.wav'), Buffer.from(wav, 'base64'));
   console.log('audio mixed', fs.statSync(require('path').join(require('os').tmpdir(), 'mix.wav')).size, 'bytes');
-  const FPS = 30, N = Math.ceil(info.end * FPS);
+  const FPS = 30, N = Math.ceil(info.end * FPS), COVER = Math.round(0.3 * FPS);   // 맨 앞 0.3초 = 썸네일 커버
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
     '-i', require('path').join(require('os').tmpdir(), 'mix.wav'), '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(FPS),
-    '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', '-shortest',
+    '-af', 'adelay=300:all=1,loudnorm=I=-14:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', '-shortest',
     (process.argv[3] || 'out.mp4')]);
   ff.stderr.on('data', d => process.stderr.write(d));
   const t0 = Date.now();
+  const cover = await page.evaluate(() => window.__exp.cover());
+  const coverBuf = Buffer.from(cover.slice(cover.indexOf(',') + 1), 'base64');
+  require('fs').writeFileSync((process.argv[3] || 'out.mp4').replace(/\.mp4$/, '') + '_thumbnail.jpg', coverBuf);
+  for (let i = 0; i < COVER; i++) if (!ff.stdin.write(coverBuf)) await new Promise(r => ff.stdin.once('drain', r));
   for (let i = 0; i < N; i++) {
     const url = await page.evaluate(t => window.__exp.frame(t), i / FPS);
     const buf = Buffer.from(url.slice(url.indexOf(',') + 1), 'base64');
