@@ -1030,6 +1030,34 @@ try{
     else setTTS('대본이 바뀌어 내장 음성과 맞지 않아요. ‘음성 생성’으로 새로 만드세요.','err');
   }
 }catch(e){}
+// ?export → 프레임 단위 렌더 + 오디오 오프라인 믹스 (MP4 제작 스크립트용)
+if(qs.has('export'))window.__exp={
+  ready:()=>!!document.fonts&&document.fonts.status==='loaded'&&TL.src==='tts',
+  info:()=>({end:TL.end,voiceEnd:TL.voiceEnd,src:TL.src}),
+  frame(t,q=.92){phase='seek';T=t;R=t;render();return cv.toDataURL('image/jpeg',q);},
+  async audio(){
+    const sr=48000,oc=new OfflineAudioContext(2,Math.ceil((TL.end+.2)*sr),sr);
+    const saved=[ac,master,voiceBus,sfxBus,bgmBus,NOISE,t0];
+    ac=oc;master=oc.createGain();master.gain.value=.95;master.connect(oc.destination);
+    voiceBus=oc.createGain();voiceBus.connect(master);
+    sfxBus=oc.createGain();sfxBus.gain.value=.55;sfxBus.connect(master);
+    bgmBus=oc.createGain();bgmBus.connect(master);
+    bgmBus.gain.setValueAtTime(.09,0);bgmBus.gain.setTargetAtTime(.18,TL.voiceEnd,.2);
+    NOISE=oc.createBuffer(1,sr*3,sr);const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    if(voiceBuf){const s=oc.createBufferSource();s.buffer=voiceBuf;s.connect(voiceBus);s.start(0);}
+    PLAN.ev.forEach(e=>{try{SFX[e.n](Math.max(0,e.t));}catch(err){}});
+    t0=0;for(let s=0,t=.08;t<TL.end;t+=STEP,s++)bgmStep(s,t);
+    const buf=await oc.startRendering();
+    [ac,master,voiceBus,sfxBus,bgmBus,NOISE,t0]=saved;
+    const n=buf.length,out=new DataView(new ArrayBuffer(44+n*4)),w=(o,s)=>[...s].forEach((c,i)=>out.setUint8(o+i,c.charCodeAt(0)));
+    w(0,'RIFF');out.setUint32(4,36+n*4,true);w(8,'WAVEfmt ');out.setUint32(16,16,true);out.setUint16(20,1,true);out.setUint16(22,2,true);
+    out.setUint32(24,sr,true);out.setUint32(28,sr*4,true);out.setUint16(32,4,true);out.setUint16(34,16,true);w(36,'data');out.setUint32(40,n*4,true);
+    const L0=buf.getChannelData(0),R0=buf.getChannelData(1);
+    for(let i=0;i<n;i++){out.setInt16(44+i*4,clamp(L0[i],-1,1)*32767,true);out.setInt16(46+i*4,clamp(R0[i],-1,1)*32767,true);}
+    const bytes=new Uint8Array(out.buffer);let bin='';for(let i=0;i<bytes.length;i+=32768)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+32768));
+    return btoa(bin);
+  }
+};
 const glyphs=[...new Set(document.currentScript.textContent.replace(/[\x00-\x7F]/g,''))].join('');
 if(document.fonts)['400 100px "Black Han Sans"','900 58px "Noto Sans KR"','800 40px "Noto Sans KR"','700 30px "Noto Sans KR"'].forEach(f=>document.fonts.load(f,glyphs).catch(()=>{}));
 requestAnimationFrame(loop);
