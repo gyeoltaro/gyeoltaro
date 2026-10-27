@@ -2,6 +2,7 @@
 
 - 원본: `longform/ep01-startup-payback.html` (16:9 엔진 + 대본 + 나레이션 내장, `?seek=초` 로 정지 화면)
 - 렌더: `node longform/render-longform.js longform/ep01-startup-payback.html 결과.mp4 3` → 1920×1080 30fps, 썸네일 3안 같이 저장
+- 결과: `secret-calculator_LF01_startup-payback.mp4` 1920×1080 30fps, 14:35.97, −14.0 LUFS (최고 −2.6 dBFS), 227MB
 - 길이 14:36 (나레이션 14:16 + 최종 화면 20초) · 나레이션 공백 뺀 5,361자 · 문장 166개 · TTS 6번 요청
 - 비교 기준: **회수 기간 = 창업비 ÷ 한 달에 남는 현금** (계획안의 '1억당 5년 뒤 남는 돈'에서 바꿈 — 가게 크기가 달라도 한 숫자로 비교되고, 장비 수명과 바로 견줄 수 있다)
 

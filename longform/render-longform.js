@@ -53,8 +53,14 @@ function run(args) { return new Promise((res, rej) => { const p = spawn('ffmpeg'
   }));
   await browser.close();
   const list = path.join(TMP, 'list.txt'); fs.writeFileSync(list, segs.filter(Boolean).map(s => `file '${s}'`).join('\n'));
+  // 음량: 한 번에 거는 loudnorm 은 긴 영상에서 −15.3 LUFS 로 모자랐다 → 먼저 재고(1차) 그 값으로 맞춘다(2차, linear)
+  const meas = require('child_process').spawnSync('ffmpeg', ['-nostats', '-f', 's16le', '-ar', '44100', '-ac', '1', '-i', raw,
+    '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+  const L = JSON.parse(meas.slice(meas.lastIndexOf('{'), meas.lastIndexOf('}') + 1));
+  const ln = `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${L.input_i}:measured_TP=${L.input_tp}:measured_LRA=${L.input_lra}:measured_thresh=${L.input_thresh}:offset=${L.target_offset}:linear=true`;
+  console.log('음량 측정', L.input_i, 'LUFS → −14');
   await run(['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-f', 's16le', '-ar', '44100', '-ac', '1', '-i', raw,
-    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-af', ln + ',aresample=48000', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
     '-movflags', '+faststart', '-shortest', OUT]);
   fs.rmSync(TMP, { recursive: true, force: true });
   console.log('완료', OUT, ((Date.now() - t0) / 60000).toFixed(1), '분');
