@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신비한 장사사전 · 치킨집 편</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+  body.rec{cursor:none}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #frame{position:relative;width:1080px;height:1920px;flex:none;transform-origin:center center;overflow:hidden;background:#070e22}
+  #cv{position:absolute;inset:0;width:1080px;height:1920px;display:block}
+
+  /* ── 쇼츠 자막 ── */
+  #sub{position:absolute;left:40px;right:40px;top:1420px;display:flex;justify-content:center;pointer-events:none}
+  #subBox{max-width:1000px;padding:22px 40px 26px;border-radius:28px;background:rgba(4,9,24,.78);
+    border:2px solid rgba(255,255,255,.10);box-shadow:0 14px 40px rgba(0,0,0,.55);
+    text-align:center;font:900 58px/1.36 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    color:#fff;letter-spacing:-1.5px;word-break:keep-all;
+    opacity:0;transform:translateY(24px) scale(.94);transition:opacity .16s ease,transform .26s cubic-bezier(.2,1.5,.4,1)}
+  #subBox.show{opacity:1;transform:none}
+  #subBox .w{opacity:.38;transition:opacity .1s linear,text-shadow .1s linear}
+  #subBox .w.on{opacity:1;text-shadow:0 3px 0 rgba(0,0,0,.45)}
+  #subBox .kw{color:#FFC531}
+  #subBox .neg{color:#FF5C5C}
+  #subBox .pos{color:#3CE58F}
+
+  /* ── 시작 / 종료 오버레이 (1080x1920 좌표계) ── */
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%,rgba(22,48,106,.92),rgba(4,8,20,.97));z-index:5}
+  .overlay.hidden{display:none}
+  .ov{width:900px;text-align:center;color:#fff}
+  .ov .tag{display:inline-block;padding:14px 34px;border:3px solid #FFC531;border-radius:60px;color:#FFC531;font-weight:900;font-size:40px;letter-spacing:2px}
+  .ov h1{font-family:"Black Han Sans","Noto Sans KR",sans-serif;font-weight:400;font-size:122px;line-height:1.15;margin:46px 0 22px;letter-spacing:-2px}
+  .ov h1 span{color:#FFC531}
+  .ov .desc{font-size:38px;color:rgba(255,255,255,.7);margin:0 0 56px;font-weight:500}
+  .ov button.big{font:900 64px "Noto Sans KR",sans-serif;color:#1a1300;background:#FFC531;border:0;border-radius:90px;
+    padding:34px 110px;cursor:pointer;box-shadow:0 18px 50px rgba(255,197,49,.35);transition:transform .15s}
+  .ov button.big:hover{transform:scale(1.04)}
+  .ov button.big:disabled{opacity:.5;cursor:wait}
+  .ov button.ghost{font:700 40px "Noto Sans KR",sans-serif;color:#fff;background:transparent;border:3px solid rgba(255,255,255,.35);
+    border-radius:70px;padding:22px 60px;cursor:pointer;margin-top:30px}
+  .opts{margin:60px auto 0;width:820px;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);
+    border-radius:36px;padding:34px 44px;font-size:36px;font-weight:700;color:rgba(255,255,255,.9)}
+  .opts .row{display:flex;align-items:center;gap:22px;margin:18px 0}
+  .opts .row > span{min-width:170px;color:rgba(255,255,255,.6)}
+  .opts select{flex:1;min-width:0;font:700 30px "Noto Sans KR",sans-serif;padding:14px 18px;border-radius:16px;border:2px solid rgba(255,255,255,.2);background:#0d1733;color:#fff}
+  .opts input[type=range]{flex:1;height:40px;accent-color:#FFC531}
+  .opts input[type=checkbox]{width:40px;height:40px;accent-color:#FFC531;margin:0}
+  .opts label.chk{display:flex;align-items:center;gap:20px;margin:16px 0;cursor:pointer}
+  .hint{font-size:28px;line-height:1.5;color:rgba(255,255,255,.55);margin:30px 0 0;font-weight:500}
+
+  /* ── 화면 밖 HUD (녹화 모드에서 숨김) ── */
+  #hud{position:fixed;left:12px;bottom:12px;z-index:10;display:flex;gap:8px;align-items:center;
+    font:600 13px "Noto Sans KR",sans-serif;color:#fff;background:rgba(20,24,36,.85);padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12)}
+  #hud button{font:700 12px "Noto Sans KR",sans-serif;color:#fff;background:#2a3350;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+  #hud .tc{font-variant-numeric:tabular-nums;min-width:118px}
+  body.rec #hud{display:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="frame">
+    <canvas id="cv" width="1080" height="1920"></canvas>
+    <div id="sub"><div id="subBox"></div></div>
+
+    <div id="startUI" class="overlay">
+      <div class="ov">
+        <div class="tag">신비한 장사사전 · EP.01</div>
+        <h1>치킨 한 마리 팔면<br><span>얼마</span> 남을까?</h1>
+        <p class="desc">음성 나레이션 + 실시간 자막 + 모션 그래픽</p>
+        <button id="btnStart" class="big" disabled>불러오는 중…</button>
+        <div class="opts">
+          <div class="row"><span>목소리</span><select id="selVoice"></select></div>
+          <div class="row"><span>말 속도</span><input type="range" id="rngRate" min="0.85" max="1.4" step="0.05" value="1.2"><b id="rateVal">1.20</b></div>
+          <label class="chk"><input type="checkbox" id="chkTTS" checked> 음성 나레이션 (TTS)</label>
+          <label class="chk"><input type="checkbox" id="chkBGM" checked> 배경음악</label>
+          <label class="chk"><input type="checkbox" id="chkSFX" checked> 효과음</label>
+          <label class="chk"><input type="checkbox" id="chkRec"> 녹화 모드 (화면 밖 버튼·커서 숨김)</label>
+        </div>
+        <p class="hint" id="voiceHint">Chrome · Edge 권장. Edge의 ‘SunHi / InJoon Online (Natural)’ 음성이 가장 자연스럽습니다.</p>
+      </div>
+    </div>
+
+    <div id="endUI" class="overlay hidden">
+      <div class="ov">
+        <div class="tag">신비한 장사사전 · EP.01</div>
+        <h1>치킨집 편<br><span>끝</span></h1>
+        <button id="btnReplay" class="big">⟲ 다시 보기</button><br>
+        <button id="btnHome" class="ghost">설정 화면으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="hud">
+  <span class="tc" id="tc">00:00.0 / 00:00</span>
+  <button id="hudRestart" title="R">⟲ 처음부터 (R)</button>
+  <button id="hudRec" title="H">녹화 모드 (H)</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ════════════════════════════════════════════════════════════════════
+   0. 기본 설정
+   ════════════════════════════════════════════════════════════════════ */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const W = 1080, H = 1920;
+const FD = '"Black Han Sans","Noto Sans KR",sans-serif';                      // 디스플레이(제목·숫자)
+const FB = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif'; // 본문
+const FE = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+const C = {
+  gold:'#FFC531', red:'#FF4D4D', green:'#35E08A', cyan:'#6FD3FF', ink:'#1d2433',
+  paper:'#F6F1E4', dim:'rgba(255,255,255,.6)', line:'#d6e8ff'
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   1. 대본 큐 (자막 표기: [노랑 키워드] {빨강} <초록>,  say = TTS 발음 보정)
+      t·dur 은 plan() 이 말 속도에 맞춰 자동 계산 → 모션·자막·효과음이 같은 시계로 움직임
+   ════════════════════════════════════════════════════════════════════ */
+const DED = [[0.05,'swipe'],[0.2,'minus']];
+const CUES = [
+  {id:'h1', sc:'hook',    text:'전 세계 [맥도날드]보다 많은 게, 한국에 있습니다.', min:2.8, sfx:[[0,'whoosh'],[0.3,'roll'],[1.2,'roll']]},
+  {id:'h2', sc:'hook',    text:'바로, [치킨집]이죠.', min:1.7, sfx:[[0.05,'impact']], shake:[[0.05,24,.55]], flash:[[0.05,.35]]},
+  {id:'s1', sc:'store',   text:'치킨 한 마리 [2만 원]. 꽤 남을 것 같죠?', say:'치킨 한 마리 이만 원. 꽤 남을 것 같죠?', min:2.9, sfx:[[0,'whoosh'],[0.65,'stamp'],[1.7,'pop']], shake:[[0.7,10,.3]]},
+  {id:'d0', sc:'deduct',  text:'이 [2만 원], 하나씩 빼볼게요.', say:'이 이만 원, 하나씩 빼 볼게요.', min:1.9, sfx:[[0,'whoosh'],[0.2,'rise']]},
+  {id:'d1', sc:'deduct',  text:'생닭, 본사 공급가 {5천5백 원}.', say:'생닭, 본사 공급가 오천오백 원.', min:1.5, sfx:DED},
+  {id:'d2', sc:'deduct',  text:'기름·파우더·소스 {2천5백 원}.', say:'기름, 파우더, 소스 이천오백 원.', min:1.5, sfx:DED},
+  {id:'d3', sc:'deduct',  text:'무, 콜라, 포장 박스 {1천5백 원}.', say:'무, 콜라, 포장 박스 천오백 원.', min:1.5, sfx:DED},
+  {id:'d4', sc:'deduct',  text:'배달앱과 카드 수수료 {2천 원}.', say:'배달앱과 카드 수수료 이천 원.', min:1.5, sfx:DED},
+  {id:'d5', sc:'deduct',  text:'배달 대행비 {3천 원}.', say:'배달 대행비 삼천 원.', min:1.4, sfx:DED},
+  {id:'d6', sc:'deduct',  text:'월세·인건비를 한 마리로 나누면 {3천5백 원}.', say:'월세, 인건비를 한 마리로 나누면, 삼천오백 원.', min:2.4, sfx:[...DED,[1.4,'pop']]},
+  {id:'c1', sc:'calc',    text:'[계산기를 두드려보면] 머리가 {띵해지는} 순간이죠.', min:2.9, sfx:[[0,'whoosh'],
+      ...['2','0','0','0','0','−','1','8','0','0','0','='].map((_,i)=>[0.2+i*0.1,'click']),[1.42,'ding'],[1.42,'impact']],
+      shake:[[1.42,30,.9]], flash:[[1.42,.6]]},
+  {id:'p1', sc:'profit',  text:'2만 원짜리 치킨을 팔면,', say:'이만 원짜리 치킨을 팔면,', min:1.6, sfx:[[0,'whoosh'],[0.15,'rise'],[1.0,'pop']]},
+  {id:'p2', sc:'profit',  text:'사장님 손에 남는 건 고작 <2천 원>.', say:'사장님 손에 남는 건, 고작 이천 원.', min:2.4, sfx:[[1.2,'coin']]},
+  {id:'f1', sc:'fifty',   text:'한 달 [300만 원]을 벌려면,', say:'한 달에 삼백만 원을 벌려면,', min:1.9, sfx:[[0,'whoosh'],[0.05,'stamp'],[0.7,'pop']]},
+  {id:'f2', sc:'fifty',   text:'매일 {50마리}를 쉬지 않고 튀겨야 하죠.', say:'매일 오십 마리를, 쉬지 않고 튀겨야 하죠.', min:2.9,
+      sfx:[...Array.from({length:25},(_,i)=>[0.15+i*0.08,'tick']),[2.3,'stamp']], shake:[[2.32,9,.3]]},
+  {id:'x1', sc:'closure', text:'그래서 매년, 여는 집보다 {닫는 집}이 더 많습니다.', min:3.0, sfx:[[0,'whoosh'],[0.15,'rise'],[1.2,'rise'],[2.4,'stamp'],[2.42,'buzz']], shake:[[2.42,12,.35]]},
+  {id:'t1', sc:'twist',   text:'그런데 이상하죠?', min:1.5, sfx:[[0,'scratch'],[0.02,'impact']], shake:[[0.02,20,.5]], flash:[[0,.5]]},
+  {id:'t2', sc:'twist',   text:'이렇게 빠듯한데, 치킨 [본사]는 왜 계속 커질까요?', min:2.6, sfx:[[0.1,'rumble']], shake:[[0.1,7,1.1]]},
+  {id:'k1', sc:'secret',  text:'비밀은 아까 뺀 비용에 있습니다.', min:2.3, sfx:[[0,'rewind'],[0.6,'marker'],[0.85,'marker'],[1.1,'marker'],[1.45,'pop']]},
+  {id:'k2', sc:'supply',  text:'[닭], [기름], [소스], [박스].', say:'닭, 기름, 소스, 박스.', min:1.8, sfx:[[0.05,'pop'],[0.43,'pop'],[0.81,'pop'],[1.19,'pop']]},
+  {id:'k3', sc:'supply',  text:'점주는 이걸 [본사에서만] 사야 합니다.', min:2.0, sfx:[[0.95,'lock']], shake:[[1.0,10,.3]]},
+  {id:'m1', sc:'supply',  text:'본사는 물건을 넘길 때마다 [마진]을 붙이죠.', min:2.6, sfx:[[0.55,'coin'],[0.97,'coin'],[1.39,'coin'],[1.81,'coin'],[2.23,'coin']]},
+  {id:'m2', sc:'supply',  text:'치킨이 팔리기도 전에, 본사는 {이미} 번 거죠.', min:2.6, sfx:[[1.4,'kaching']], shake:[[1.4,10,.3]]},
+  {id:'g1', sc:'gold',    text:'골드러시 때 가장 큰돈을 번 사람은,', min:1.9, sfx:[[0,'whoosh'],[0.1,'shimmer']]},
+  {id:'g2', sc:'gold',    text:'금 캔 사람이 아니라, [곡괭이와 청바지] 판 사람이었죠.', min:2.8, sfx:[[0.75,'buzz'],[1.75,'win']]},
+  {id:'g3', sc:'gold',    text:'치킨 전쟁의 진짜 승자도,', min:1.5, sfx:[[0.05,'morph']]},
+  {id:'g4', sc:'gold',    text:'튀기는 사람이 아니라, [닭을 대주는 사람]입니다.', min:2.6, sfx:[[0.55,'buzz'],[1.35,'impact'],[1.4,'win']], shake:[[1.35,16,.45]]},
+  {id:'o1', sc:'outro',   text:'다른 가게 돈 구조도 궁금하면, [구독]!', say:'다른 가게 돈 구조도 궁금하면, 구독!', min:2.8, sfx:[[0,'whoosh'],[0.2,'pop'],[0.45,'pop'],[0.7,'pop'],[1.7,'click'],[1.75,'ding2']]},
+];
+
+/* ════════════════════════════════════════════════════════════════════
+   2. 유틸
+   ════════════════════════════════════════════════════════════════════ */
+const clamp = (v,a=0,b=1) => v<a?a:v>b?b:v;
+const lerp = (a,b,t) => a+(b-a)*t;
+const P = (t,s,d) => clamp((t-s)/d);
+const E = {
+  out:t=>1-Math.pow(1-t,3),
+  io:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  back:t=>{const c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)},
+  elastic:t=>t<=0?0:t>=1?1:Math.pow(2,-10*t)*Math.sin((t*10-.75)*2*Math.PI/3)+1,
+  bounce:t=>{const n=7.5625,d=2.75;if(t<1/d)return n*t*t;if(t<2/d)return n*(t-=1.5/d)*t+.75;if(t<2.5/d)return n*(t-=2.25/d)*t+.9375;return n*(t-=2.625/d)*t+.984375}
+};
+const rnd = n => {const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const won = n => Math.round(n).toLocaleString('ko-KR');
+const strip = s => s.replace(/[\[\]{}<>]/g,'');
+
+function rr(x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function text(s,x,y,o={}){
+  ctx.save();
+  const disp=o.f==='D';
+  ctx.font=`${disp?400:(o.w||800)} ${o.s||48}px ${disp?FD:FB}`;
+  ctx.textAlign=o.a||'center';ctx.textBaseline='middle';
+  if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
+  if(o.glow){ctx.shadowColor=o.glow;ctx.shadowBlur=o.gb||30;}
+  if(o.st){ctx.lineJoin='round';ctx.lineWidth=o.st;ctx.strokeStyle=o.sc||'rgba(0,0,0,.85)';ctx.strokeText(s,x,y);}
+  ctx.fillStyle=o.c||'#fff';ctx.fillText(s,x,y);
+  ctx.restore();
+}
+function emoji(ch,x,y,size,o={}){
+  ctx.save();ctx.translate(x,y);if(o.rot)ctx.rotate(o.rot);
+  const sc=o.sc??1;if(sc!==1)ctx.scale(sc,sc);
+  if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
+  if(o.gray&&'filter' in ctx)ctx.filter='grayscale(1) brightness(.75)';
+  ctx.font=`${size}px ${FE}`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#000';ctx.fillText(ch,0,size*0.05);ctx.restore();
+}
+function group(x,y,sc,rot,alpha,fn){
+  ctx.save();ctx.translate(x,y);if(rot)ctx.rotate(rot);if(sc!==1)ctx.scale(sc,sc);
+  ctx.globalAlpha*=alpha;fn();ctx.restore();
+}
+function line(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function coin(x,y,r,alpha=1){
+  ctx.save();ctx.globalAlpha*=alpha;
+  const g=ctx.createRadialGradient(x-r*.3,y-r*.35,r*.1,x,y,r);
+  g.addColorStop(0,'#FFF1A8');g.addColorStop(.55,'#FFC531');g.addColorStop(1,'#C98A00');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(120,70,0,.6)';ctx.lineWidth=r*.09;ctx.beginPath();ctx.arc(x,y,r*.78,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+  text('₩',x,y+r*.04,{f:'D',s:r*1.05,c:'#8a5a00',alpha});
+}
+function stampBox(str,x,y,t,o={}){
+  if(t<0)return;
+  const k=E.out(P(t,0,.2)),sz=o.s||80,col=o.c||C.red;
+  group(x,y,lerp(2.3,1,k),o.rot??-0.12,P(t,0,.1),()=>{
+    ctx.font=`400 ${sz}px ${FD}`;
+    const w=ctx.measureText(str).width+80,h=sz*1.5;
+    ctx.fillStyle=o.bg||'rgba(0,0,0,.35)';rr(-w/2,-h/2,w,h,20);ctx.fill();
+    ctx.lineWidth=10;ctx.strokeStyle=col;rr(-w/2,-h/2,w,h,20);ctx.stroke();
+    text(str,0,4,{f:'D',s:sz,c:col});
+  });
+}
+function dashed(x1,y,x2,col){ctx.save();ctx.setLineDash([12,10]);ctx.strokeStyle=col;ctx.lineWidth=3;line(x1,y,x2,y);ctx.restore();}
+
+/* ════════════════════════════════════════════════════════════════════
+   3. 공용 그래픽 (영수증 · 본사 빌딩 · 가맹점)
+   ════════════════════════════════════════════════════════════════════ */
+const COSTS = [
+  {id:'d1', ic:'🐔', lb:'생닭 (본사 공급)',     v:5500},
+  {id:'d2', ic:'🛢️', lb:'기름·파우더·소스',     v:2500},
+  {id:'d3', ic:'📦', lb:'무·콜라·포장재',       v:1500},
+  {id:'d4', ic:'📱', lb:'배달앱·카드 수수료',   v:2000},
+  {id:'d5', ic:'🛵', lb:'배달 대행비',          v:3000},
+  {id:'d6', ic:'🏠', lb:'월세·인건비 (1마리분)', v:3500},
+];
+const RW = 620, RH = 860;
+function drawReceipt(x,y,o){
+  ctx.save();ctx.translate(x,y);
+  ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=40;ctx.shadowOffsetY=16;
+  ctx.fillStyle=C.paper;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(RW,0);ctx.lineTo(RW,RH);
+  for(let i=RW;i>0;i-=31){ctx.lineTo(i-15.5,RH-16);ctx.lineTo(i-31,RH);}
+  ctx.closePath();ctx.fill();ctx.shadowColor='transparent';
+  text('치킨 1마리 정산서',RW/2,62,{s:46,w:900,c:C.ink});
+  text('RECEIPT · 프랜차이즈 배달 매장 추정',RW/2,112,{s:24,w:700,c:'#857e6d'});
+  dashed(30,150,RW-30,'#b9b19c');
+  text('판매가',40,205,{a:'left',s:38,w:900,c:C.ink});
+  text('20,000',RW-40,207,{a:'right',s:48,f:'D',c:C.ink});
+  dashed(30,250,RW-30,'#b9b19c');
+  COSTS.forEach((c,k)=>{
+    const v=o.vis[k];if(v<=0)return;const ly=300+k*80;
+    if(o.hl&&o.hl[k]>0){ctx.fillStyle='rgba(255,206,0,.55)';ctx.fillRect(18,ly-34,(RW-36)*o.hl[k],68);}
+    ctx.save();ctx.globalAlpha*=v;ctx.translate((1-E.out(v))*50,0);
+    emoji(c.ic,58,ly,40);
+    text(c.lb,96,ly,{a:'left',s:32,w:700,c:C.ink});
+    text('-'+won(c.v),RW-40,ly+2,{a:'right',s:42,f:'D',c:'#d62f2f'});
+    ctx.restore();
+  });
+  if(o.total>0){
+    dashed(30,750,RW-30,'#b9b19c');
+    text('남는 돈',40,805,{a:'left',s:40,w:900,c:C.ink,alpha:o.total});
+    text(o.totalText,RW-40,807,{a:'right',s:58,f:'D',c:o.totalCol||'#14a35a',alpha:o.total});
+  }
+  ctx.restore();
+}
+function drawHQ(cx,by,sc,o={}){
+  ctx.save();ctx.translate(cx,by);ctx.scale(sc,sc);
+  const w=400,h=760;
+  if(o.glow){ctx.shadowColor='rgba(255,197,49,.8)';ctx.shadowBlur=o.glow;}
+  const g=ctx.createLinearGradient(-w/2,0,w/2,0);g.addColorStop(0,'#2e4377');g.addColorStop(1,'#18234a');
+  ctx.fillStyle=g;ctx.fillRect(-w/2,-h,w,h);ctx.shadowColor='transparent';
+  ctx.strokeStyle='#8fb4ff';ctx.lineWidth=4;ctx.strokeRect(-w/2,-h,w,h);
+  for(let r=0;r<9;r++)for(let c=0;c<5;c++){
+    const lit=rnd(r*13+c*7+Math.floor(R*1.3+rnd(r*5+c)*4))>(o.lit??.35);
+    ctx.fillStyle=lit?'rgba(255,214,102,.92)':'rgba(140,170,230,.16)';
+    ctx.fillRect(-w/2+30+c*72,-h+80+r*70,46,40);
+  }
+  ctx.fillStyle='#0d1530';ctx.fillRect(-50,-110,100,110);ctx.strokeRect(-50,-110,100,110);
+  ctx.fillStyle=C.gold;rr(-140,-h-92,280,84,16);ctx.fill();
+  text('본사',0,-h-48,{f:'D',s:60,c:C.ink});
+  ctx.strokeStyle='#8fb4ff';ctx.lineWidth=5;line(0,-h-92,0,-h-170);
+  ctx.fillStyle=Math.sin(R*6)>0?'#ff4d4d':'#5a1b1b';ctx.beginPath();ctx.arc(0,-h-174,10,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function drawShopMini(cx,by,o={}){
+  ctx.save();ctx.translate(cx,by);
+  ctx.globalAlpha*=o.alpha??1;
+  ctx.fillStyle='#22305a';ctx.fillRect(-150,-300,300,300);
+  ctx.strokeStyle='#8fb4ff';ctx.lineWidth=4;ctx.strokeRect(-150,-300,300,300);
+  for(let i=0;i<6;i++){ctx.fillStyle=i%2?'#fff':'#ff4d4d';ctx.beginPath();ctx.moveTo(-160+i*53.3,-300);ctx.lineTo(-160+(i+1)*53.3,-300);
+    ctx.lineTo(-160+(i+1)*53.3,-250);ctx.arc(-160+(i+.5)*53.3,-250,26.6,0,Math.PI);ctx.closePath();ctx.fill();}
+  ctx.fillStyle=C.gold;rr(-110,-370,220,62,12);ctx.fill();
+  text('치킨',0,-338,{f:'D',s:44,c:C.ink});
+  ctx.fillStyle='rgba(111,211,255,.25)';ctx.fillRect(-120,-200,120,110);ctx.strokeRect(-120,-200,120,110);
+  emoji('🍗',-60,-145,60);
+  ctx.fillStyle='#0d1530';ctx.fillRect(30,-170,90,170);ctx.strokeRect(30,-170,90,170);
+  ctx.restore();
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   4. 장면(Scene) — 모든 장면은 타임라인 시계 T 하나로 그려짐 (L(id) = 해당 큐 시작 후 경과초)
+   ════════════════════════════════════════════════════════════════════ */
+let T = 0, R = 0;            // T: 타임라인(초), R: 실시간(초, 앰비언트 모션용)
+let CT = {};                 // 큐 id → 시작 시각
+const L = id => T - CT[id];
+
+function hookBar(y,ic,label,val,col,t,hot){
+  if(t<0)return;
+  const k=E.out(P(t,0,1.0)),ap=P(t,0,.25);
+  emoji(ic,150,y-70,64,{alpha:ap});
+  text(label,200,y-70,{a:'left',s:46,w:900,alpha:ap});
+  text((val*k).toFixed(1)+'만 곳',970,y-70,{a:'right',s:58,f:'D',c:hot?C.gold:'#fff',alpha:ap});
+  ctx.fillStyle='rgba(255,255,255,.08)';rr(110,y,860,120,28);ctx.fill();
+  const w=Math.max(56,860*(val/9.4)*k);
+  ctx.save();ctx.globalAlpha*=ap;
+  if(hot){ctx.shadowColor=col;ctx.shadowBlur=30+18*Math.sin(R*8);}
+  const g=ctx.createLinearGradient(110,0,110+w,0);g.addColorStop(0,col);g.addColorStop(1,'#fff6d6');
+  ctx.fillStyle=hot?g:col;rr(110,y,w,120,28);ctx.fill();ctx.restore();
+}
+
+const SCENES = {
+  /* ── 01 훅: 맥도날드 vs 치킨집 ── */
+  hook:{draw(){
+    const a=L('h1'),b=L('h2'),k=E.out(P(a,0,.45)),rev=b>=0;
+    text('매장 수, 비교해 보면',540,320-(1-k)*30,{s:62,w:900,alpha:k});
+    text('2018년 기준 · 맥도날드 연차보고서 / KB경영연구소',540,392,{s:30,w:500,c:C.dim,alpha:k});
+    hookBar(600,'🍔','전 세계 맥도날드',3.8,'#FF8B3D',a-.3,false);
+    hookBar(900,rev?'🍗':'❔',rev?'한국 치킨집':'한국의 ???',8.7,C.gold,a-1.2,rev);
+    if(rev){
+      const s=E.out(P(b,0,.25));
+      group(540,1200,lerp(2.8,1,s),-.04,P(b,0,.1),()=>text('치킨집',0,0,{f:'D',s:200,c:C.gold,glow:'rgba(255,197,49,.75)',gb:50,st:14}));
+      text('전 세계 맥도날드의 2배 이상',540,1335,{s:40,w:900,c:'#fff',alpha:P(b,.35,.3)});
+    }
+  }},
+
+  /* ── 02 매장 단면도 + 2만 원 가격표 ── */
+  store:{draw(){
+    const a=L('s1'),rev=E.io(P(a,0,1.0));
+    text("SECTION A-A' · 치킨집 단면도",110,300,{a:'left',s:36,w:700,c:C.cyan,alpha:P(a,0,.3)});
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*rev+2,H);ctx.clip();drawShopSection();ctx.restore();
+    if(rev<1){
+      ctx.save();ctx.shadowColor=C.cyan;ctx.shadowBlur=30;ctx.fillStyle=C.cyan;ctx.fillRect(W*rev-3,360,6,960);ctx.restore();
+    }
+    const pt=a-.65;
+    if(pt>=0) group(700,860,lerp(2.3,1,E.out(P(pt,0,.22))),-.12,P(pt,0,.08),()=>{
+      ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=30;ctx.fillStyle=C.gold;rr(-195,-62,390,124,22);ctx.fill();
+      ctx.shadowColor='transparent';ctx.fillStyle='#0b1530';ctx.beginPath();ctx.arc(-162,0,13,0,Math.PI*2);ctx.fill();
+      text('20,000원',22,4,{f:'D',s:76,c:C.ink});
+    });
+    const bt=a-2.1;
+    if(bt>=0) group(845,300,E.back(P(bt,0,.35)),Math.sin(R*4)*.04,1,()=>{
+      ctx.fillStyle='#fff';rr(-185,-58,370,116,58);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-90,50);ctx.lineTo(-130,105);ctx.lineTo(-40,52);ctx.fill();
+      emoji('💰',-120,2,58);text('남는 장사?',35,2,{s:48,w:900,c:C.ink});
+    });
+  }},
+
+  /* ── 03 차감 시뮬레이션 (막대 + 영수증 + 카운터) ── */
+  deduct:{draw(){
+    const a=L('d0');
+    const BX=110,BW=220,BT=560,BB=1360,PX=(BB-BT)/20000,RX=390,RY=480;
+    let rem=20000,cut=0;
+    COSTS.forEach(c=>{const t=L(c.id);rem-=c.v*E.out(P(t,.2,.6));if(t>=.2)cut+=c.v;});
+    const col=rem>9000?C.gold:rem>4500?'#FF9F43':C.red;
+    text('사장님 몫',540,238,{s:40,w:700,c:C.dim,alpha:P(a,0,.3)});
+    let bump=0;COSTS.forEach(c=>{const t=L(c.id);if(t>=.2&&t<.5)bump=Math.max(bump,Math.sin(P(t,.2,.3)*Math.PI));});
+    group(540,355,1+bump*.07,0,P(a,0,.2),()=>text(won(rem)+'원',0,0,{f:'D',s:150,c:col,glow:col==C.red?'rgba(255,77,77,.6)':null,gb:40}));
+    // 막대
+    const grow=E.out(P(a,.2,.6));
+    ctx.fillStyle='rgba(255,255,255,.06)';rr(BX,BT,BW,BB-BT,24);ctx.fill();
+    const top=BT+cut*PX,h=(BB-top)*grow;
+    if(h>1){
+      const g=ctx.createLinearGradient(0,BT,0,BB);g.addColorStop(0,'#FFE07a');g.addColorStop(1,'#F2A900');
+      ctx.fillStyle=g;rr(BX,BB-h,BW,h,24);ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=2;
+      for(let v=1000;v<20000;v+=1000){const y=BT+v*PX;if(y>BB-h+4)line(BX+14,y,BX+BW-14,y);}
+    }
+    text('20,000',BX+BW/2,BT-34,{s:30,w:700,c:C.dim,alpha:grow});
+    // 날아가는 조각
+    let cum=0;
+    COSTS.forEach((c,k)=>{
+      const t=L(c.id),y0=BT+cum*PX,hh=c.v*PX;cum+=c.v;
+      if(t<0||t>1.1)return;
+      if(t<.2){
+        ctx.fillStyle=`rgba(255,77,77,${.55+.45*Math.sin(t*70)})`;rr(BX,y0,BW,hh,14);ctx.fill();
+      }else{
+        const f=E.io(P(t,.2,.5)),tx=RX+70,ty=RY+300+k*80;
+        const cx=lerp(BX+BW/2,tx,f),cy=lerp(y0+hh/2,ty,f)-Math.sin(f*Math.PI)*120;
+        const w=lerp(BW,46,f),hh2=lerp(hh,46,f);
+        ctx.save();ctx.globalAlpha*=1-P(t,.62,.15);ctx.translate(cx,cy);ctx.rotate(f*.6);
+        ctx.fillStyle=C.red;rr(-w/2,-hh2/2,w,hh2,12);ctx.fill();ctx.restore();
+        const q=P(t,.2,.9);
+        text('-'+won(c.v)+'원',BX+BW/2,y0+hh/2-q*90,{f:'D',s:54,c:C.red,alpha:1-q,st:9});
+      }
+    });
+    // 영수증
+    const ry=RY+(1-E.out(P(a,0,.5)))*1000;
+    const tq=P(L('d6'),1.3,.3);
+    drawReceipt(RX,ry,{vis:COSTS.map(c=>P(L(c.id),.55,.3)),total:tq,totalText:'?,???',totalCol:'#d62f2f'});
+  }},
+
+  /* ── 04 시그니처: 계산기 ── */
+  calc:{draw(){
+    const a=L('c1');
+    const KEYS=[['C','±','%','÷'],['7','8','9','×'],['4','5','6','−'],['1','2','3','+'],['0','00','.','=']];
+    const SEQ=['2','0','0','0','0','−','1','8','0','0','0','='],K0=.2,KD=.1,DING=1.42;
+    const n=a<K0?0:Math.min(SEQ.length,Math.floor((a-K0)/KD)+1);
+    const typed=SEQ.slice(0,n).join(''),[n1,n2]=typed.split('−');
+    const done=typed.endsWith('=');
+    const fmt=s=>s?Number(s.replace('=','')).toLocaleString('ko-KR'):'';
+    let small='',big='0';
+    if(done){small=`${fmt(n1)} − ${fmt(n2)} =`;big='2,000';}
+    else if(n2!==undefined){small=`${fmt(n1)} −`;big=n2?fmt(n2):fmt(n1);}
+    else if(n1){big=fmt(n1);}
+    const s=E.back(P(a,0,.4));
+    // 띵! 링 웨이브
+    const dt=a-DING;
+    if(dt>=0)for(let i=0;i<3;i++){
+      const q=P(dt,i*.12,.9);if(q<=0||q>=1)continue;
+      ctx.save();ctx.strokeStyle=`rgba(255,197,49,${1-q})`;ctx.lineWidth=14*(1-q)+2;
+      ctx.beginPath();ctx.arc(540,840,120+q*720,0,Math.PI*2);ctx.stroke();ctx.restore();
+    }
+    group(540,840,lerp(.82,1,s),dt>=0?Math.sin(dt*40)*.03*(1-P(dt,0,.6)):0,P(a,0,.15),()=>{
+      ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=50;ctx.shadowOffsetY=20;
+      ctx.fillStyle='#1d2230';rr(-290,-500,580,1000,58);ctx.fill();
+      ctx.shadowColor='transparent';ctx.strokeStyle='#3a4560';ctx.lineWidth=5;rr(-290,-500,580,1000,58);ctx.stroke();
+      const flash=dt>=0&&dt<.5&&Math.sin(dt*50)>0;
+      ctx.fillStyle=flash?'#ffd6d6':'#c9e6bf';rr(-250,-455,500,215,26);ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,.08)';ctx.fillRect(-250,-455,500,14);
+      text(small,225,-405,{a:'right',s:40,w:700,c:'#4a5a44'});
+      text(big,225,-310,{a:'right',s:done?120:104,f:'D',c:done?'#d62f2f':'#1f2b1c'});
+      KEYS.forEach((row,ri)=>row.forEach((k,ci)=>{
+        const x=-250+ci*130,y=-200+ri*130;
+        const idx=SEQ.findIndex((q,i)=>q===k&&a>=K0+i*KD&&a<K0+i*KD+.09);
+        const pressed=idx>=0;
+        const isOp=ci===3,isEq=k==='=';
+        ctx.fillStyle=isEq?(pressed?'#ff8a8a':'#ff4d4d'):isOp?(pressed?'#ffd27a':'#ff9f1a'):(pressed?'#5a6684':'#323a50');
+        rr(x,y+(pressed?6:0),110,110,26);ctx.fill();
+        if(!pressed){ctx.fillStyle='rgba(0,0,0,.35)';rr(x,y+100,110,10,5);ctx.fill();}
+        text(k,x+55,y+57+(pressed?6:0),{s:k.length>1?40:54,w:900,c:'#fff'});
+      }));
+    });
+    // 어지러운 별
+    if(dt>=0){
+      const ap=P(dt,0,.2);
+      for(let i=0;i<6;i++){
+        const ang=R*4+i*Math.PI*2/6;
+        text('★',540+Math.cos(ang)*230,290+Math.sin(ang)*48,{s:60,c:i%2?C.gold:'#fff',alpha:ap*(.6+.4*Math.sin(ang))});
+      }
+      group(880,250,E.back(P(dt,0,.3)),.18,1,()=>text('띵—!',0,0,{f:'D',s:96,c:C.gold,st:12}));
+    }
+  }},
+
+  /* ── 05 순이익 도넛 + 동전 ── */
+  profit:{draw(){
+    const a=L('p1'),b=L('p2'),cx=540,cy=730,R0=265;
+    text('치킨 1마리 20,000원의 행방',540,318,{s:52,w:900,alpha:P(a,0,.3)});
+    ctx.save();ctx.lineWidth=96;ctx.strokeStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.arc(cx,cy,R0,0,Math.PI*2);ctx.stroke();
+    const s0=-Math.PI/2,r1=E.io(P(a,.15,.8)),r2=E.out(P(a,.95,.45));
+    ctx.strokeStyle=C.red;ctx.beginPath();ctx.arc(cx,cy,R0,s0,s0+Math.PI*2*.9*r1);ctx.stroke();
+    if(r2>0){ctx.shadowColor=C.green;ctx.shadowBlur=30+14*Math.sin(R*8);ctx.strokeStyle=C.green;
+      ctx.beginPath();ctx.arc(cx,cy,R0,s0+Math.PI*2*.9,s0+Math.PI*2*(.9+.1*r2));ctx.stroke();}
+    ctx.restore();
+    text('남는 돈',cx,cy-78,{s:40,w:700,c:C.dim,alpha:P(a,.95,.3)});
+    text(Math.round(10*r2)+'%',cx,cy+22,{f:'D',s:170,c:C.green,alpha:P(a,.95,.2)});
+    const lg=P(a,.6,.3);
+    ctx.save();ctx.globalAlpha*=lg;ctx.fillStyle=C.red;ctx.beginPath();ctx.arc(130,1085,16,0,7);ctx.fill();
+    ctx.fillStyle=C.green;ctx.beginPath();ctx.arc(600,1085,16,0,7);ctx.fill();ctx.restore();
+    text('나가는 돈 18,000원',160,1085,{a:'left',s:40,w:800,alpha:lg});
+    text('남는 돈 2,000원',630,1085,{a:'left',s:40,w:800,alpha:lg});
+    if(b>=0){
+      const d=P(b,.9,.55);
+      if(d>0){
+        coin(330,lerp(820,1235,E.bounce(d)),78);
+        text('2,000원',690,1240,{f:'D',s:120,c:C.green,glow:'rgba(53,224,138,.5)',alpha:P(b,1.25,.2)});
+      }
+    }
+  }},
+
+  /* ── 06 하루 50마리 ── */
+  fifty:{draw(){
+    const a=L('f1'),b=L('f2');
+    text('목표: 월 순수익',540,290,{s:42,w:700,c:C.dim,alpha:P(a,0,.3)});
+    group(540,385,lerp(1.7,1,E.out(P(a,0,.25))),0,P(a,0,.12),()=>text('300만 원',0,0,{f:'D',s:122,c:C.gold,glow:'rgba(255,197,49,.5)'}));
+    text('300만 원 ÷ 2,000원 = 월 1,500마리',540,505,{s:44,w:800,alpha:P(a,.7,.3)});
+    let cnt=0;
+    if(b>=0)for(let i=0;i<50;i++){
+      const t=b-(.15+i*.04);if(t<0)continue;cnt=i+1;
+      const c=i%10,r=Math.floor(i/10);
+      emoji('🍗',540+(c-4.5)*88,640+r*88,62,{sc:E.back(P(t,0,.25))});
+    }
+    if(b>=0){
+      text(`하루 ${cnt}마리`,540,1120,{f:'D',s:118,c:cnt>=50?C.red:'#fff',glow:cnt>=50?'rgba(255,77,77,.5)':null});
+      stampBox('× 30일 · 쉬는 날 0일',540,1265,b-2.3,{s:58,rot:-.06});
+    }
+  }},
+
+  /* ── 07 개업 vs 폐업 ── */
+  closure:{draw(){
+    const a=L('x1'),b=a-1.2,base=1130,maxH=560;
+    text('치킨집, 1년에 몇 곳이 열고 닫을까?',540,318,{s:52,w:900,alpha:P(a,0,.3)});
+    text('2014~2018년 연평균 · KB경영연구소',540,386,{s:32,w:600,c:C.dim,alpha:P(a,0,.3)});
+    const vbar=(cx,v,col,lb,k)=>{
+      ctx.fillStyle='rgba(255,255,255,.06)';rr(cx-125,base-maxH,250,maxH,24);ctx.fill();
+      const h=maxH*(v/8000)*E.out(k);
+      if(h>2){ctx.fillStyle=col;rr(cx-125,base-h,250,h,24);ctx.fill();}
+      text(won(v*E.out(k))+'곳',cx,base-h-48,{f:'D',s:66,c:col,alpha:P(k,0,.1)});
+      text(lb,cx,base+56,{s:44,w:900});
+    };
+    vbar(320,6200,C.green,'새로 여는 곳',P(a,.15,.8));
+    vbar(760,8000,C.red,'문 닫는 곳',b>=0?P(b,0,.8):0);
+    if(b>=0)stampBox('폐업 > 개업',540,1290,b-1.22,{s:80,rot:-.08});
+  }},
+
+  /* ── 08 반전: 본사는 왜 커질까? ── */
+  twist:{xf:0,draw(){
+    const a=L('t1'),b=L('t2');
+    ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(540,900,200,540,900,1200);
+    g.addColorStop(0,'rgba(255,40,40,0)');g.addColorStop(1,`rgba(255,40,40,${.18+.08*Math.sin(R*5)})`);
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    if(a<.45)for(let i=0;i<9;i++){
+      const s=Math.floor(R*40)+i*17;ctx.fillStyle=i%2?'rgba(111,211,255,.25)':'rgba(255,77,77,.28)';
+      ctx.fillRect((rnd(s)-.5)*80,rnd(s+3)*H,W,10+rnd(s+5)*50);
+    }
+    if(b>=0){
+      const up=E.out(P(b,.1,.9));
+      drawHQ(540,1360+(1-up)*1000,1,{glow:30+20*Math.sin(R*5),lit:.25});
+      const ar=P(b,.8,.8);
+      if(ar>0){
+        const pts=[[830,1300],[880,1150],[920,1190],[985,900]];
+        ctx.save();ctx.strokeStyle=C.green;ctx.lineWidth=14;ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowColor=C.green;ctx.shadowBlur=20;
+        ctx.beginPath();ctx.moveTo(...pts[0]);
+        const segs=pts.length-1,prog=ar*segs;
+        for(let i=1;i<=segs;i++){const f=clamp(prog-(i-1));if(f<=0)break;
+          ctx.lineTo(lerp(pts[i-1][0],pts[i][0],f),lerp(pts[i-1][1],pts[i][1],f));}
+        ctx.stroke();ctx.restore();
+        if(ar>=1)text('▲',985,880,{s:70,c:C.green});
+      }
+    }
+    let qy=800,qs=1;
+    if(b>=0){const m=E.io(P(b,0,.6));qy=lerp(800,320,m);qs=lerp(1,.38,m);}
+    group(540,qy,E.elastic(P(a,0,.7))*qs,Math.sin(R*3)*.07,1,()=>text('?',0,0,{f:'D',s:560,c:C.gold,glow:'rgba(255,197,49,.85)',gb:70}));
+  }},
+
+  /* ── 09 되감기: 영수증 속 필수품목 ── */
+  secret:{draw(){
+    const a=L('k1');
+    if(a>1.6||Math.floor(R*3)%2===0)text('◀◀ REWIND',90,250,{a:'left',s:48,f:'D',c:C.red});
+    if(a<.6){ctx.fillStyle='rgba(255,255,255,.07)';for(let i=0;i<14;i++)ctx.fillRect(0,(i*137+R*900)%H,W,4);}
+    const jit=a<.5?(rnd(Math.floor(R*30))-.5)*36*(1-a/.5):0;
+    const rx=80+jit,ry=420;
+    drawReceipt(rx,ry,{vis:[1,1,1,1,1,1],hl:[P(a,.6,.3),P(a,.85,.3),P(a,1.1,.3),0,0,0],total:1,totalText:'2,000'});
+    const bk=E.out(P(a,1.45,.4));
+    if(bk>0){
+      const top=ry+262,bot=ry+500,mid=(top+bot)/2,bx=rx+RW+18;
+      ctx.save();ctx.globalAlpha*=bk;ctx.strokeStyle=C.gold;ctx.lineWidth=7;ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(bx,top);ctx.lineTo(bx+28,top);ctx.lineTo(bx+28,bot);ctx.lineTo(bx,bot);ctx.moveTo(bx+28,mid);ctx.lineTo(bx+52,mid);ctx.stroke();ctx.restore();
+      const lx=bx+52+(1080-bx-52)/2;
+      text('본사',lx,mid-110,{s:46,w:900,c:C.gold,alpha:bk});
+      text('필수품목',lx,mid-55,{s:46,w:900,c:C.gold,alpha:bk});
+      text('9,500원',lx,mid+25,{f:'D',s:64,c:'#fff',alpha:bk});
+      text('판매가의 47.5%',lx,mid+88,{s:28,w:700,c:C.dim,alpha:bk});
+    }
+  }},
+
+  /* ── 10 공급 구조: 본사 → 가맹점, 마진, 선(先)수익 ── */
+  supply:{draw(){
+    const a=L('k2'),b=L('k3'),c=L('m1'),d=L('m2');
+    const ITEMS=[['🐔','닭'],['🛢️','기름'],['🥫','소스'],['📦','박스']];
+    ctx.strokeStyle='rgba(214,232,255,.5)';ctx.lineWidth=4;line(50,1180,1030,1180);
+    const hqScale=.7+(c>=0?.04*P(c,0,2.4):0);
+    drawHQ(250,1180,hqScale,{glow:d>=0?40:0,lit:c>=0?.2:.4});
+    drawShopMini(830,1180);
+    text('가맹점 (점주)',830,1235,{s:38,w:900});
+    text('가맹본부',250,1235,{s:38,w:900,c:C.gold});
+    // 납품 화살표
+    ctx.save();ctx.strokeStyle=C.cyan;ctx.lineWidth=8;ctx.setLineDash([22,14]);ctx.lineDashOffset=-R*80;
+    line(410,1040,660,1040);ctx.setLineDash([]);ctx.fillStyle=C.cyan;
+    ctx.beginPath();ctx.moveTo(690,1040);ctx.lineTo(655,1018);ctx.lineTo(655,1062);ctx.closePath();ctx.fill();ctx.restore();
+    text('납품',540,1095,{s:32,w:700,c:C.cyan});
+    // 아이템 4종
+    const rowA=c>=0?1-P(c,0,.3):1;
+    if(rowA>0)ITEMS.forEach((it,i)=>{
+      const t=a-(.05+i*.38);if(t<0)return;
+      group(240+i*200,400,E.back(P(t,0,.3)),0,rowA,()=>{
+        ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.arc(0,-10,82,0,7);ctx.fill();
+        ctx.strokeStyle=C.gold;ctx.lineWidth=4;ctx.stroke();
+        emoji(it[0],0,-14,84);text(it[1],0,112,{s:40,w:900});
+      });
+    });
+    // 자물쇠: 본사에서만 구매
+    if(b>=0){
+      const t=b-.95,la=c>=0?1-P(c,0,.3):1;
+      if(t>=0&&la>0)group(540,700,lerp(2.2,1,E.out(P(t,0,.2))),0,P(t,0,.1)*la,()=>{
+        ctx.fillStyle=C.red;ctx.beginPath();ctx.arc(0,0,74,0,7);ctx.fill();
+        emoji('🔒',0,-2,74);text('본사에서만 구매',0,120,{s:38,w:900,c:'#ff9a9a',st:8});
+      });
+    }
+    // 마진 흐름
+    if(c>=0){
+      text('물건이 넘어갈 때마다',540,300,{s:44,w:700,c:C.dim,alpha:P(c,.1,.3)});
+      const SP=.42,TR=.9,n=Math.floor((c-.1)/SP);
+      let landed=0;
+      for(let j=0;j<=n;j++){
+        const t=c-.1-j*SP;if(t<0)continue;
+        const f=P(t,0,TR);
+        if(f<1)emoji(ITEMS[j%4][0],lerp(420,680,f),1030,58,{alpha:1-P(f,.85,.15)});
+        const tm=t-TR*.5;
+        if(tm>=0&&tm<.42)text('+마진',555,975-tm*150,{s:42,w:900,c:C.green,alpha:1-P(tm,.25,.17),st:7});
+        if(tm>=0&&tm<.5){const q=E.io(P(tm,0,.5));coin(lerp(555,250,q),lerp(990,700,q)-Math.sin(q*Math.PI)*170,28);}
+        if(tm>=.5)landed++;
+      }
+      group(540,395,1+(landed>0?.05*Math.max(0,Math.sin((c-.1-TR*.5-.5)/SP*Math.PI*2)):0),0,P(c,.1,.3),()=>
+        text(`본사 +마진 × ${landed}`,0,0,{f:'D',s:96,c:C.gold,glow:'rgba(255,197,49,.5)'}));
+      text('= 차액가맹금 (필수품목 유통 마진)',540,1320,{s:40,w:900,c:'#fff',alpha:P(c,.8,.3)});
+    }
+    // 선(先)수익
+    if(d>=0){
+      const ca=P(d,.1,.3);
+      group(830,690,1,0,ca,()=>{
+        ctx.fillStyle='rgba(20,26,40,.9)';rr(-170,-58,340,116,22);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=3;rr(-170,-58,340,116,22);ctx.stroke();
+        text('점주: 팔아야 수익',0,-18,{s:32,w:800,c:C.dim});text('아직 0원',0,26,{f:'D',s:44,c:'#9aa3b5'});
+      });
+      stampBox('이미 수익 ✔',250,880,d-1.4,{s:62,c:C.green,rot:-.14,bg:'rgba(0,30,15,.55)'});
+    }
+  }},
+
+  /* ── 11 골드러시 비유 → 치킨 전쟁 ── */
+  gold:{draw(){
+    const a=L('g1'),b=L('g2'),c=L('g3'),d=L('g4');
+    ctx.fillStyle='rgba(255,170,40,.07)';ctx.fillRect(0,0,W,H);
+    for(let i=0;i<28;i++){
+      const x=rnd(i)*W,y=((R*.1+rnd(i+50))%1)*H,r=5+rnd(i+9)*9;
+      ctx.fillStyle=`rgba(255,197,49,${.18+rnd(i+3)*.25})`;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+    }
+    const flip=c>=0?P(c,0,.5):0,era2=flip>=.5,sx=Math.max(.02,Math.abs(Math.cos(flip*Math.PI)));
+    text(era2?'그리고 지금, 치킨 전쟁':'1848 · 캘리포니아 골드러시',540,318,{s:56,w:900,c:C.gold,alpha:P(a,0,.3)});
+    const lose=era2?P(d,.55,.35):(b>=0?P(b,.75,.35):0);
+    const win=era2?P(d,1.35,.45):(b>=0?P(b,1.75,.45):0);
+    const L1=era2?{ic:['🍗'],t:'튀기는 사람',s:'점주'}:{ic:['🤠'],t:'금을 캔 사람',s:'광부'};
+    const R1=era2?{ic:['🏢'],t:'닭을 대주는 사람',s:'본사'}:{ic:['⛏️','👖'],t:'곡괭이·청바지 판 사람',s:'상인'};
+    const panel=(cx,info,lost,won_,slide)=>{
+      ctx.save();ctx.translate(cx+slide,0);ctx.scale(sx,1);
+      ctx.globalAlpha*=lerp(1,.4,lost);
+      if(won_>0){ctx.shadowColor=C.gold;ctx.shadowBlur=50*won_;}
+      ctx.fillStyle='rgba(10,20,45,.85)';rr(-190,520,380,600,40);ctx.fill();ctx.shadowColor='transparent';
+      ctx.strokeStyle=won_>0?C.gold:'rgba(255,255,255,.2)';ctx.lineWidth=won_>0?8:3;rr(-190,520,380,600,40);ctx.stroke();
+      if(info.ic.length===1)emoji(info.ic[0],0,740,170,{gray:lost>.5});
+      else{emoji(info.ic[0],-78,740,130,{gray:lost>.5});emoji(info.ic[1],78,740,130,{gray:lost>.5});}
+      text(info.t,0,935,{s:info.t.length>9?31:42,w:900});
+      text(info.s,0,995,{s:34,w:700,c:C.dim});
+      ctx.restore();
+      if(lost>0){
+        const k=E.back(lost);ctx.save();ctx.translate(cx+slide,740);ctx.scale(k*sx,k);
+        ctx.strokeStyle=C.red;ctx.lineWidth=22;ctx.lineCap='round';line(-90,-90,90,90);line(90,-90,-90,90);ctx.restore();
+      }
+      if(won_>0){
+        emoji('👑',cx+slide,lerp(300,500,E.bounce(won_)),120);
+        text('WIN',cx+slide,1170,{f:'D',s:72,c:C.gold,alpha:won_,glow:'rgba(255,197,49,.7)'});
+      }
+    };
+    const sl=E.out(P(a,.1,.5));
+    panel(290,L1,lose,0,lerp(-600,0,sl));
+    panel(790,R1,0,flip>0&&flip<1?0:win,lerp(600,0,sl));
+    text('VS',540,820,{f:'D',s:60,c:'#fff',alpha:sl*(1-lose*.5)});
+    if(b<.7&&a>=.3){const qa=P(a,.3,.3)*(b>=0?1-P(b,.4,.3):1);text('?',290,455,{f:'D',s:90,alpha:qa});text('?',790,455,{f:'D',s:90,alpha:qa});}
+  }},
+
+  /* ── 12 아웃트로: 요약 + 구독 ── */
+  outro:{draw(){
+    const a=L('o1');
+    group(540,0,1,0,P(a,0,.25),()=>{
+      ctx.fillStyle='rgba(8,16,40,.88)';rr(-450,330,900,610,40);ctx.fill();
+      ctx.strokeStyle=C.gold;ctx.lineWidth=4;rr(-450,330,900,610,40);ctx.stroke();
+    });
+    text('치킨집 돈의 구조',540,415,{f:'D',s:76,c:C.gold,alpha:P(a,0,.25)});
+    const rows=[['🍗','치킨 1마리','20,000원','#fff'],['🏪','점주 손에','2,000원',C.green],['🏢','본사','납품 때 이미 수익',C.gold]];
+    rows.forEach((r,i)=>{
+      const k=E.out(P(a,.2+i*.25,.3)),y=540+i*130;if(k<=0)return;
+      group((1-k)*-60,0,1,0,k,()=>{
+        emoji(r[0],160,y,60);text(r[1],215,y,{a:'left',s:44,w:800});
+        text(r[2],950,y+2,{a:'right',s:r[2].length>6?46:62,f:'D',c:r[3]});
+        if(i<2)dashed(130,y+65,950,'rgba(255,255,255,.15)');
+      });
+    });
+    const clicked=a>=1.7;
+    const hand=P(a,1.0,.6),press=a>=1.65&&a<1.85;
+    group(540,1085,press?.94:1+(!clicked?.03*Math.sin(R*8):0),0,P(a,.6,.3),()=>{
+      ctx.fillStyle=clicked?'#3a3f4b':'#ff2b2b';rr(-210,-60,420,120,60);ctx.fill();
+      text(clicked?'구독중 ✔':'구독',clicked?0:-30,4,{s:56,w:900});
+      if(!clicked)emoji('🔔',85,0,54);
+    });
+    if(a>=1.0&&a<2.6)emoji('👆',lerp(880,600,E.io(hand)),lerp(1420,1160,E.io(hand))+(press?14:0),110,{alpha:1-P(a,2.2,.4)});
+    text('다음 편: 어떤 가게일까요?',540,1250,{s:42,w:700,c:C.dim,alpha:P(a,2.0,.4)});
+  }},
+};
+
+/* 매장 단면도 (블루프린트 선화) */
+function drawShopSection(){
+  ctx.save();ctx.strokeStyle=C.line;ctx.lineWidth=5;ctx.lineJoin='round';ctx.lineCap='round';
+  line(70,1180,1010,1180);
+  ctx.lineWidth=2;ctx.globalAlpha*=.5;for(let x=90;x<1000;x+=28)line(x,1184,x-20,1208);ctx.globalAlpha*=2;
+  ctx.lineWidth=5;
+  ctx.fillStyle='rgba(120,170,255,.06)';ctx.fillRect(160,570,760,610);
+  line(160,570,160,1180);line(920,570,920,955);line(520,570,520,880);
+  ctx.fillStyle='rgba(214,232,255,.16)';ctx.fillRect(140,540,800,32);ctx.strokeRect(140,540,800,32);
+  // 간판
+  line(380,500,380,540);line(700,500,700,540);
+  ctx.fillStyle='#0b1430';rr(290,410,500,94,16);ctx.fill();ctx.stroke();
+  const flick=Math.sin(R*23)>.92?.4:1;
+  text('치킨 · CHICKEN',540,458,{f:'D',s:62,c:C.gold,glow:'rgba(255,197,49,.9)',gb:26,alpha:flick});
+  // 후드 + 덕트
+  ctx.beginPath();ctx.moveTo(200,700);ctx.lineTo(460,700);ctx.lineTo(430,770);ctx.lineTo(230,770);ctx.closePath();ctx.stroke();
+  line(300,700,300,572);line(360,700,360,572);
+  // 튀김기
+  ctx.fillStyle='rgba(214,232,255,.08)';ctx.fillRect(210,960,240,220);ctx.strokeRect(210,960,240,220);
+  ctx.fillStyle='rgba(255,180,40,.55)';ctx.fillRect(226,975,208,36);
+  for(let i=0;i<10;i++){
+    const ph=(R*.9+rnd(i))%1,x=236+rnd(i+20)*188,y=1005-ph*40;
+    ctx.fillStyle=`rgba(255,230,150,${1-ph})`;ctx.beginPath();ctx.arc(x,y,4+rnd(i+5)*6,0,7);ctx.fill();
+  }
+  ctx.strokeRect(250,925,160,64);line(410,940,470,900);
+  ctx.lineWidth=3;ctx.globalAlpha*=.6;
+  for(let i=0;i<3;i++){ctx.beginPath();const sx=260+i*55,ph=(R*.6+i*.33)%1;
+    for(let k=0;k<=20;k++){const y=900-k*7-ph*30;ctx.lineTo(sx+Math.sin(k*.6+R*3+i)*10,y);}ctx.stroke();}
+  ctx.globalAlpha/=.6;ctx.lineWidth=5;
+  text('주방',340,630,{s:34,w:700,c:C.cyan});text('홀 · 포장',720,630,{s:34,w:700,c:C.cyan});
+  // 카운터 + 치킨 박스
+  ctx.fillStyle='rgba(214,232,255,.08)';ctx.fillRect(560,1060,260,120);ctx.strokeRect(560,1060,260,120);
+  ctx.fillStyle=C.paper;ctx.fillRect(610,965,160,95);ctx.fillStyle=C.red;ctx.fillRect(610,990,160,14);
+  emoji('🍗',690,1028,46);
+  // 배달 오토바이
+  const ph=(R*.33)%1;
+  emoji('🛵',860+ph*320,1128,90,{alpha:1-P(ph,.7,.3)});
+  // 치수선
+  ctx.strokeStyle=C.cyan;ctx.lineWidth=3;line(160,1262,920,1262);line(160,1246,160,1278);line(920,1246,920,1278);
+  ctx.fillStyle='#0d1a3a';ctx.fillRect(420,1240,240,44);
+  text('약 10평 · 33㎡',540,1263,{s:32,w:700,c:C.cyan});
+  ctx.restore();
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   5. 배경 · 상단바 · 흔들림/플래시
+   ════════════════════════════════════════════════════════════════════ */
+function drawBG(){
+  const g=ctx.createRadialGradient(540,820,80,540,900,1300);
+  g.addColorStop(0,'#173270');g.addColorStop(1,'#060d20');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const off=(R*14)%60;
+  ctx.strokeStyle='rgba(120,170,255,.07)';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0;x<=W;x+=60){ctx.moveTo(x+.5,0);ctx.lineTo(x+.5,H);}
+  for(let y=-60;y<=H;y+=60){ctx.moveTo(0,y+off+.5);ctx.lineTo(W,y+off+.5);}
+  ctx.stroke();
+  ctx.strokeStyle='rgba(120,170,255,.13)';ctx.lineWidth=2;ctx.beginPath();
+  for(let x=0;x<=W;x+=300){ctx.moveTo(x,0);ctx.lineTo(x,H);}
+  for(let y=-300;y<=H;y+=300){ctx.moveTo(0,y+(R*14)%300);ctx.lineTo(W,y+(R*14)%300);}
+  ctx.stroke();
+}
+function drawTop(){
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(0,0,W,10);
+  ctx.fillStyle=C.gold;ctx.fillRect(0,0,W*clamp(T/(PLAN?PLAN.end:1)),10);
+  ctx.fillStyle='rgba(0,0,0,.35)';rr(60,70,400,84,42);ctx.fill();
+  ctx.strokeStyle=C.gold;ctx.lineWidth=3;rr(60,70,400,84,42);ctx.stroke();
+  text('신비한 장사사전',260,113,{s:40,w:900,c:C.gold});
+  text('EP.01 치킨집',1020,113,{a:'right',s:40,w:700,c:'rgba(255,255,255,.75)'});
+}
+function vignette(){
+  const g=ctx.createRadialGradient(540,960,600,540,960,1250);
+  g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+const fxAt=(list,dflt)=>{let v=0;for(const e of list){const d=T-e.t,dur=e.d||dflt;if(d>=0&&d<dur)v=Math.max(v,e.a*Math.pow(1-d/dur,2));}return v;};
+
+/* ════════════════════════════════════════════════════════════════════
+   6. 타임라인 계획 (말 속도 기반 자동 타이밍)
+   ════════════════════════════════════════════════════════════════════ */
+let PLAN=null;
+function estimate(s,rate){
+  const syl=s.replace(/[^가-힣0-9A-Za-z]/g,'').length;
+  const pauses=(s.match(/[,.?!]/g)||[]).length;
+  return syl/(5.4*rate)+pauses*.16+.2;
+}
+function plan(rate){
+  let t=0;const ev=[],shakes=[],flashes=[];CT={};
+  for(const c of CUES){
+    c.say_=c.say||strip(c.text);
+    c.est=estimate(c.say_,rate);
+    const maxOff=Math.max(0,...(c.sfx||[]).map(s=>s[0]));
+    c.t=t;c.dur=Math.max(c.min||0,c.est+.12,maxOff+.15);
+    CT[c.id]=t;
+    (c.sfx||[]).forEach(([o,n])=>ev.push({t:t+o,n}));
+    (c.shake||[]).forEach(([o,a,d])=>shakes.push({t:t+o,a,d}));
+    (c.flash||[]).forEach(([o,a])=>flashes.push({t:t+o,a,d:.3}));
+    t+=c.dur;
+  }
+  ev.sort((x,y)=>x.t-y.t);
+  const scenes=[];CUES.forEach(c=>{if(!scenes.length||scenes[scenes.length-1].id!==c.sc)scenes.push({id:c.sc,t:c.t});});
+  PLAN={ev,shakes,flashes,scenes,end:t+.6};
+  return PLAN;
+}
+function sceneIndexAt(t){let i=0;for(let k=0;k<PLAN.scenes.length;k++)if(PLAN.scenes[k].t<=t)i=k;return i;}
+
+/* ════════════════════════════════════════════════════════════════════
+   7. 오디오: 효과음 + 배경음악 (Web Audio 합성, 외부 파일 없음)
+   ════════════════════════════════════════════════════════════════════ */
+let ac=null,master,sfxBus,bgmBus,NOISE,bgmTimer=null,nextNote=0,step=0;
+const opt={tts:true,bgm:true,sfx:true,rate:1.2,voice:null};
+function initAudio(){
+  if(ac)return;
+  ac=new (window.AudioContext||window.webkitAudioContext)();
+  master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
+  sfxBus=ac.createGain();sfxBus.gain.value=.75;sfxBus.connect(master);
+  bgmBus=ac.createGain();bgmBus.gain.value=.22;bgmBus.connect(master);
+  NOISE=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate);
+  const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+}
+function tone(type,f0,f1,t,dur,vol,dest=sfxBus,att=.005){
+  const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);
+  if(f1&&f1!==f0)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);
+}
+function nz(t,dur,vol,type,f0,f1,q=1,dest=sfxBus,att=.005){
+  const s=ac.createBufferSource();s.buffer=NOISE;
+  const f=ac.createBiquadFilter();f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,t);
+  if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  const g=ac.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f);f.connect(g);g.connect(dest);s.start(t,Math.random()*1.2);s.stop(t+dur+.05);
+}
+const SFX={
+  whoosh:t=>nz(t,.45,.35,'bandpass',300,3500,1.2,sfxBus,.15),
+  swipe:t=>nz(t,.22,.3,'highpass',1500,6000,.7,sfxBus,.03),
+  pop:t=>tone('sine',380,980,t,.13,.45),
+  click:t=>{tone('square',2200,1800,t,.035,.1);nz(t,.03,.15,'highpass',4000,null,.7);},
+  tick:t=>tone('triangle',2400,null,t,.03,.1),
+  roll:t=>{for(let i=0;i<9;i++)tone('triangle',1800+i*90,null,t+i*.075,.03,.08);},
+  minus:t=>tone('triangle',620,240,t,.22,.3),
+  rise:t=>{tone('sine',180,720,t,.6,.16,sfxBus,.25);nz(t,.6,.1,'bandpass',400,2400,1,sfxBus,.3);},
+  stamp:t=>{tone('sine',150,45,t,.3,.8);nz(t,.12,.4,'lowpass',1200,300,.7);},
+  impact:t=>{tone('sine',110,32,t,.75,.95);nz(t,.35,.5,'lowpass',2000,200,.7);tone('square',55,40,t,.25,.12);},
+  ding:t=>{[[1318,.32,1.8],[2637,.12,1.2],[3520,.07,.9]].forEach(([f,v,d])=>tone('sine',f,null,t,d,v,sfxBus,.003));tone('sine',4200,null,t+.05,1.5,.03,sfxBus,.25);},
+  ding2:t=>tone('sine',2093,null,t,1.0,.15,sfxBus,.003),
+  coin:t=>{tone('square',1568,null,t,.08,.1);tone('square',2093,null,t+.08,.35,.1);},
+  kaching:t=>{nz(t,.06,.35,'bandpass',5000,null,2);tone('triangle',2637,null,t+.04,.5,.25);tone('triangle',3136,null,t+.12,.6,.2);tone('sine',90,40,t,.2,.4);},
+  scratch:t=>{nz(t,.12,.55,'bandpass',3000,600,3);nz(t+.12,.18,.45,'bandpass',600,2800,3);},
+  rumble:t=>{tone('sine',48,38,t,1.3,.6,sfxBus,.2);nz(t,1.3,.35,'lowpass',260,120,.7,sfxBus,.3);},
+  rewind:t=>{for(let i=0;i<7;i++)tone('sawtooth',1400,500,t+i*.08,.075,.06);},
+  marker:t=>nz(t,.28,.16,'bandpass',2600,3400,4,sfxBus,.04),
+  lock:t=>{tone('square',900,600,t,.05,.15);SFX.stamp(t+.06);},
+  shimmer:t=>{[1047,1319,1568,2093,2637].forEach((f,i)=>tone('sine',f,null,t+i*.07,.5,.07));},
+  win:t=>{[523,659,784,1047].forEach((f,i)=>tone('triangle',f,null,t+i*.08,.35,.18));SFX.ding2(t+.32);},
+  morph:t=>{tone('sine',260,1300,t,.45,.2,sfxBus,.1);SFX.whoosh(t);},
+  buzz:t=>tone('square',120,110,t,.4,.1),
+};
+function playSfx(n){if(!ac||!opt.sfx||!SFX[n])return;try{SFX[n](ac.currentTime+.005);}catch(e){}}
+const BPM=104,STEP=60/BPM/2,BASS=[55,55,43.65,49];
+function bgmStep(s,t){
+  const id=PLAN.scenes[sceneIndexAt(T)].id,dark=id==='twist',i=s%8,bar=Math.floor(s/8)%4;
+  if(!dark){
+    if(i===0||i===3||i===4){tone('sine',150,45,t,.2,i===3?.4:.65,bgmBus);}
+    if(i===2||i===6)nz(t,.09,.3,'bandpass',1800,null,1,bgmBus);
+    if(i%2)nz(t,.035,.14,'highpass',8000,null,.7,bgmBus);
+    if(i===0)tone('triangle',BASS[bar]*2,null,t,STEP*3,.4,bgmBus,.02);
+    if(i===4)tone('triangle',BASS[bar]*3,null,t,STEP*1.5,.18,bgmBus,.02);
+  }else if(i===0){tone('sawtooth',BASS[bar],null,t,STEP*8,.12,bgmBus,.3);}
+}
+function startBGM(){
+  stopBGM();if(!opt.bgm)return;
+  nextNote=ac.currentTime+.08;step=0;
+  bgmTimer=setInterval(()=>{while(nextNote<ac.currentTime+.15){bgmStep(step,nextNote);nextNote+=STEP;step++;}},25);
+}
+function stopBGM(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null;}}
+
+/* ════════════════════════════════════════════════════════════════════
+   8. 음성(TTS) — speechSynthesis, ko-KR
+   ════════════════════════════════════════════════════════════════════ */
+const synth=window.speechSynthesis||null;
+let voices=[],speakToken=0;
+const st={done:true,endAt:0,started:false,waitUntil:0,onstartOK:false,uStart:0,est:1,bIdx:0,usedB:false,sayLen:1,fakeEnd:0};
+function voiceScore(v){const n=v.name;return(/Natural|Neural|Online|Premium|Enhanced/i.test(n)?30:0)+(/Google/i.test(n)?20:0)+(/InJoon|SunHi|Yuna|Heami/i.test(n)?5:0)+(v.localService?0:1);}
+function loadVoices(){
+  if(!synth)return;
+  voices=synth.getVoices().filter(v=>/^ko/i.test(v.lang)||/korean|한국/i.test(v.name)).sort((a,b)=>voiceScore(b)-voiceScore(a));
+  const sel=document.getElementById('selVoice'),prev=sel.value;
+  sel.innerHTML='';
+  if(!voices.length){sel.innerHTML='<option value="">(한국어 음성을 찾는 중… 없으면 자막만 재생)</option>';return;}
+  voices.forEach((v,i)=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name}${i===0?'  ★추천':''}`;sel.appendChild(o);});
+  if(prev&&voices.some(v=>v.name===prev))sel.value=prev;
+}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices;}
+function speak(text){
+  const tok=++speakToken;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR';if(opt.voice)u.voice=opt.voice;u.rate=opt.rate;u.pitch=1;u.volume=1;
+  const fin=()=>{if(tok!==speakToken||st.done)return;st.done=true;st.endAt=performance.now()/1000;};
+  u.onstart=()=>{if(tok!==speakToken)return;st.started=true;st.onstartOK=true;st.uStart=performance.now()/1000;};
+  u.onend=fin;u.onerror=fin;
+  u.onboundary=e=>{if(tok!==speakToken)return;st.usedB=true;st.bIdx=e.charIndex+(e.charLength||1);};
+  window.__utter=u;                      // Chrome GC 버그 방지(onend 누락)
+  synth.speak(u);
+  setTimeout(fin,(st.est*1.8+2)*1000);   // 안전장치: onend 미발생 시
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   9. 실시간 자막
+   ════════════════════════════════════════════════════════════════════ */
+const subBox=document.getElementById('subBox');let subWords=[],subLen=1;
+function showSub(c){
+  subBox.classList.remove('show');subBox.innerHTML='';subWords=[];
+  let pos=0;
+  const re=/\[([^\]]+)\]|\{([^}]+)\}|<([^>]+)>|([^\[{<]+)/g;let m;
+  const add=(s,cls)=>{
+    s.split(/(\s+)/).forEach(tok=>{
+      if(!tok)return;
+      if(/^\s+$/.test(tok)){subBox.appendChild(document.createTextNode(' '));return;}
+      const sp=document.createElement('span');sp.className='w'+(cls?' '+cls:'');sp.textContent=tok;subBox.appendChild(sp);
+      subWords.push({el:sp,start:pos,on:false});pos+=tok.length;
+    });
+  };
+  while((m=re.exec(c.text))){if(m[1])add(m[1],'kw');else if(m[2])add(m[2],'neg');else if(m[3])add(m[3],'pos');else add(m[4],'');}
+  subLen=Math.max(1,pos);
+  void subBox.offsetWidth;subBox.classList.add('show');
+}
+function updateSub(now){
+  if(!subWords.length)return;
+  let p;
+  if(st.done)p=1;
+  else if(st.usedB)p=clamp(st.bIdx/st.sayLen);
+  else if(!st.started)p=0;
+  else p=clamp((now-st.uStart)/(st.est*.9));
+  const pos=p*subLen+.5;
+  for(const w of subWords){const on=w.start<pos;if(on!==w.on){w.on=on;w.el.classList.toggle('on',on);}}
+}
+function hideSub(){subBox.classList.remove('show');}
+
+/* ════════════════════════════════════════════════════════════════════
+   10. 재생 엔진 — 타임라인 T 는 '다음 큐 시작' 지점에서 음성이 끝날 때까지 대기(홀드)
+       → 어떤 음성/속도에서도 나레이션·자막·모션·효과음이 어긋나지 않음
+   ════════════════════════════════════════════════════════════════════ */
+let phase='idle',cueIdx=-1,evIdx=0,last=0,endTimer=null;
+const GAP=.12;
+function startCue(i,now){
+  cueIdx=i;const c=CUES[i];
+  showSub(c);
+  Object.assign(st,{done:false,started:false,usedB:false,bIdx:0,est:c.est,uStart:now,sayLen:Math.max(1,c.say_.length)});
+  if(opt.tts&&synth){
+    st.waitUntil=now+(i===0?1.6:(st.onstartOK?.9:0));
+    speak(c.say_);
+  }else{st.started=true;st.waitUntil=0;st.fakeEnd=now+c.est;}
+}
+function fireEvents(){while(evIdx<PLAN.ev.length&&PLAN.ev[evIdx].t<=T){playSfx(PLAN.ev[evIdx].n);evIdx++;}}
+function advance(dt,now){
+  if(!(opt.tts&&synth)&&!st.done&&now>=st.fakeEnd){st.done=true;st.endAt=st.fakeEnd;}
+  if(!st.started&&now<st.waitUntil)return;          // 음성 시작 대기
+  const next=CUES[cueIdx+1],boundary=next?next.t:PLAN.end;
+  let nt=T+dt;
+  if(nt>=boundary){
+    if(!(st.done&&now-st.endAt>=GAP)){nt=boundary-1e-4;}  // 홀드
+    else if(next){T=boundary;fireEvents();startCue(cueIdx+1,now);return;}
+    else{T=PLAN.end;finish();return;}
+  }
+  T=Math.max(T,nt);fireEvents();
+}
+function finish(){
+  phase='end';hideSub();stopBGM();
+  if(ac)bgmBus.gain.setTargetAtTime(.22,ac.currentTime,.1);
+  endTimer=setTimeout(()=>document.getElementById('endUI').classList.remove('hidden'),900);
+}
+function readOptions(){
+  opt.tts=document.getElementById('chkTTS').checked;
+  opt.bgm=document.getElementById('chkBGM').checked;
+  opt.sfx=document.getElementById('chkSFX').checked;
+  opt.rate=parseFloat(document.getElementById('rngRate').value);
+  const name=document.getElementById('selVoice').value;
+  opt.voice=voices.find(v=>v.name===name)||voices[0]||null;
+  if(!opt.voice)opt.tts=false;           // 한국어 음성이 없으면 자막 전용 모드
+  document.body.classList.toggle('rec',document.getElementById('chkRec').checked);
+  fit();
+}
+function play(){
+  readOptions();initAudio();ac.resume();
+  const busy=synth&&(synth.speaking||synth.pending);
+  if(synth)synth.cancel();speakToken++;
+  stopBGM();hideSub();clearTimeout(endTimer);
+  plan(opt.rate);
+  document.getElementById('startUI').classList.add('hidden');
+  document.getElementById('endUI').classList.add('hidden');
+  T=0;evIdx=0;cueIdx=-1;phase='ready';
+  const go=()=>{phase='play';last=performance.now();startBGM();fireEvents();startCue(0,performance.now()/1000);};
+  if(busy)setTimeout(go,150);else go();   // Chrome: cancel 직후 speak 누락 방지
+}
+function toMenu(){
+  if(synth)synth.cancel();speakToken++;stopBGM();hideSub();clearTimeout(endTimer);
+  phase='idle';T=0;
+  document.getElementById('endUI').classList.add('hidden');
+  document.getElementById('startUI').classList.remove('hidden');
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   11. 렌더 루프
+   ════════════════════════════════════════════════════════════════════ */
+function render(){
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;
+  drawBG();
+  if(phase!=='idle'&&PLAN){
+    const sh=fxAt(PLAN.shakes,.4);
+    ctx.save();
+    if(sh>0){const k=Math.floor(R*60);ctx.translate((rnd(k)-.5)*2*sh,(rnd(k+7)-.5)*2*sh);}
+    const si=sceneIndexAt(T),sc=PLAN.scenes[si],lt=T-sc.t,xf=SCENES[sc.id].xf??.35;
+    if(si>0&&lt<xf){
+      ctx.save();ctx.globalAlpha=1-lt/xf;SCENES[PLAN.scenes[si-1].id].draw();ctx.restore();
+      ctx.save();ctx.globalAlpha=lt/xf;SCENES[sc.id].draw();ctx.restore();
+    }else SCENES[sc.id].draw();
+    ctx.restore();
+    const fl=fxAt(PLAN.flashes,.3);
+    if(fl>0){ctx.fillStyle=`rgba(255,255,255,${fl})`;ctx.fillRect(0,0,W,H);}
+  }
+  vignette();drawTop();
+}
+const tcEl=document.getElementById('tc');
+const mmss=s=>{s=Math.max(0,s);const m=Math.floor(s/60);return String(m).padStart(2,'0')+':'+(s-m*60).toFixed(1).padStart(4,'0');};
+function loop(ms){
+  const dt=Math.min(.05,(ms-last)/1000);last=ms;R=ms/1000;
+  const now=ms/1000;
+  if(phase==='play'){
+    advance(dt,now);updateSub(now);
+    if(ac&&opt.bgm)bgmBus.gain.setTargetAtTime(st.started&&!st.done?.15:.24,ac.currentTime,.15);
+  }
+  render();
+  tcEl.textContent=`${mmss(T)} / ${mmss(PLAN?PLAN.end:0)}`;
+  requestAnimationFrame(loop);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   12. UI · 화면 맞춤 · 단축키 · 폰트 프리로드
+   ════════════════════════════════════════════════════════════════════ */
+const frame=document.getElementById('frame');
+function fit(){const s=Math.min(innerWidth/W,innerHeight/H);frame.style.transform=`scale(${s})`;}
+addEventListener('resize',fit);fit();
+const rng=document.getElementById('rngRate');
+rng.addEventListener('input',()=>document.getElementById('rateVal').textContent=parseFloat(rng.value).toFixed(2));
+document.getElementById('btnStart').addEventListener('click',play);
+document.getElementById('btnReplay').addEventListener('click',play);
+document.getElementById('btnHome').addEventListener('click',toMenu);
+document.getElementById('hudRestart').addEventListener('click',()=>{if(phase==='idle')return;play();});
+document.getElementById('hudRec').addEventListener('click',()=>document.body.classList.toggle('rec'));
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
+  if(e.key==='h'||e.key==='H')document.body.classList.toggle('rec');
+  if((e.key==='r'||e.key==='R')&&phase!=='idle')play();
+  if(e.code==='Space'){e.preventDefault();if(phase!=='play')play();}
+});
+if(!synth){document.getElementById('chkTTS').checked=false;document.getElementById('voiceHint').textContent='이 브라우저는 음성 합성을 지원하지 않아 자막 + 효과음으로 재생됩니다.';}
+
+// 디버그: ?seek=초 → 해당 시점 정지 화면 (장면 수정·썸네일 캡처용)
+const qs=new URLSearchParams(location.search);
+if(qs.has('seek')){
+  plan(parseFloat(qs.get('rate'))||opt.rate);
+  document.getElementById('startUI').classList.add('hidden');
+  phase='seek';T=parseFloat(qs.get('seek'))||0;
+  let ci=0;CUES.forEach((c,i)=>{if(c.t<=T)ci=i;});
+  showSub(CUES[ci]);st.done=true;updateSub(0);
+}
+window.__plan=()=>plan(opt.rate).scenes&&CUES.map(c=>({id:c.id,t:+c.t.toFixed(1),dur:+c.dur.toFixed(1),text:strip(c.text)}));
+
+const glyphs=[...new Set(document.currentScript.textContent.replace(/[\x00-\x7F]/g,''))].join('');
+const fontLoads=[['400 100px "Black Han Sans"'],['900 60px "Noto Sans KR"'],['700 40px "Noto Sans KR"'],['500 30px "Noto Sans KR"']]
+  .map(([f])=>document.fonts?document.fonts.load(f,glyphs).catch(()=>{}):Promise.resolve());
+Promise.race([Promise.all(fontLoads),new Promise(r=>setTimeout(r,3500))]).then(()=>{
+  const b=document.getElementById('btnStart');b.disabled=false;b.textContent='▶ 재생 시작';
+});
+requestAnimationFrame(ms=>{last=ms;loop(ms);});
+})();
+</script>
+</body>
+</html>
