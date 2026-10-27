@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>신비한 장사사전 · 치킨집 편</title>
+<title>비밀의 계산기 · 치킨집 편</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
@@ -70,7 +70,7 @@
 
     <div id="startUI" class="overlay">
       <div class="ov">
-        <div class="tag">신비한 장사사전 · EP.01</div>
+        <div class="tag">비밀의 계산기 · EP.01</div>
         <h1>치킨 한 마리 팔면<br><span>얼마</span> 남을까?</h1>
         <p class="desc">음성 나레이션 + 실시간 자막 + 모션 그래픽</p>
         <button id="btnStart" class="big" disabled>불러오는 중…</button>
@@ -88,7 +88,7 @@
 
     <div id="endUI" class="overlay hidden">
       <div class="ov">
-        <div class="tag">신비한 장사사전 · EP.01</div>
+        <div class="tag">비밀의 계산기 · EP.01</div>
         <h1>치킨집 편<br><span>끝</span></h1>
         <button id="btnReplay" class="big">⟲ 다시 보기</button><br>
         <button id="btnHome" class="ghost">설정 화면으로</button>
@@ -765,7 +765,7 @@ function drawTop(){
   ctx.fillStyle=C.gold;ctx.fillRect(0,0,W*clamp(T/(PLAN?PLAN.end:1)),10);
   ctx.fillStyle='rgba(0,0,0,.35)';rr(60,70,400,84,42);ctx.fill();
   ctx.strokeStyle=C.gold;ctx.lineWidth=3;rr(60,70,400,84,42);ctx.stroke();
-  text('신비한 장사사전',260,113,{s:40,w:900,c:C.gold});
+  text('비밀의 계산기',260,113,{s:40,w:900,c:C.gold});
   text('EP.01 치킨집',1020,113,{a:'right',s:40,w:700,c:'rgba(255,255,255,.75)'});
 }
 function vignette(){
