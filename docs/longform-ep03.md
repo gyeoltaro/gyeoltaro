@@ -3,7 +3,7 @@
 - 원본: `longform/ep03-convenience-store.html` (LF.01 엔진 + 새 장면 묶음 + 대본 + 나레이션 내장, `?seek=초` 로 정지 화면)
 - 렌더: `node longform/render-longform.js longform/ep03-convenience-store.html 결과.mp4 3` → 1920×1080 30fps, 썸네일 3안 같이 저장
 - 자막: `longform/ep03-convenience-store.ko.srt` (191줄, `make-srt.js`)
-- 결과: `secret-calculator_LF03_convenience-store.mp4` 1920×1080 30fps, 11:37.1 (나레이션 11:17 + 최종 화면 20초)
+- 결과: `secret-calculator_LF03_convenience-store.mp4` 1920×1080 30fps, H.264 + AAC 48kHz 스테레오, 11:37.1 (나레이션 11:17 + 최종 화면 20초), −14.0 LUFS (최고 −2.9 dBFS), 182MB · 렌더 18분 (2차 loudnorm 뒤 −15 → 자동 보정 +1.0 dB)
 - 나레이션 공백 뺀 4,175자 · 문장 114개 · 장 14개 · TTS 4번 요청 (Neural2-C, 1.16, −1)
 - 왜 이 주제: 사용자가 고름(2026.10.29). 같은 업계 히트작(편의점 '월매출 4,800만 → 실제 218만', 구독 대비 65배)과 같은 질문을 우리 방식(1만 원을 끝까지 쪼개기)으로 답한다. 쇼츠 EP.03(점주 시급)의 심화이고, LF.02(치킨)와 같은 '한 개 계산서' 시리즈다.
 - LF.02와 다른 점: 본사가 재료 마진이 아니라 **이익을 나눠 가져가는** 구조(가맹수수료), 그래서 계약 형태(누가 점포를 구하나)가 결과를 뒤집는다. 중심 그림도 지폐 대신 100원짜리 동전 100개.
