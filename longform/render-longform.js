@@ -59,9 +59,20 @@ function run(args) { return new Promise((res, rej) => { const p = spawn('ffmpeg'
   const L = JSON.parse(meas.slice(meas.lastIndexOf('{'), meas.lastIndexOf('}') + 1));
   const ln = `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${L.input_i}:measured_TP=${L.input_tp}:measured_LRA=${L.input_lra}:measured_thresh=${L.input_thresh}:offset=${L.target_offset}:linear=true`;
   console.log('음량 측정', L.input_i, 'LUFS → −14');
-  await run(['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-f', 's16le', '-ar', '44100', '-ac', '1', '-i', raw,
-    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-af', ln + ',aresample=48000', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
-    '-movflags', '+faststart', '-shortest', OUT]);
+  const mux = (af, out) => run(['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-f', 's16le', '-ar', '44100', '-ac', '1', '-i', raw,
+    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-af', af + ',aresample=48000', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+    '-movflags', '+faststart', '-shortest', out]);
+  await mux(ln, OUT);
+  // 2차를 걸어도 어긋날 때가 있다(LF.02: 입력 −20.6 → −15.0). 결과를 다시 재서 0.3 LU 넘게 벗어나면 그만큼 더한다
+  const lufs = f => { const e = require('child_process').spawnSync('ffmpeg', ['-nostats', '-i', f, '-af', 'ebur128', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+    const m = [...e.matchAll(/I:\s+(-?[\d.]+) LUFS/g)]; return parseFloat(m[m.length - 1][1]); };
+  let I = lufs(OUT);
+  if (Math.abs(I + 14) > 0.3) {
+    const fix = (-14 - I).toFixed(2), tmpOut = path.join(TMP, 'fix.mp4');
+    console.log('음량', I, 'LUFS → 보정', fix, 'dB');
+    await mux(ln + `,volume=${fix}dB`, tmpOut); fs.copyFileSync(tmpOut, OUT); I = lufs(OUT);
+  }
+  console.log('최종 음량', I, 'LUFS');
   fs.rmSync(TMP, { recursive: true, force: true });
   console.log('완료', OUT, ((Date.now() - t0) / 60000).toFixed(1), '분');
   console.log(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_name,width,height,r_frame_rate', '-of', 'compact', OUT]).toString());
