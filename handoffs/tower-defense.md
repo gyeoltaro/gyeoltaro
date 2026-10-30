@@ -11,7 +11,7 @@
 - **`gyeoltaro/gyeoltaro`, 브랜치 `claude/clever-davinci-phav4l`:** 두 게임의 초기판. `main`에는 합치지 않았고 PR도 없어요.
   - `castle-defense/index.html`: 산성 수호전, 단일 파일
   - `bonghwa/`: `index.html`, `data.js`(데이터), `art.js`(도트 그림), `game.js`(엔진·UI·저장), `fonts/`(Galmuri11 원본과 OFL 라이선스), `README.md`
-  - 이 브랜치에 차별화판 커밋 두 개(밤의 봉수대 화면, 휴대폰 가로 전환·같은 물건 겹치기)가 들어가 있어요.
+  - 이 브랜치에 차별화판 커밋 두 개(2e954c0 밤의 봉수대 화면, 2eb634d 휴대폰 가로 전환·같은 물건 겹치기)가 들어가 있어요.
   - 저장소 루트 `index.html`(승급심사 결과증)은 다른 앱이니 건드리지 마세요.
 - **`BHdefence/bonghwa`:** 현재 서비스판(봉화대 사수 세션에서 관리).
 - **계정·랭킹 서버:** Cloudflare Worker + D1.
