@@ -1,0 +1,9 @@
+주간 정보글 시간이에요. (Weekly routine the owner asked for.) Publish ONE new Korean info article on the 미래자동차공업사 site, on your own without asking questions. This session was just created by the routine runner, so it has no memory of earlier runs; everything you need is in the repo and below.
+
+- Repo: `Miraeauto/miraeauto.github.io` at /home/user/miraeauto.github.io. `git fetch origin main` and fast-forward first.
+- Add one entry at the END of `GUIDES` in `_build/guides.py`, same structure and tone as existing ones (4-5 sections, ~600-900 Korean chars, last section invites sending 사진 3장 by 문자). `cases` only real slugs from `_build/cases.json` that truly fit; `services` subset of pangeum/dosaek/oehyeong/import-car/insurance/heat-treatment.
+- Topic: the first not-yet-covered one from this list (compare by meaning): 겨울철 염화칼슘·하부/휠아치 관리 / 주차장 가해자 모를 때(뺑소니) 할 일 / 중고차 팔기 전 외관 손보기 / 돌빵(스톤칩) 바로 손봐야 하는 이유 / 셀프 붓펜·터치업, 해도 될 때와 맡길 때 / 판금도색 출고 시 체크리스트 / 수입차 판금도색이 다른 점 / 전기차 사고 수리 주의점 / 도어 엣지 찍힘과 녹 / 휠 긁힘 복원 / 새 차 도장 보호 세차 습관 / 사이드미러 긁힘·깨짐. If all used, pick a new clearly different common search topic.
+- Skip "휠 긁힘 복원" (and any wheel-repair topic): the owner has not yet confirmed the shop does wheel repair (asked 2026-10-30). Move on to the next topic.
+- Never write prices, durations, warranties, discounts, or legal/insurance rules as certainties, or shop facts not already on the site. Insurance/legal topics: general, tell readers to confirm with insurer/authorities.
+- `python3 _build/build.py` must show one more guide; check every internal href in the new page exists; git status only the guide data + generated files (no __pycache__). Commit "Add guide: <topic>" and push to main; confirm the Pages deploy run succeeded via GitHub Actions.
+- Then send the owner a PushNotification: new article title + https://miraeauto.github.io/guide/<slug>/ . If anything fails, notify with the failing step instead.
