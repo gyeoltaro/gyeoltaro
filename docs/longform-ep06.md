@@ -3,7 +3,7 @@
 - 원본: `longform/ep06-delivery-snack.html` (LF.03 엔진 + 새 장면 묶음 + 대본 + 나레이션 내장, `?seek=초` 로 정지 화면) · 빌더 `longform/build-ep06.py` (대본·장면 `ep06-scenes.js`·썸네일 `ep06-thumbs.js` → html)
 - 렌더: `node longform/render-longform.js longform/ep06-delivery-snack.html 결과.mp4 3` → 1920×1080 30fps, 썸네일 3안 같이 저장
 - 자막: `longform/ep06-delivery-snack.ko.srt` (`make-srt.js`, 140줄)
-- 결과: `secret-calculator_LF06_delivery-snack.mp4` 1920×1080 30fps, @RESULT@ · MP4 는 저장소에 넣지 않음(재렌더: 위 명령)
+- 결과: `secret-calculator_LF06_delivery-snack.mp4` 1920×1080 30fps, H.264 + AAC, 8:44.1 (나레이션 8:24.1 + 최종 화면 20초), −14.0 LUFS, 최고 −3.1 dBFS, LRA 3.1 LU, 134MB · 렌더 9.7분 (병렬 3) · MP4 는 저장소에 넣지 않음(재렌더: 위 명령)
 - 나레이션 공백 뺀 3,059자 · 문장 84개 · 장 9개 · TTS 3번 요청 (Neural2-C, 1.16, −1) · 나레이션 8:24.1 + 최종 화면 20초 = 8:44.1
 - 왜 이 주제: 대기열 2순위. 쇼츠 EP.10(배달 떡볶이, 같은 2만 원 매장 vs 배달)을 잇되, LF.02 치킨(포장 1마리 = 배달 2마리)과 겹치지 않게 **소액 주문(고정 배달비 → 작을수록 비율이 커짐)** 과 **'한 건은 적자인데 못 끊는 이유'(고정비 분담)** 로 짰다. 어제 LF.05(무인 · 계절 · 도난 · 제조사)와 반전이 겹치지 않는다.
 - 중심 그림: 주문 1만 8천 원 = **떡볶이 떡 18개**(하나 1,000원). 가져가는 순서대로 떡이 물들고, 마지막 '월세·인건비 몫'은 남은 떡을 다 먹고도 176원이 모자란다.
