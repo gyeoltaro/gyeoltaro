@@ -1,0 +1,5 @@
+pycairo>=1.25
+pillow>=10.0
+numpy>=1.26
+fonttools>=4.40
+edge-tts>=7.0

@@ -1,0 +1,7 @@
+# 생성물(용량이 큼) — 저장소에는 대본/코드/썸네일/자막만 보관
+cache/
+episodes/*/out/*.mp4
+episodes/*/out/stills/
+episodes/*/voice/*.wav
+__pycache__/
+*.pyc
