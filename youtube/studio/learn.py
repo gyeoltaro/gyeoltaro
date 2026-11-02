@@ -261,6 +261,12 @@ def fetch_ytdlp(watch):
 
 def store(snap, date):
     """index.json(영상 메타, 처음 본 날짜) + history/날짜.json(조회수)로 나눠 저장"""
+    hpath = os.path.join(LDIR, "history", f"{date}.json")
+    old_hist = jload(hpath, None)
+    if old_hist and old_hist.get("source") == "api" and snap["source"] != "api":
+        # 같은 날 이미 API(더 정확한 데이터)로 모았다면 덮어쓰지 않는다
+        print("  오늘은 이미 API로 수집한 데이터가 있어 그대로 사용합니다")
+        return jload(os.path.join(LDIR, "index.json"), {}), old_hist
     index = jload(os.path.join(LDIR, "index.json"), {})
     for vid, v in snap["videos"].items():
         old = index.get(vid, {})
