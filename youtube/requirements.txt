@@ -3,3 +3,4 @@ pillow>=10.0
 numpy>=1.26
 fonttools>=4.40
 edge-tts>=7.0
+yt-dlp>=2025.1  # 선택: 대시보드 스냅샷 갱신용

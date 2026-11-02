@@ -14,8 +14,9 @@ import time
 
 import cairo
 
-from .core import (C, FPS, H, PAL, W, card, clamp, ease_in_out, ease_out_cubic, hexc, prog,
-                   round_rect, set_col, text)
+from . import core as K
+from .core import (C, FPS, H, PAL, W, apply_theme, card, clamp, ease_in_out, ease_out_cubic, hexc,
+                   prog, round_rect, set_col, text)
 from .mascot import ARM_POSES, Pose, draw_mascot, lerp_pose
 from .visuals import VISUALS, SceneCtx
 
@@ -28,20 +29,13 @@ LAYOUT_POS = {
     "hidden": (-320, 935, 650, False),
 }
 
-BG_THEMES = {
-    "navy": ("#16275E", "#070D24"),
-    "red": ("#4A1630", "#12060F"),
-    "green": ("#0F3B3A", "#041514"),
-    "purple": ("#33215E", "#0C0720"),
-    "gold": ("#4A3A12", "#140F04"),
-}
-
 SYMBOLS = ["₩", "%", "$", "↑", "↓", "€", "¥", "₩", "%"]
 
 
 class Renderer:
     def __init__(self, tl: dict):
         self.tl = tl
+        self.theme = apply_theme(tl["meta"].get("theme"))
         self.scenes = tl["scenes"]
         self.starts = [s["f0"] for s in self.scenes]
         self.cap_starts = [c["start"] for c in tl["captions"]]
@@ -59,7 +53,8 @@ class Renderer:
     # ------------------------------------------------------------ backgrounds
     def _bg(self, theme):
         if theme not in self._bg_cache:
-            c1, c2 = BG_THEMES.get(theme, BG_THEMES["navy"])
+            th = self.theme
+            c1, c2 = th["tints"].get(theme, th["base"]) if theme not in (None, "base", "navy") else th["base"]
             surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
             ctx = cairo.Context(surf)
             g = cairo.RadialGradient(W * 0.5, H * 0.38, 80, W * 0.5, H * 0.5, W * 0.75)
@@ -93,7 +88,7 @@ class Renderer:
         # 움직이는 격자
         off = (t * 14) % 80
         ctx.set_line_width(1.5)
-        ctx.set_source_rgba(1, 1, 1, 0.045)
+        ctx.set_source_rgba(1, 1, 1, self.theme["grid"])
         for x in range(-80, W + 80, 80):
             ctx.move_to(x + off, 0)
             ctx.line_to(x + off, H)
@@ -105,7 +100,7 @@ class Renderer:
         for (x0, y0, sym, size, spd, ph, a) in self.particles:
             y = (y0 - t * spd) % (H + 200) - 100
             x = x0 + math.sin(t * 0.4 + ph) * 30
-            text(ctx, sym, x, y, size=size, fname="black", color="white", alpha=a,
+            text(ctx, sym, x, y, size=size, fname="black", color="white", alpha=a * self.theme["symbols"],
                  rot=math.sin(t * 0.3 + ph) * 12)
 
     # ------------------------------------------------------------ mascot
