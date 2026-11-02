@@ -249,7 +249,7 @@
     <div><h1>부의비상사태 911 제작실</h1><small id="today"></small></div>
   </div>
   <div class="top-actions">
-    <span class="pill" id="liveBadge"><span class="dot"></span><span>스냅샷</span></span>
+    <span class="pill" id="liveBadge"><span class="dot"></span><span>유튜브 미연결</span></span>
     <button class="btn" id="refreshBtn" title="지금 새로고침">↻ 새로고침</button>
     <button class="btn primary" id="settingsBtn">채널 연결 설정</button>
   </div>
@@ -368,6 +368,8 @@
     <li>사용자 인증 정보 → <b>API 키 만들기</b></li>
     <li>키 제한 → API 제한: <b>YouTube Data API v3</b>만 선택 (보안)</li>
   </ol>
+  <label for="keyFile">바탕화면 대시보드 파일에서 키 불러오기 (키를 직접 복사하지 않아도 됩니다)</label>
+  <input id="keyFile" type="file" accept=".html,text/html">
   <label for="apiKey">API 키</label>
   <input id="apiKey" type="password" autocomplete="off" placeholder="AIza…">
   <label for="chId">채널 ID</label>
@@ -405,6 +407,8 @@ const fmt = n => (n == null || isNaN(n)) ? '-' : Number(n).toLocaleString('ko-KR
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
+let SERVER_KEY = false;   // 제작실 서버에 API 키가 저장돼 있으면, 서버를 통해 유튜브에 연결한다
+const hasKey = () => !!S.settings.apiKey || (SERVER_KEY && !S.settings.disconnected);
 const CH = SEED.channel || {};
 if (!S.settings.channelId) S.settings.channelId = CH.id || '';
 // 바탕화면용 파일: API 키가 미리 들어 있으면 자동 연결 (사용자가 '연결 해제'하면 다시 넣지 않음)
@@ -738,8 +742,9 @@ const API = 'https://www.googleapis.com/youtube/v3/';
 let timer = null;
 function isoSec(d) { const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(d || ''); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0; }
 async function api(path, params) {
-  const q = new URLSearchParams({ ...params, key: S.settings.apiKey });
-  const r = await fetch(API + path + '?' + q);
+  const viaServer = !S.settings.apiKey && SERVER_KEY;
+  const q = new URLSearchParams(viaServer ? params : { ...params, key: S.settings.apiKey });
+  const r = await fetch((viaServer ? '/api/yt/' : API) + path + '?' + q);
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { const reason = (((j.error || {}).errors || [])[0] || {}).reason || r.status; throw new Error(reason); }
   return j;
@@ -770,7 +775,7 @@ async function fetchLive() {
 }
 const ERR = { keyInvalid: 'API 키가 올바르지 않습니다', quotaExceeded: '오늘 API 할당량을 다 썼습니다', channelNotFound: '채널 ID를 찾을 수 없습니다', accessNotConfigured: 'YouTube Data API v3가 사용 설정되지 않았습니다', forbidden: '키 제한 설정 때문에 거부되었습니다' };
 async function refresh(manual) {
-  if (!S.settings.apiKey) { renderLive(); if (manual) openSettings(); return; }
+  if (!hasKey()) { renderLive(); if (manual) openSettings(); return; }
   setStatus('loading');
   try {
     const live = await fetchLive();
@@ -788,7 +793,7 @@ function setStatus(kind, msg) {
   s.classList.toggle('err', kind === 'error');
   const live = kind === 'live';
   s.innerHTML = `<span class="dot ${live ? 'live' : ''}"></span><span>${esc(msg || (kind === 'loading' ? '불러오는 중…' : ''))}</span>`;
-  badge.innerHTML = `<span class="dot ${live ? 'live' : ''}"></span><span>${live ? '실시간 연결됨' : (kind === 'error' ? '연결 오류' : '스냅샷')}</span>`;
+  badge.innerHTML = `<span class="dot ${live ? 'live' : ''}"></span><span>${live ? '실시간 연결됨' : (kind === 'error' ? '연결 오류' : '유튜브 미연결')}</span>`;
 }
 function delta(id, cur, key) {
   const box = $(id); box.className = 'delta'; box.textContent = '';
@@ -801,14 +806,14 @@ function delta(id, cur, key) {
   box.textContent = `직전 ${d1 >= 0 ? '+' : ''}${fmt(d1)} · 오늘 ${d2 >= 0 ? '+' : ''}${fmt(d2)}`;
 }
 function videosNow() {
-  if (S.live && S.settings.apiKey) return S.live.videos;
+  if (S.live && hasKey()) return S.live.videos;
   return ((SEED.snapshot || {}).videos || []).map(v => ({ publishedAt: null, likes: null, comments: null, ...v }));
 }
 function renderLive() {
   const snap = SEED.snapshot || {};
   $('#chLink').href = 'https://www.youtube.com/channel/' + encodeURIComponent(S.settings.channelId || CH.id || '');
   let subs, views, vc, likes;
-  if (S.live && S.settings.apiKey) {
+  if (S.live && hasKey()) {
     subs = S.live.subs; views = S.live.views; vc = S.live.videoCount; likes = S.live.videos.reduce((a, v) => a + (v.likes || 0), 0);
     const iv = +S.settings.interval;
     setStatus('live', `실시간 · ${iv ? (iv / 60) + '분마다 자동 갱신' : '수동 갱신'} · 마지막 ${new Date(S.live.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`);
@@ -816,7 +821,7 @@ function renderLive() {
     const sv = snap.videos || [];
     subs = snap.subscribers; views = snap.total_views ?? snap.longform_views; vc = snap.video_count;
     likes = sv.some(v => v.likes != null) ? sv.reduce((a, v) => a + (v.likes || 0), 0) : null;
-    setStatus('snap', `스냅샷 (${snap.date || '-'}) · '채널 연결 설정'에서 API 키를 넣으면 실시간`);
+    setStatus('snap', `유튜브에 연결되지 않아 ${snap.date || '-'}에 받아 둔 숫자를 보여 줍니다 · 오른쪽 위 '채널 연결 설정'에서 연결하세요`);
   }
   $('#sSubs').textContent = fmt(subs); $('#sViews').textContent = fmt(views); $('#sVideos').textContent = fmt(vc); $('#sLikes').textContent = fmt(likes);
   delta('#dSubs', subs, 'subs'); delta('#dViews', views, 'views'); delta('#dVideos', vc, 'videos'); delta('#dLikes', likes, 'likes');
@@ -836,7 +841,7 @@ function renderSpark() {
 }
 function renderVideos() {
   const vs = videosNow().slice();
-  const live = !!(S.live && S.settings.apiKey), dated = vs.every(v => v.publishedAt);
+  const live = !!(S.live && hasKey()), dated = vs.every(v => v.publishedAt);
   if (dated) vs.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)); else vs.sort((a, b) => (b.views || 0) - (a.views || 0));
   $('#vSort').textContent = (dated ? '최신순' : '조회수 순') + (live ? '' : ' (스냅샷)');
   $('#videos').innerHTML = vs.slice(0, 12).map(v => {
@@ -856,11 +861,18 @@ $('#closeSettings').onclick = () => dlg.close();
 $('#saveSettings').onclick = () => {
   S.settings.apiKey = $('#apiKey').value.trim(); S.settings.disconnected = !S.settings.apiKey; S.settings.channelId = $('#chId').value.trim() || CH.id; S.settings.interval = +$('#interval').value;
   save(); dlg.close(); schedule(); refresh(true);
-  if (SERVER && S.settings.apiKey) api2('POST', '/api/settings/apikey', { key: S.settings.apiKey }).then(() => toast('학습 엔진에도 API 키를 저장했습니다')).catch(() => { });
+  if (SERVER && S.settings.apiKey) api2('POST', '/api/settings/apikey', { key: S.settings.apiKey }).then(() => { SERVER_KEY = true; toast('제작실과 학습 엔진에도 API 키를 저장했습니다. 다음부터는 입력 없이 연결됩니다'); }).catch(() => { });
 };
 $('#disconnect').onclick = () => { S.settings.apiKey = ''; S.settings.disconnected = true; S.live = null; save(); dlg.close(); schedule(); renderLive(); renderCalendar(); toast('연결을 해제했습니다'); };
+$('#keyFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const t = await f.text(), m = /"apiKey"\s*:\s*"(AIza[0-9A-Za-z_\-]{30,})"/.exec(t);
+  if (m) { $('#apiKey').value = m[1]; toast('키를 불러왔습니다. 아래 [저장하고 연결]을 누르세요'); }
+  else toast('이 파일에는 API 키가 들어 있지 않습니다. 키가 들어 있는 대시보드 파일을 고르세요');
+  e.target.value = '';
+};
 $('#refreshBtn').onclick = () => refresh(true);
-function schedule() { clearInterval(timer); const iv = +S.settings.interval; if (S.settings.apiKey && iv > 0) timer = setInterval(() => { if (!document.hidden) refresh(false); }, iv * 1000); }
+function schedule() { clearInterval(timer); const iv = +S.settings.interval; if (hasKey() && iv > 0) timer = setInterval(() => { if (!document.hidden) refresh(false); }, iv * 1000); }
 
 // ------------------------------------------------------------ 캘린더
 let calMonth = new Date(); calMonth.setDate(1);
@@ -912,7 +924,7 @@ const FEAT_LABEL = Object.fromEntries((SEED.features || []).map(f => [f[0], f[1]
 
 async function detectServer() {
   if (!location.protocol.startsWith('http')) return false;
-  try { const r = await fetch('/api/ping', { cache: 'no-store' }); return r.ok; } catch (e) { return false; }
+  try { const r = await fetch('/api/ping', { cache: 'no-store' }); if (!r.ok) return false; const j = await r.json(); SERVER_KEY = !!j.api_key; return true; } catch (e) { return false; }
 }
 async function loadLearning() {
   const srcs = [];
@@ -1350,9 +1362,12 @@ renderEpisodes(); renderChecks(); renderThemes(); renderLinks();
 buildBrain(); renderFilters(); renderBrain();
 renderTodos(); renderLive(); renderCalendar(); schedule();
 renderLearning();
-(async () => { SERVER = await detectServer(); await loadLearning(); initStudio(); })();
-if (S.settings.apiKey) refresh(false);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.settings.apiKey && S.live && Date.now() - S.live.at > (+S.settings.interval || 300) * 1000) refresh(false); });
+(async () => {
+  SERVER = await detectServer(); await loadLearning(); initStudio();
+  if (SERVER && SERVER_KEY && !S.settings.apiKey && !S.settings.disconnected) { schedule(); refresh(false); }   // 서버에 저장된 키로 자동 연결
+})();
+if (hasKey()) refresh(false);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && hasKey() && S.live && Date.now() - S.live.at > (+S.settings.interval || 300) * 1000) refresh(false); });
 })();
 </script>
 </body>

@@ -259,6 +259,9 @@ class Handler(BaseHTTPRequestHandler):
             m = re.match(r"^/api/episodes/([^/]+)/script$", path)
             if m:
                 return self._send(200, open(os.path.join(self._ep(m.group(1)), "02_script.json"), encoding="utf-8").read())
+            m = re.match(r"^/api/yt/(channels|playlistItems|videos)$", path)
+            if m:
+                return self._yt(m.group(1), urlparse(self.path).query)
             m = re.match(r"^/api/episodes/([^/]+)/plan$", path)
             if m:
                 f = os.path.join(self._ep(m.group(1)), "01_plan.md")
@@ -281,6 +284,24 @@ class Handler(BaseHTTPRequestHandler):
             return self._err(500, f"서버 오류: {e}")
 
     do_HEAD = do_GET
+
+    def _yt(self, name, query):
+        """YouTube Data API 를 서버가 대신 호출한다 (저장된 키 사용, 키는 응답에 포함되지 않음)."""
+        import urllib.error
+        import urllib.parse
+        import urllib.request
+        key = _api_key()
+        if not key:
+            return self._send(400, {"error": {"errors": [{"reason": "keyInvalid"}], "message": "서버에 저장된 API 키가 없습니다"}})
+        params = [(k, v) for k, v in urllib.parse.parse_qsl(query) if k != "key"]
+        url = f"https://www.googleapis.com/youtube/v3/{name}?" + urllib.parse.urlencode(params + [("key", key)])
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:
+                return self._send(200, r.read())
+        except urllib.error.HTTPError as e:
+            return self._send(e.code, e.read() or b"{}")
+        except Exception as e:
+            return self._send(502, {"error": {"errors": [{"reason": "network"}], "message": str(e)[:120]}})
 
     def _file(self, rel):
         full = os.path.realpath(os.path.join(ROOT, rel))
