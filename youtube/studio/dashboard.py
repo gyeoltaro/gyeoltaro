@@ -95,7 +95,14 @@ CHECKLIST = [
 ]
 
 
-def _episodes():
+def _uploaded(title: str, snap: dict) -> bool:
+    """채널 스냅샷에 같은 제목(따옴표 훅 제외 핵심부)의 영상이 있으면 업로드 완료로 본다."""
+    core = re.sub(r"^[“\"].*?[”\"]\s*", "", title).strip()
+    return bool(core) and any(core in (v.get("title") or "") for v in snap.get("videos", []))
+
+
+def _episodes(snap=None):
+    snap = snap or {}
     eps = []
     for sj in sorted(glob.glob(os.path.join(ROOT, "episodes", "*", "02_script.json"))):
         ep_dir = os.path.dirname(sj)
@@ -121,7 +128,7 @@ def _episodes():
                 "video": os.path.exists(os.path.join(out, "video.mp4")) or bool(dur),
                 "subs": os.path.exists(os.path.join(out, "subtitles.srt")),
                 "thumb": os.path.exists(os.path.join(out, "thumbnail_A.png")),
-                "upload": False,
+                "upload": _uploaded(title, snap),
             },
         })
     return eps
@@ -158,7 +165,7 @@ def refresh_snapshot(path):
 def build_seed():
     snap_path = os.path.join(DASH, "channel_snapshot.json")
     snap = json.load(open(snap_path, encoding="utf-8")) if os.path.exists(snap_path) else {}
-    eps = _episodes()
+    eps = _episodes(snap)
     have = {e["id"] for e in eps}
     nodes = [{"id": i, "label": l, "region": r, "weight": w, "status": s, "x": x, "y": y, "memo": ""}
              for i, l, r, w, s, x, y in BRAIN_NODES]

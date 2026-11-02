@@ -1,156 +1,230 @@
 {
  "date": "2026-11-02",
  "subscribers": 18,
- "video_count": 21,
+ "total_views": 16119,
+ "video_count": 22,
  "longform_views": 431,
- "upload_note": "공개 정보로는 '약 8개월 전(2026년 2~3월경)'까지만 확인됨 — 정확한 날짜는 API 키 연결 시 자동 표시",
+ "upload_note": "YouTube Data API로 받은 실제 업로드 날짜",
  "videos": [
+  {
+   "id": "6SKHwhiLezc",
+   "title": "“내 월급만 제자리인 진짜 이유..” 15분 만에 끝내는 인플레이션의 모든 것",
+   "publishedAt": "2026-11-02T06:27:57Z",
+   "views": 0,
+   "likes": 0,
+   "comments": 0,
+   "type": "long",
+   "duration": 933
+  },
+  {
+   "id": "5Gr0PNqLdws",
+   "title": "20년 전 5만 원의 기적! #shorts",
+   "publishedAt": "2026-02-22T15:00:08Z",
+   "views": 1129,
+   "likes": 4,
+   "comments": 0,
+   "type": "short",
+   "duration": 36
+  },
+  {
+   "id": "grwl78ozc2U",
+   "title": "하이닉스 5만원의 충격적인 진실 #shorts",
+   "publishedAt": "2026-02-21T15:01:09Z",
+   "views": 752,
+   "likes": 1,
+   "comments": 0,
+   "type": "short",
+   "duration": 39
+  },
   {
    "id": "YJ1isF4aq90",
    "title": "[긴급] 금값 폭등에 금고 대란! 집집마다 금고 사재기 열풍, 도대체 무슨 일?",
+   "publishedAt": "2026-02-20T22:00:41Z",
    "views": 16,
+   "likes": 0,
+   "comments": 0,
    "type": "long",
    "duration": 1027
   },
   {
+   "id": "0EUn0gqkc5s",
+   "title": "삼성전자 '5만 원'의 마법 #shorts",
+   "publishedAt": "2026-02-20T15:25:31Z",
+   "views": 1,
+   "likes": 0,
+   "comments": 0,
+   "type": "short",
+   "duration": 37
+  },
+  {
+   "id": "DCOMgVOWlR8",
+   "title": "30년 뒤 '3억 5천만 원'? #shorts",
+   "publishedAt": "2026-02-20T07:15:47Z",
+   "views": 2756,
+   "likes": 5,
+   "comments": 2,
+   "type": "short",
+   "duration": 32
+  },
+  {
+   "id": "f7cpfxLnf5o",
+   "title": "넷플릭스 구독료가 사실 '1억 7천만 원'짜리라면? #shorts",
+   "publishedAt": "2026-02-18T22:00:42Z",
+   "views": 1246,
+   "likes": 2,
+   "comments": 2,
+   "type": "short",
+   "duration": 31
+  },
+  {
+   "id": "7oXgf45wSEA",
+   "title": "보험료 20만 원의 배신 #shorts",
+   "publishedAt": "2026-02-18T09:06:32Z",
+   "views": 1998,
+   "likes": 2,
+   "comments": 0,
+   "type": "short",
+   "duration": 35
+  },
+  {
+   "id": "_oWZS-uYBHY",
+   "title": "담배 끊으라는 소리가 아닙니다. #shorts",
+   "publishedAt": "2026-02-18T01:34:52Z",
+   "views": 1414,
+   "likes": 6,
+   "comments": 2,
+   "type": "short",
+   "duration": 30
+  },
+  {
    "id": "u0HqHLCnagc",
    "title": "[긴급] 금수저는 서울로, 흙수저는 그대로\" 한국은행이 폭로한 대한민국 계층 대물림의 충격적 진실",
+   "publishedAt": "2026-02-17T22:00:56Z",
    "views": 22,
+   "likes": 1,
+   "comments": 0,
    "type": "long",
    "duration": 1153
   },
   {
+   "id": "V0tlHDs3w0s",
+   "title": "무이자 할부가 무서운 진짜 이유 #shorts",
+   "publishedAt": "2026-02-17T13:02:35Z",
+   "views": 2427,
+   "likes": 5,
+   "comments": 1,
+   "type": "short",
+   "duration": 38
+  },
+  {
+   "id": "3IS2tcGpOU4",
+   "title": "5,000원짜리 커피 한 잔 #shorts",
+   "publishedAt": "2026-02-16T21:18:10Z",
+   "views": 1516,
+   "likes": 3,
+   "comments": 1,
+   "type": "short",
+   "duration": 29
+  },
+  {
    "id": "4LSQ5CckzgE",
    "title": "[긴급] \"유럽은 절대 못 만든다!\" 노르웨이가 천무에 경악한 이유",
+   "publishedAt": "2026-02-16T21:00:10Z",
    "views": 29,
+   "likes": 1,
+   "comments": 0,
    "type": "long",
    "duration": 1471
   },
   {
+   "id": "6bjmGgifwww",
+   "title": "기적은 멀리 있지 않습니다. #shorts",
+   "publishedAt": "2026-02-16T20:04:21Z",
+   "views": 2449,
+   "likes": 3,
+   "comments": 2,
+   "type": "short",
+   "duration": 36
+  },
+  {
    "id": "All-DJ1cTHs",
    "title": "[긴급] 삼성전자 운명의 날! 성과급 전쟁에 멈춰서는 반도체?",
+   "publishedAt": "2026-02-15T21:00:08Z",
    "views": 36,
+   "likes": 2,
+   "comments": 0,
    "type": "long",
    "duration": 1346
   },
   {
    "id": "Oc9yzKEI2Lg",
    "title": "[긴급] 지금 안 팔면 8억 날립니다\" 패닉에 빠진 다주택자들, 서울 급매물 폭발하는 진짜 이유",
+   "publishedAt": "2026-02-15T11:02:23Z",
    "views": 34,
+   "likes": 0,
+   "comments": 2,
    "type": "long",
    "duration": 1064
   },
   {
    "id": "iTBh4FPW5ME",
    "title": "[긴급]트럼프의 선전포고 \"이제 온실가스 기준 없다\" | 내 아파트값 폭락하고 밥값 3배 뛰는 진짜 이유",
+   "publishedAt": "2026-02-14T21:00:45Z",
    "views": 9,
+   "likes": 0,
+   "comments": 0,
    "type": "long",
    "duration": 1234
   },
   {
    "id": "cVXX1WTZeGw",
    "title": "[긴급]현대차 아틀라스의 대변신! 공중제비보다 놀라운 '인간 협업'의 비밀",
+   "publishedAt": "2026-02-14T10:03:21Z",
    "views": 17,
+   "likes": 1,
+   "comments": 0,
    "type": "long",
    "duration": 1056
   },
   {
    "id": "zve4_6xM4Do",
    "title": "[긴급]삼성의 대반격! HBM4 세계 최초 양산 성공... 엔비디아가 줄 서는 이유",
+   "publishedAt": "2026-02-13T11:31:02Z",
    "views": 0,
+   "likes": 0,
+   "comments": 0,
    "type": "long",
    "duration": 1142
   },
   {
    "id": "8ZgTPnAINxs",
    "title": "[긴급]상장폐지 대분석! 7월 동전주 '대숙청' 시작, 내 주식은 안전한가?",
+   "publishedAt": "2026-02-13T02:54:06Z",
    "views": 253,
+   "likes": 3,
+   "comments": 0,
    "type": "long",
    "duration": 1243
   },
   {
    "id": "ctsjL0OPLvM",
    "title": "[긴급]지금 이영상은 소름돋는 30가지의 ai의 이야기입니다.",
+   "publishedAt": "2026-02-12T13:01:09Z",
    "views": 6,
+   "likes": 1,
+   "comments": 0,
    "type": "long",
    "duration": 388
   },
   {
    "id": "yCPTgGsqinY",
    "title": "[긴급] 이제 농사 안 지어도 시골 살 수 있다? 역대급 규제 완화와 2030 귀촌 열풍 총정리!",
+   "publishedAt": "2026-02-12T07:17:50Z",
    "views": 9,
+   "likes": 0,
+   "comments": 0,
    "type": "long",
    "duration": 346
-  },
-  {
-   "id": "5Gr0PNqLdws",
-   "title": "20년 전 5만 원의 기적! #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "grwl78ozc2U",
-   "title": "하이닉스 5만원의 충격적인 진실 #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "0EUn0gqkc5s",
-   "title": "삼성전자 '5만 원'의 마법 #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "DCOMgVOWlR8",
-   "title": "30년 뒤 '3억 5천만 원'? #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "f7cpfxLnf5o",
-   "title": "넷플릭스 구독료가 사실 '1억 7천만 원'짜리라면? #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "7oXgf45wSEA",
-   "title": "보험료 20만 원의 배신 #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "_oWZS-uYBHY",
-   "title": "담배 끊으라는 소리가 아닙니다. #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "V0tlHDs3w0s",
-   "title": "무이자 할부가 무서운 진짜 이유 #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "3IS2tcGpOU4",
-   "title": "5,000원짜리 커피 한 잔 #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
-  },
-  {
-   "id": "6bjmGgifwww",
-   "title": "기적은 멀리 있지 않습니다. #shorts",
-   "views": null,
-   "type": "short",
-   "duration": null
   }
  ]
 }
