@@ -5,3 +5,5 @@ episodes/*/out/stills/
 episodes/*/voice/*.wav
 __pycache__/
 *.pyc
+# 개인용 대시보드(API 키 포함) — 절대 커밋하지 않음
+dashboard/dist/

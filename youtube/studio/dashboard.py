@@ -185,7 +185,7 @@ def build_seed():
     }
 
 
-def write(seed):
+def write(seed, out_path=None):
     path = os.path.join(DASH, "index.html")
     html = open(path, encoding="utf-8").read()
     payload = json.dumps(seed, ensure_ascii=False).replace("</", "<\\/")
@@ -193,18 +193,30 @@ def write(seed):
     html, n = re.subn(r"<!--SEED:BEGIN-->.*?<!--SEED:END-->", lambda m: block, html, flags=re.S)
     if n != 1:
         raise RuntimeError("index.html 에서 SEED 표식을 찾지 못했습니다")
-    open(path, "w", encoding="utf-8").write(html)
-    return path
+    out_path = out_path or path
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    open(out_path, "w", encoding="utf-8").write(html)
+    return out_path
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--refresh", action="store_true", help="채널 공개 데이터 스냅샷 갱신(yt-dlp)")
+    ap.add_argument("--desktop", metavar="PATH", nargs="?", const=os.path.join(DASH, "dist", "부의비상사태911_대시보드.html"),
+                    help="API 키가 미리 들어간 개인용 파일 생성 (저장소에는 올라가지 않음)")
     args = ap.parse_args()
     if args.refresh:
         refresh_snapshot(os.path.join(DASH, "channel_snapshot.json"))
-    p = write(build_seed())
+    seed = build_seed()
+    p = write(seed)
     print(f"대시보드 갱신: {p}")
+    if args.desktop:
+        key = os.environ.get("B911_YT_API_KEY", "").strip()
+        if not key:
+            raise SystemExit("B911_YT_API_KEY 환경변수에 API 키를 넣고 실행하세요")
+        seed["default_settings"] = {"apiKey": key, "channelId": CHANNEL_ID, "interval": 300}
+        d = write(seed, args.desktop)
+        print(f"개인용(바탕화면) 대시보드: {d}")
 
 
 if __name__ == "__main__":
