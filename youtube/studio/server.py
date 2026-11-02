@@ -42,7 +42,8 @@ def _run_job(job, cmd):
     job["log"].append("$ " + " ".join(cmd[2:]))
     try:
         p = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             text=True, bufsize=1, env=dict(os.environ, PYTHONUNBUFFERED="1"))
+                             text=True, encoding="utf-8", errors="replace", bufsize=1,
+                             env=dict(os.environ, PYTHONUNBUFFERED="1", PYTHONUTF8="1", PYTHONIOENCODING="utf-8"))
         job["pid"] = p.pid
         buf = ""
         while True:

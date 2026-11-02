@@ -336,7 +336,9 @@ def render_video(tl, video_path, workdir, workers=None, crf=20, preset="veryfast
         jobs.append((a, min(b0, a + seg), os.path.join(workdir, f"chunk_{i:04d}.mp4"), crf, preset))
     t0 = time.time()
     done = 0
-    ctx = mp.get_context("fork")
+    # Windows에는 fork가 없어 spawn을 쓴다 (B911_MP_START 로 강제 지정 가능 — 시험용)
+    method = os.environ.get("B911_MP_START") or ("fork" if "fork" in mp.get_all_start_methods() else "spawn")
+    ctx = mp.get_context(method)
     with ctx.Pool(workers, initializer=_init_worker, initargs=(tl,)) as pool:
         for k in pool.imap_unordered(_render_chunk, jobs):
             done += k
@@ -347,7 +349,7 @@ def render_video(tl, video_path, workdir, workers=None, crf=20, preset="veryfast
     lst = os.path.join(workdir, "chunks.txt")
     with open(lst, "w") as f:
         for j in jobs:
-            f.write(f"file '{os.path.abspath(j[2])}'\n")
+            f.write("file '" + os.path.abspath(j[2]).replace("\\", "/") + "'\n")
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy",
                     video_path], check=True)
     for j in jobs:

@@ -14,4 +14,5 @@ pip install -q --upgrade pip >/dev/null 2>&1
 if ! pip install -q -r requirements.txt; then
   echo "설치에 실패했습니다. 터미널에서 'brew install cairo pkg-config' 후 다시 실행하세요."; read -n1; exit 1
 fi
+export PYTHONUTF8=1
 python -m studio.server --open

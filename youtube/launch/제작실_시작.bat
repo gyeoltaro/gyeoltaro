@@ -9,6 +9,8 @@ where py >nul 2>nul && set "PY=py -3"
 where ffmpeg >nul 2>nul || (echo ffmpeg가 필요합니다. 명령 프롬프트에서: winget install Gyan.FFmpeg  설치 후 이 창을 닫고 다시 실행하세요. & pause & exit /b 1)
 if not exist .venv %PY% -m venv .venv
 call .venv\Scripts\activate.bat
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 python -m pip install -q --upgrade pip >nul 2>nul
 pip install -q -r requirements.txt || (echo 설치에 실패했습니다. & pause & exit /b 1)
 python -m studio.server --open
