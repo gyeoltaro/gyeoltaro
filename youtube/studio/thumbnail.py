@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import math
+import re
 import random
 
 import cairo
@@ -121,8 +122,25 @@ VARIANTS = {
 }
 
 
+def auto_variants(title: str, minutes: int) -> dict:
+    """대본 meta.thumbnails 가 없을 때 제목에서 A/B/C 문구를 만든다."""
+    m = re.match(r"^\s*[“\"](.*?)[”\"]\s*(.*)$", title or "")
+    hook = (m.group(1) if m else "").strip(" .…")
+    core = (m.group(2) if m else title).strip()
+    core = re.sub(r"^\d+\s*분\s*만에\s*(끝내는|알아보는)?\s*", "", core) or core
+    note = hook.replace(" ", "\n", 1) if hook else "모르면\n손해 봅니다"
+    return {
+        "A": {"top": f"{minutes}분 만에 끝내는", "main": core, "note": note, "tags": ["↑", "₩", "%"],
+              "screen": "up", "emotion": "shock"},
+        "B": {"top": hook or "모르면 손해 보는", "main": core, "note": f"{minutes}분\n총정리", "tags": ["₩", "↑", "%"],
+              "screen": "alert", "emotion": "angry"},
+        "C": {"top": "초등학생도 이해하는", "main": core, "note": note, "tags": ["%", "₩", "↑"],
+              "screen": "won", "emotion": "surprised"},
+    }
+
+
 def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None):
-    v = dict(VARIANTS[variant])
+    v = dict(VARIANTS.get(variant, VARIANTS["A"]))
     if overrides:
         v.update(overrides)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)

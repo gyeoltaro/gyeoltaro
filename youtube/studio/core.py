@@ -31,35 +31,8 @@ PAL = {
 }
 C = {k: hexc(v) for k, v in PAL.items()}
 
-# 배경 테마 — 영상마다 02_script.json 의 meta.theme 으로 선택
-# base: 기본 배경 그라데이션(중앙, 가장자리) / tints: 장면별 강조 배경(bg: red, purple ...)
-THEMES = {
-    "navy": {  # EP.01에 사용한 남색
-        "label": "남색", "base": ("#16275E", "#070D24"), "grid": 0.045, "symbols": 1.0,
-        "card": "#16224D", "card2": "#1E2E63", "line": "#33488A", "grey": "#A8B3D1", "dim": "#6C7AA6",
-        "tints": {"red": ("#4A1630", "#12060F"), "green": ("#0F3B3A", "#041514"),
-                  "purple": ("#33215E", "#0C0720"), "gold": ("#4A3A12", "#140F04")},
-    },
-    "charcoal": {  # 따뜻한 차콜: 채도가 낮아 눈이 편하고, 노랑·초록 강조가 또렷함 (기본값)
-        "label": "웜 차콜", "base": ("#34302A", "#161412"), "grid": 0.03, "symbols": 0.7,
-        "card": "#2C2925", "card2": "#3A362F", "line": "#5E574D", "grey": "#D2CABB", "dim": "#958C7F",
-        "tints": {"red": ("#43292A", "#181010"), "green": ("#283A2E", "#0F1611"),
-                  "purple": ("#372D3E", "#151018"), "gold": ("#423823", "#18140C")},
-    },
-    "forest": {  # 딥 그린: 차분하고 편안한 녹색 계열
-        "label": "딥 그린", "base": ("#21403A", "#0B1815"), "grid": 0.035, "symbols": 0.8,
-        "card": "#1D352F", "card2": "#27463E", "line": "#40705F", "grey": "#C2D8CF", "dim": "#82A397",
-        "tints": {"red": ("#43292A", "#170E0E"), "green": ("#1F4A3A", "#0A1A14"),
-                  "purple": ("#33304A", "#12111C"), "gold": ("#45401F", "#18160A")},
-    },
-    "slate": {  # 무채색 블루그레이
-        "label": "슬레이트", "base": ("#313945", "#13171C"), "grid": 0.035, "symbols": 0.8,
-        "card": "#262D37", "card2": "#313A46", "line": "#4E5A6B", "grey": "#C6CED9", "dim": "#8792A2",
-        "tints": {"red": ("#432A2E", "#171011"), "green": ("#26392F", "#0E1511"),
-                  "purple": ("#352E45", "#131119"), "gold": ("#41392A", "#16130D")},
-    },
-}
-DEFAULT_THEME = "charcoal"
+from .themes import DEFAULT_THEME, THEMES  # noqa: E402
+
 CURRENT_THEME = dict(THEMES[DEFAULT_THEME], name=DEFAULT_THEME)
 
 

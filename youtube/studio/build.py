@@ -10,13 +10,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import time
 
 from . import audio as A
 from .core import FPS, strip_marks
 from .render import mux, render_video, still
-from .thumbnail import VARIANTS, make_thumbnail
+from .thumbnail import auto_variants, make_thumbnail
 from .timeline import build, fmt_ts, write_srt
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,19 +49,23 @@ def write_upload(script, tl, path, json_path):
     gaps_ok = all(chapters[i + 1]["t"] - chapters[i]["t"] >= 10 for i in range(len(chapters) - 1))
     ch_lines = [f"{fmt_ts(0 if i == 0 else c['t'])} {c['title']}" for i, c in enumerate(chapters)]
     title = strip_marks(meta.get("title", ""))
-    desc = f"""통장에 넣어둔 돈은 그대로인데, 왜 점점 가난해지는 느낌이 들까요?
-물가가 오르는 진짜 이유부터, 역사 속 최악의 인플레이션, 인플레이션의 승자와 패자,
-그리고 내 돈을 지키기 위해 꼭 알아야 할 원리까지 {tl['total'] / 60:.0f}분 만에 정리했습니다.
+    up = meta.get("upload", {})
+    mins = round(tl["total"] / 60)
+    core = re.sub(r"^[“\"].*?[”\"]\s*", "", title).strip() or title
+    intro = up.get("intro") or f"{core}, 처음 듣는 분도 이해할 수 있게 {mins}분 만에 핵심만 정리했습니다."
+    sources = up.get("sources") or ["(출처를 01_plan.md 사실 확인표에서 옮겨 적으세요)"]
+    tags = up.get("tags") or [w for w in re.findall(r"[가-힣A-Za-z0-9]{2,}", core) if len(w) <= 12][:8] + [
+        "경제공부", "기초경제", "경제상식", "부의비상사태911"]
+    hashtags = up.get("hashtags") or ["경제공부"] + tags[:2]
+    pinned = up.get("pinned") or "오늘 영상에서 가장 도움이 된 부분은 무엇인가요? 다음에 다뤘으면 하는 주제도 댓글로 알려주세요!"
+    alt_titles = up.get("alt_titles") or [f"“{core}..” 초보자도 이해하는 {core} {mins}분 총정리"]
+    desc = f"""{intro}
 
 📌 목차
 {chr(10).join(ch_lines)}
 
 📚 참고 자료
-- 한국은행 경제통계시스템(ECOS): 기준금리, 물가안정목표
-- 통계청 KOSIS: 소비자물가지수(2022년 연간 5.1%)
-- 미국 노동통계국(BLS): 2022년 6월 CPI 9.1%
-- 미국 연준(FRED): M2 통화량, 연방기금금리
-- 바이마르 공화국·짐바브웨 초인플레이션 관련 공개 자료
+{chr(10).join("- " + x for x in sources)}
 
 ⚠️ 안내
 - 이 영상은 경제 원리를 설명하는 교육 콘텐츠이며, 특정 금융상품·자산에 대한 투자 권유가 아닙니다.
@@ -68,13 +73,8 @@ def write_upload(script, tl, path, json_path):
 - 기획·대본·자료 검수는 채널 운영자가 직접 했으며, 내레이션은 AI 음성(TTS)으로 제작했습니다.
   영상 속 캐릭터는 실존 인물이 아닌 채널 마스코트입니다.
 
-#인플레이션 #경제공부 #물가
+{" ".join("#" + h for h in hashtags)}
 """
-    tags = ["인플레이션", "물가", "물가상승", "경제공부", "기초경제", "경제상식", "금리", "기준금리",
-            "디플레이션", "스태그플레이션", "실질금리", "72의법칙", "슈링크플레이션", "칸티용효과",
-            "초인플레이션", "짐바브웨", "바이마르", "돈의가치", "재테크기초", "부의비상사태911"]
-    pinned = ("여러분이 요즘 가장 크게 체감하는 물가는 무엇인가요? 🛒\n"
-              "댓글로 알려주시면 다음 영상 '금리의 모든 것'에서 함께 다뤄볼게요!")
     md = f"""# 업로드 정보 — {meta.get('episode', '')}
 
 ## 제목 (추천)
@@ -82,8 +82,7 @@ def write_upload(script, tl, path, json_path):
 
 ### 제목 후보 (A/B 테스트용)
 1. {title}
-2. “월급 빼고 다 오르는 이유..” 초보자도 이해하는 인플레이션의 모든 것 {tl['total'] / 60:.0f}분 총정리
-3. 통장에 1,000만 원 넣어두면 10년 뒤 744만 원 되는 이유 (인플레이션의 모든 것)
+{chr(10).join(f"{i + 2}. {t}" for i, t in enumerate(alt_titles))}
 
 ## 설명란
 ```
@@ -106,7 +105,7 @@ def write_upload(script, tl, path, json_path):
 - [ ] **자막**: `subtitles.srt` 업로드 (한국어) — 영상에 자막이 이미 들어가 있으므로 '기본 표시'는 끔
 - [ ] **썸네일 테스트 및 비교**: `thumbnail_A.png`, `thumbnail_B.png`, `thumbnail_C.png` 3개 등록
 - [ ] **최종 화면**: 마지막 20초 — 왼쪽 '다음 편 보기'(재생목록/최신 영상), 오른쪽 '추천 영상', 가운데 구독
-- [ ] **카드**: PART 4 시작 지점({fmt_ts(chapters[4]['t']) if len(chapters) > 4 else '-'})에 관련 쇼츠/영상 카드
+- [ ] **카드**: 중반 챕터 시작 지점({fmt_ts(chapters[len(chapters) // 2]['t']) if chapters else '-'})에 관련 쇼츠/영상 카드
 - [ ] **재생목록**: '기초 경제 시리즈'에 추가 (나중에 몰아보기 영상의 재료)
 - [ ] **시청자층**: 아동용 아님 / **카테고리**: 교육
 - [ ] **유료 광고 포함**: 아니요
@@ -144,8 +143,9 @@ def main():
     write_srt(tl["captions"], os.path.join(out, "subtitles.srt"))
 
     print("[3/6] 썸네일")
-    for k in VARIANTS:
-        make_thumbnail(os.path.join(out, f"thumbnail_{k}.png"), k)
+    variants = script["meta"].get("thumbnails") or auto_variants(script["meta"].get("title", ""), round(tl["total"] / 60))
+    for k, v in variants.items():
+        make_thumbnail(os.path.join(out, f"thumbnail_{k}.png"), overrides=v)
 
     print("[4/6] 업로드 정보")
     write_upload(script, tl, os.path.join(ep, "03_upload.md"), os.path.join(out, "upload.json"))

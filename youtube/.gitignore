@@ -7,3 +7,7 @@ __pycache__/
 *.pyc
 # 개인용 대시보드(API 키 포함) — 절대 커밋하지 않음
 dashboard/dist/
+# 내 컴퓨터 전용 (API 키·가상환경·백업)
+.secrets/
+.venv/
+episodes/*/02_script.json.bak

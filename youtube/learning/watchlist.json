@@ -1,0 +1,12 @@
+{
+  "channels": [
+    {"id": "UCm879ZUxkV6mqZFqNVUcwZg", "name": "부의비상사태 911", "role": "mine"},
+    {"id": "UC7cf7eZIucAAzkm_rwoawZw", "name": "유치한경제학", "role": "benchmark"}
+  ],
+  "keywords": ["경제 모든것", "금리", "환율", "인플레이션", "재테크 기초"],
+  "max_videos_per_channel": 200,
+  "search_days": 14,
+  "search_results": 15,
+  "hot_days": 30,
+  "hot_limit": 8
+}

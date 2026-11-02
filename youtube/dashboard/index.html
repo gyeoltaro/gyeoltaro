@@ -100,7 +100,7 @@
   @keyframes glow{50%{filter:drop-shadow(0 0 6px currentColor)}}
   .hint{position:absolute;left:12px;bottom:10px;font-size:11.5px;color:var(--dim);pointer-events:none}
   .linkmode .hint{color:var(--yellow)}
-  .legend{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+  .legend{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px}
   .lg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
   .lg b{font-size:18px;display:block;line-height:1.2}
   .lg span{font-size:11px;color:var(--muted)}
@@ -165,6 +165,53 @@
   .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(30px);background:var(--card2);border:1px solid var(--line2);padding:9px 16px;border-radius:12px;opacity:0;transition:.25s;z-index:50;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* 학습 백로그 */
+  .tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+  .tabs button{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+  .tabs button.on{border-color:var(--yellow);color:var(--yellow)}
+  .hotgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .hot{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--text);display:flex;flex-direction:column}
+  .hot:hover{border-color:var(--line2);text-decoration:none}
+  .hot .th{position:relative;aspect-ratio:16/9;background:var(--card2)}
+  .hot .th img{width:100%;height:100%;object-fit:cover;display:block}
+  .hot .badge{position:absolute;left:8px;top:8px;background:var(--red);color:#fff;font-weight:900;font-size:13px;padding:2px 8px;border-radius:8px}
+  .hot .badge.mine{background:var(--yellow);color:#1A1712}
+  .hot .bd{padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+  .hot .tt{font-size:12.5px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .hot .ch{font-size:11.5px;color:var(--muted)}
+  .hot .why{font-size:11.5px;color:var(--yellow)}
+  .chips{display:flex;gap:4px;flex-wrap:wrap}
+  .chips span{font-size:10.5px;padding:1px 7px;border-radius:99px;background:var(--card2);color:var(--muted)}
+  .mine-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+  .mine-row .stat .v{font-size:19px}
+  .ins{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line);margin-bottom:6px}
+  .ins .k{font-size:10.5px;padding:1px 7px;border-radius:6px;background:rgba(79,209,197,.15);color:#7FE6DC;flex:none;margin-top:2px}
+  .ins .k.idea{background:rgba(255,212,59,.14);color:var(--yellow)}
+  .ins p{margin:0;flex:1;font-size:13px}
+  .ins .acts{display:flex;gap:4px;flex:none}
+  .lift{display:grid;grid-template-columns:170px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:12.5px;padding:3px 0}
+  .lift .track{position:relative;height:10px;background:var(--card2);border-radius:99px}
+  .lift .track i{position:absolute;top:0;bottom:0;border-radius:99px}
+  .lift .track b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--muted)}
+  .lift .n{color:var(--dim);font-size:11px}
+  .sub-h{font-size:12.5px;color:var(--muted);margin:12px 0 6px;font-weight:700}
+  .hist-item{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+  .hist-item summary{cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-size:13px}
+  .hist-item ul{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+  /* 제작실 */
+  .studio-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px}
+  textarea.code{width:100%;min-height:340px;background:#12100E;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#E9E2D4;resize:vertical}
+  .log{background:#12100E;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:11.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--muted);max-height:130px;overflow:auto;white-space:pre-wrap;margin-bottom:8px}
+  .out video{width:100%;border-radius:10px;background:#000;display:block}
+  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+  .thumbs img,.stills img{width:100%;border-radius:8px;display:block;cursor:zoom-in;border:1px solid var(--line)}
+  .stills{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;margin-top:8px;max-height:250px;overflow:auto}
+  .notice{background:var(--card);border:1px dashed var(--line2);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--muted)}
+  .notice b{color:var(--text)}
+  .notice code{background:var(--card2);padding:1px 6px;border-radius:5px;color:var(--text)}
+  .notice ol{margin:6px 0 0;padding-left:18px}
+  .rowx{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px}
+  @media (max-width:760px){.studio-grid{grid-template-columns:1fr}.mine-row{grid-template-columns:1fr 1fr}.lift{grid-template-columns:110px minmax(0,1fr) 46px}}
   @media (max-width:1280px){
     main.grid{grid-template-columns:1fr 1fr}
     .col.center{grid-column:1 / -1;order:-1}
@@ -243,8 +290,19 @@
         <label>상태<select id="dStatus"><option value="idea">아이디어</option><option value="doing">진행 중</option><option value="done">완료</option></select></label>
         <label>&nbsp;<button class="btn sm" id="dLink">다른 아이디어와 연결</button></label>
         <label class="full">메모<textarea id="dMemo" rows="2" placeholder="자료 출처, 대본 아이디어 등"></textarea></label>
-        <div class="row"><button class="btn sm danger" id="dDelete">삭제</button><button class="btn sm" id="dClose">닫기</button></div>
+        <div class="row"><span class="dim" id="dAuto" style="margin-right:auto;font-size:11.5px"></span><button class="btn sm" id="dPin" style="display:none">고정</button><button class="btn sm danger" id="dDelete">삭제</button><button class="btn sm" id="dClose">닫기</button></div>
       </div>
+    </section>
+    <section class="panel" id="learnPanel">
+      <h2><span class="t"><span class="ico">✚</span>매일 학습 백로그</span><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="pill" id="learnMeta">불러오는 중…</span><button class="btn sm" id="learnRun">지금 학습</button></span></h2>
+      <div class="tabs" id="learnTabs">
+        <button data-t="hot" class="on">오늘의 떡상</button><button data-t="ins">배운 것·아이디어</button><button data-t="model">학습 모델</button><button data-t="hist">지난 기록</button>
+      </div>
+      <div id="learnBody"></div>
+    </section>
+    <section class="panel" id="studioPanel">
+      <h2><span class="t"><span class="ico">▣</span>영상 제작실</span><span class="pill" id="studioStatus">확인 중…</span></h2>
+      <div id="studioBody"></div>
     </section>
     <section class="panel">
       <h2><span class="t"><span class="ico">☰</span>할 일 메모</span><span class="pill num" id="todoCount"></span></h2>
@@ -310,7 +368,7 @@
 </dialog>
 <div class="toast" id="toast"></div>
 
-<!--SEED:BEGIN--><script id="seed" type="application/json">{"generated": "2026-11-02", "channel": {"id": "UCm879ZUxkV6mqZFqNVUcwZg", "name": "부의비상사태 911"}, "snapshot": {"date": "2026-11-02", "subscribers": 18, "total_views": 16119, "video_count": 22, "longform_views": 431, "upload_note": "YouTube Data API로 받은 실제 업로드 날짜", "videos": [{"id": "6SKHwhiLezc", "title": "“내 월급만 제자리인 진짜 이유..” 15분 만에 끝내는 인플레이션의 모든 것", "publishedAt": "2026-11-02T06:27:57Z", "views": 0, "likes": 0, "comments": 0, "type": "long", "duration": 933}, {"id": "5Gr0PNqLdws", "title": "20년 전 5만 원의 기적! #shorts", "publishedAt": "2026-02-22T15:00:08Z", "views": 1129, "likes": 4, "comments": 0, "type": "short", "duration": 36}, {"id": "grwl78ozc2U", "title": "하이닉스 5만원의 충격적인 진실 #shorts", "publishedAt": "2026-02-21T15:01:09Z", "views": 752, "likes": 1, "comments": 0, "type": "short", "duration": 39}, {"id": "YJ1isF4aq90", "title": "[긴급] 금값 폭등에 금고 대란! 집집마다 금고 사재기 열풍, 도대체 무슨 일?", "publishedAt": "2026-02-20T22:00:41Z", "views": 16, "likes": 0, "comments": 0, "type": "long", "duration": 1027}, {"id": "0EUn0gqkc5s", "title": "삼성전자 '5만 원'의 마법 #shorts", "publishedAt": "2026-02-20T15:25:31Z", "views": 1, "likes": 0, "comments": 0, "type": "short", "duration": 37}, {"id": "DCOMgVOWlR8", "title": "30년 뒤 '3억 5천만 원'? #shorts", "publishedAt": "2026-02-20T07:15:47Z", "views": 2756, "likes": 5, "comments": 2, "type": "short", "duration": 32}, {"id": "f7cpfxLnf5o", "title": "넷플릭스 구독료가 사실 '1억 7천만 원'짜리라면? #shorts", "publishedAt": "2026-02-18T22:00:42Z", "views": 1246, "likes": 2, "comments": 2, "type": "short", "duration": 31}, {"id": "7oXgf45wSEA", "title": "보험료 20만 원의 배신 #shorts", "publishedAt": "2026-02-18T09:06:32Z", "views": 1998, "likes": 2, "comments": 0, "type": "short", "duration": 35}, {"id": "_oWZS-uYBHY", "title": "담배 끊으라는 소리가 아닙니다. #shorts", "publishedAt": "2026-02-18T01:34:52Z", "views": 1414, "likes": 6, "comments": 2, "type": "short", "duration": 30}, {"id": "u0HqHLCnagc", "title": "[긴급] 금수저는 서울로, 흙수저는 그대로\" 한국은행이 폭로한 대한민국 계층 대물림의 충격적 진실", "publishedAt": "2026-02-17T22:00:56Z", "views": 22, "likes": 1, "comments": 0, "type": "long", "duration": 1153}, {"id": "V0tlHDs3w0s", "title": "무이자 할부가 무서운 진짜 이유 #shorts", "publishedAt": "2026-02-17T13:02:35Z", "views": 2427, "likes": 5, "comments": 1, "type": "short", "duration": 38}, {"id": "3IS2tcGpOU4", "title": "5,000원짜리 커피 한 잔 #shorts", "publishedAt": "2026-02-16T21:18:10Z", "views": 1516, "likes": 3, "comments": 1, "type": "short", "duration": 29}, {"id": "4LSQ5CckzgE", "title": "[긴급] \"유럽은 절대 못 만든다!\" 노르웨이가 천무에 경악한 이유", "publishedAt": "2026-02-16T21:00:10Z", "views": 29, "likes": 1, "comments": 0, "type": "long", "duration": 1471}, {"id": "6bjmGgifwww", "title": "기적은 멀리 있지 않습니다. #shorts", "publishedAt": "2026-02-16T20:04:21Z", "views": 2449, "likes": 3, "comments": 2, "type": "short", "duration": 36}, {"id": "All-DJ1cTHs", "title": "[긴급] 삼성전자 운명의 날! 성과급 전쟁에 멈춰서는 반도체?", "publishedAt": "2026-02-15T21:00:08Z", "views": 36, "likes": 2, "comments": 0, "type": "long", "duration": 1346}, {"id": "Oc9yzKEI2Lg", "title": "[긴급] 지금 안 팔면 8억 날립니다\" 패닉에 빠진 다주택자들, 서울 급매물 폭발하는 진짜 이유", "publishedAt": "2026-02-15T11:02:23Z", "views": 34, "likes": 0, "comments": 2, "type": "long", "duration": 1064}, {"id": "iTBh4FPW5ME", "title": "[긴급]트럼프의 선전포고 \"이제 온실가스 기준 없다\" | 내 아파트값 폭락하고 밥값 3배 뛰는 진짜 이유", "publishedAt": "2026-02-14T21:00:45Z", "views": 9, "likes": 0, "comments": 0, "type": "long", "duration": 1234}, {"id": "cVXX1WTZeGw", "title": "[긴급]현대차 아틀라스의 대변신! 공중제비보다 놀라운 '인간 협업'의 비밀", "publishedAt": "2026-02-14T10:03:21Z", "views": 17, "likes": 1, "comments": 0, "type": "long", "duration": 1056}, {"id": "zve4_6xM4Do", "title": "[긴급]삼성의 대반격! HBM4 세계 최초 양산 성공... 엔비디아가 줄 서는 이유", "publishedAt": "2026-02-13T11:31:02Z", "views": 0, "likes": 0, "comments": 0, "type": "long", "duration": 1142}, {"id": "8ZgTPnAINxs", "title": "[긴급]상장폐지 대분석! 7월 동전주 '대숙청' 시작, 내 주식은 안전한가?", "publishedAt": "2026-02-13T02:54:06Z", "views": 253, "likes": 3, "comments": 0, "type": "long", "duration": 1243}, {"id": "ctsjL0OPLvM", "title": "[긴급]지금 이영상은 소름돋는 30가지의 ai의 이야기입니다.", "publishedAt": "2026-02-12T13:01:09Z", "views": 6, "likes": 1, "comments": 0, "type": "long", "duration": 388}, {"id": "yCPTgGsqinY", "title": "[긴급] 이제 농사 안 지어도 시골 살 수 있다? 역대급 규제 완화와 2030 귀촌 열풍 총정리!", "publishedAt": "2026-02-12T07:17:50Z", "views": 9, "likes": 0, "comments": 0, "type": "long", "duration": 346}]}, "episodes": [{"id": "ep01_inflation", "title": "EP.01 15분 만에 끝내는 인플레이션의 모든 것", "duration": "15:32", "theme": "navy", "steps": {"plan": true, "script": true, "tts": true, "video": true, "subs": true, "thumb": true, "upload": true}}], "roadmap": [{"id": "ep02_interest", "title": "EP.02 금리의 모든 것", "note": "다음 편 · 웜 차콜", "steps": {}}, {"id": "ep03_fx", "title": "EP.03 환율의 모든 것", "note": "예정", "steps": {}}, {"id": "ep04_recession", "title": "EP.04 경기침체·스태그플레이션", "note": "예정", "steps": {}}, {"id": "ep05_stocks", "title": "EP.05 주식 기초의 모든 것", "note": "예정", "steps": {}}, {"id": "comp01", "title": "몰아보기: 기초 경제지식의 모든 것", "note": "EP.01~05 묶음", "steps": {}}], "checklist": ["제목·썸네일의 약속(분량, 숫자, '모든 것')이 영상과 일치", "모든 수치에 출처와 날짜가 있음", "특정 종목·상품 추천, 수익 보장 표현 없음", "캐릭터가 사람 전문가인 척하지 않음", "실존 인물 사진·타사 로고·보도사진 없음", "이전 영상과 구성·대본이 충분히 다름", "'변경되거나 합성된 콘텐츠' 질문에 올바르게 답함", "설명란: 챕터(0:00 시작)·출처·고지문", "자막 SRT 업로드 + 썸네일 A/B/C 테스트 등록", "최종 화면(20초)·카드·재생목록 설정"], "todos": ["EP.01 업로드: 썸네일 A/B/C 테스트 등록", "EP.01 내레이션 직접 녹음 버전 검토", "EP.02 금리의 모든 것 기획서 작성", "EP.01 하이라이트로 쇼츠 3개 만들기", "YouTube Data API 키 발급 → 대시보드 연결"], "themes": [{"name": "navy", "label": "남색", "base": ["#16275E", "#070D24"]}, {"name": "charcoal", "label": "웜 차콜", "base": ["#34302A", "#161412"]}, {"name": "forest", "label": "딥 그린", "base": ["#21403A", "#0B1815"]}, {"name": "slate", "label": "슬레이트", "base": ["#313945", "#13171C"]}], "default_theme": "charcoal", "regions": {"frontal": {"lobe": "전두엽", "name": "기획·아이디어", "color": "#FFD43B", "c": [320, 260], "r": [130, 95], "label_at": [300, 330]}, "parietal": {"lobe": "두정엽", "name": "학습한 개념", "color": "#3BE07A", "c": [640, 210], "r": [110, 70], "label_at": [650, 280]}, "occipital": {"lobe": "후두엽", "name": "연출·썸네일", "color": "#B58CFF", "c": [790, 340], "r": [50, 60], "label_at": [800, 270]}, "temporal": {"lobe": "측두엽", "name": "영상 시리즈", "color": "#5AA9FF", "c": [480, 450], "r": [150, 35], "label_at": [470, 400]}, "cerebellum": {"lobe": "소뇌", "name": "루틴·습관", "color": "#FF8F8F", "c": [752, 515], "r": [70, 30], "label_at": [752, 568]}}, "brain": {"nodes": [{"id": "n_ep02", "label": "EP.02 금리의 모든 것", "region": "frontal", "weight": 3, "status": "doing", "x": 330, "y": 190, "memo": ""}, {"id": "n_comp", "label": "몰아보기 1시간 30분", "region": "frontal", "weight": 3, "status": "idea", "x": 285, "y": 255, "memo": ""}, {"id": "n_biz", "label": "보험사·카드사 돈 버는 법", "region": "frontal", "weight": 2, "status": "idea", "x": 300, "y": 318, "memo": ""}, {"id": "n_shorts2long", "label": "쇼츠 → 롱폼 확장", "region": "frontal", "weight": 1, "status": "idea", "x": 250, "y": 375, "memo": ""}, {"id": "n_infl", "label": "인플레이션", "region": "parietal", "weight": 3, "status": "done", "x": 575, "y": 140, "memo": ""}, {"id": "n_real", "label": "실질금리", "region": "parietal", "weight": 2, "status": "done", "x": 712, "y": 168, "memo": ""}, {"id": "n_72", "label": "72의 법칙", "region": "parietal", "weight": 2, "status": "done", "x": 560, "y": 205, "memo": ""}, {"id": "n_cant", "label": "칸티용 효과", "region": "parietal", "weight": 1, "status": "done", "x": 690, "y": 222, "memo": ""}, {"id": "n_defl", "label": "디플레이션", "region": "parietal", "weight": 1, "status": "done", "x": 565, "y": 262, "memo": ""}, {"id": "n_stag", "label": "스태그플레이션", "region": "parietal", "weight": 1, "status": "done", "x": 690, "y": 275, "memo": ""}, {"id": "n_theme", "label": "새 배경: 웜 차콜", "region": "occipital", "weight": 2, "status": "done", "x": 790, "y": 330, "memo": ""}, {"id": "n_thumb", "label": "썸네일 A/B/C 테스트", "region": "occipital", "weight": 2, "status": "idea", "x": 780, "y": 385, "memo": ""}, {"id": "n_ep01", "label": "EP.01 인플레이션", "region": "temporal", "weight": 3, "status": "done", "x": 360, "y": 432, "memo": ""}, {"id": "n_ep03", "label": "EP.03 환율", "region": "temporal", "weight": 2, "status": "idea", "x": 565, "y": 418, "memo": ""}, {"id": "n_ep04", "label": "EP.04 경기침체", "region": "temporal", "weight": 2, "status": "idea", "x": 640, "y": 452, "memo": ""}, {"id": "n_ep05", "label": "EP.05 주식 기초", "region": "temporal", "weight": 2, "status": "idea", "x": 470, "y": 478, "memo": ""}, {"id": "n_weekly", "label": "주 2회 롱폼", "region": "cerebellum", "weight": 1, "status": "idea", "x": 712, "y": 497, "memo": ""}, {"id": "n_short3", "label": "쇼츠 주 3개", "region": "cerebellum", "weight": 1, "status": "idea", "x": 805, "y": 520, "memo": ""}, {"id": "n_voice", "label": "내 목소리 녹음", "region": "cerebellum", "weight": 1, "status": "idea", "x": 735, "y": 545, "memo": ""}], "links": [["n_infl", "n_ep01"], ["n_infl", "n_real"], ["n_real", "n_ep02"], ["n_ep01", "n_ep02"], ["n_ep01", "n_comp"], ["n_ep05", "n_comp"], ["n_stag", "n_ep04"], ["n_defl", "n_ep04"], ["n_72", "n_real"], ["n_theme", "n_ep02"], ["n_thumb", "n_ep01"], ["n_voice", "n_ep02"], ["n_cant", "n_infl"], ["n_ep03", "n_comp"]]}, "links": [{"label": "YouTube 스튜디오", "url": "https://studio.youtube.com/channel/UCm879ZUxkV6mqZFqNVUcwZg"}, {"label": "내 채널", "url": "https://www.youtube.com/channel/UCm879ZUxkV6mqZFqNVUcwZg"}, {"label": "벤치마크: 유치한경제학", "url": "https://www.youtube.com/@%EC%9C%A0%EC%B9%98%ED%95%9C%EA%B2%BD%EC%A0%9C%ED%95%99/videos"}, {"label": "채널 분석 문서", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/docs/01_channel_analysis.md"}, {"label": "유튜브 규정 정리", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/docs/02_youtube_policy_2026.md"}, {"label": "제작 파이프라인 사용법", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/README.md"}]}</script><!--SEED:END-->
+<!--SEED:BEGIN--><script id="seed" type="application/json">{"generated": "2026-11-02", "channel": {"id": "UCm879ZUxkV6mqZFqNVUcwZg", "name": "부의비상사태 911"}, "snapshot": {"date": "2026-11-02", "subscribers": 18, "total_views": 16119, "video_count": 22, "longform_views": 431, "upload_note": "YouTube Data API로 받은 실제 업로드 날짜", "videos": [{"id": "6SKHwhiLezc", "title": "“내 월급만 제자리인 진짜 이유..” 15분 만에 끝내는 인플레이션의 모든 것", "publishedAt": "2026-11-02T06:27:57Z", "views": 0, "likes": 0, "comments": 0, "type": "long", "duration": 933}, {"id": "5Gr0PNqLdws", "title": "20년 전 5만 원의 기적! #shorts", "publishedAt": "2026-02-22T15:00:08Z", "views": 1129, "likes": 4, "comments": 0, "type": "short", "duration": 36}, {"id": "grwl78ozc2U", "title": "하이닉스 5만원의 충격적인 진실 #shorts", "publishedAt": "2026-02-21T15:01:09Z", "views": 752, "likes": 1, "comments": 0, "type": "short", "duration": 39}, {"id": "YJ1isF4aq90", "title": "[긴급] 금값 폭등에 금고 대란! 집집마다 금고 사재기 열풍, 도대체 무슨 일?", "publishedAt": "2026-02-20T22:00:41Z", "views": 16, "likes": 0, "comments": 0, "type": "long", "duration": 1027}, {"id": "0EUn0gqkc5s", "title": "삼성전자 '5만 원'의 마법 #shorts", "publishedAt": "2026-02-20T15:25:31Z", "views": 1, "likes": 0, "comments": 0, "type": "short", "duration": 37}, {"id": "DCOMgVOWlR8", "title": "30년 뒤 '3억 5천만 원'? #shorts", "publishedAt": "2026-02-20T07:15:47Z", "views": 2756, "likes": 5, "comments": 2, "type": "short", "duration": 32}, {"id": "f7cpfxLnf5o", "title": "넷플릭스 구독료가 사실 '1억 7천만 원'짜리라면? #shorts", "publishedAt": "2026-02-18T22:00:42Z", "views": 1246, "likes": 2, "comments": 2, "type": "short", "duration": 31}, {"id": "7oXgf45wSEA", "title": "보험료 20만 원의 배신 #shorts", "publishedAt": "2026-02-18T09:06:32Z", "views": 1998, "likes": 2, "comments": 0, "type": "short", "duration": 35}, {"id": "_oWZS-uYBHY", "title": "담배 끊으라는 소리가 아닙니다. #shorts", "publishedAt": "2026-02-18T01:34:52Z", "views": 1414, "likes": 6, "comments": 2, "type": "short", "duration": 30}, {"id": "u0HqHLCnagc", "title": "[긴급] 금수저는 서울로, 흙수저는 그대로\" 한국은행이 폭로한 대한민국 계층 대물림의 충격적 진실", "publishedAt": "2026-02-17T22:00:56Z", "views": 22, "likes": 1, "comments": 0, "type": "long", "duration": 1153}, {"id": "V0tlHDs3w0s", "title": "무이자 할부가 무서운 진짜 이유 #shorts", "publishedAt": "2026-02-17T13:02:35Z", "views": 2427, "likes": 5, "comments": 1, "type": "short", "duration": 38}, {"id": "3IS2tcGpOU4", "title": "5,000원짜리 커피 한 잔 #shorts", "publishedAt": "2026-02-16T21:18:10Z", "views": 1516, "likes": 3, "comments": 1, "type": "short", "duration": 29}, {"id": "4LSQ5CckzgE", "title": "[긴급] \"유럽은 절대 못 만든다!\" 노르웨이가 천무에 경악한 이유", "publishedAt": "2026-02-16T21:00:10Z", "views": 29, "likes": 1, "comments": 0, "type": "long", "duration": 1471}, {"id": "6bjmGgifwww", "title": "기적은 멀리 있지 않습니다. #shorts", "publishedAt": "2026-02-16T20:04:21Z", "views": 2449, "likes": 3, "comments": 2, "type": "short", "duration": 36}, {"id": "All-DJ1cTHs", "title": "[긴급] 삼성전자 운명의 날! 성과급 전쟁에 멈춰서는 반도체?", "publishedAt": "2026-02-15T21:00:08Z", "views": 36, "likes": 2, "comments": 0, "type": "long", "duration": 1346}, {"id": "Oc9yzKEI2Lg", "title": "[긴급] 지금 안 팔면 8억 날립니다\" 패닉에 빠진 다주택자들, 서울 급매물 폭발하는 진짜 이유", "publishedAt": "2026-02-15T11:02:23Z", "views": 34, "likes": 0, "comments": 2, "type": "long", "duration": 1064}, {"id": "iTBh4FPW5ME", "title": "[긴급]트럼프의 선전포고 \"이제 온실가스 기준 없다\" | 내 아파트값 폭락하고 밥값 3배 뛰는 진짜 이유", "publishedAt": "2026-02-14T21:00:45Z", "views": 9, "likes": 0, "comments": 0, "type": "long", "duration": 1234}, {"id": "cVXX1WTZeGw", "title": "[긴급]현대차 아틀라스의 대변신! 공중제비보다 놀라운 '인간 협업'의 비밀", "publishedAt": "2026-02-14T10:03:21Z", "views": 17, "likes": 1, "comments": 0, "type": "long", "duration": 1056}, {"id": "zve4_6xM4Do", "title": "[긴급]삼성의 대반격! HBM4 세계 최초 양산 성공... 엔비디아가 줄 서는 이유", "publishedAt": "2026-02-13T11:31:02Z", "views": 0, "likes": 0, "comments": 0, "type": "long", "duration": 1142}, {"id": "8ZgTPnAINxs", "title": "[긴급]상장폐지 대분석! 7월 동전주 '대숙청' 시작, 내 주식은 안전한가?", "publishedAt": "2026-02-13T02:54:06Z", "views": 253, "likes": 3, "comments": 0, "type": "long", "duration": 1243}, {"id": "ctsjL0OPLvM", "title": "[긴급]지금 이영상은 소름돋는 30가지의 ai의 이야기입니다.", "publishedAt": "2026-02-12T13:01:09Z", "views": 6, "likes": 1, "comments": 0, "type": "long", "duration": 388}, {"id": "yCPTgGsqinY", "title": "[긴급] 이제 농사 안 지어도 시골 살 수 있다? 역대급 규제 완화와 2030 귀촌 열풍 총정리!", "publishedAt": "2026-02-12T07:17:50Z", "views": 9, "likes": 0, "comments": 0, "type": "long", "duration": 346}]}, "episodes": [{"id": "ep01_inflation", "title": "EP.01 15분 만에 끝내는 인플레이션의 모든 것", "duration": "15:32", "theme": "navy", "steps": {"plan": true, "script": true, "tts": true, "video": true, "subs": true, "thumb": true, "upload": true}}], "roadmap": [{"id": "ep02_interest", "title": "EP.02 금리의 모든 것", "note": "다음 편 · 웜 차콜", "steps": {}}, {"id": "ep03_fx", "title": "EP.03 환율의 모든 것", "note": "예정", "steps": {}}, {"id": "ep04_recession", "title": "EP.04 경기침체·스태그플레이션", "note": "예정", "steps": {}}, {"id": "ep05_stocks", "title": "EP.05 주식 기초의 모든 것", "note": "예정", "steps": {}}, {"id": "comp01", "title": "몰아보기: 기초 경제지식의 모든 것", "note": "EP.01~05 묶음", "steps": {}}], "checklist": ["제목·썸네일의 약속(분량, 숫자, '모든 것')이 영상과 일치", "모든 수치에 출처와 날짜가 있음", "특정 종목·상품 추천, 수익 보장 표현 없음", "캐릭터가 사람 전문가인 척하지 않음", "실존 인물 사진·타사 로고·보도사진 없음", "이전 영상과 구성·대본이 충분히 다름", "'변경되거나 합성된 콘텐츠' 질문에 올바르게 답함", "설명란: 챕터(0:00 시작)·출처·고지문", "자막 SRT 업로드 + 썸네일 A/B/C 테스트 등록", "최종 화면(20초)·카드·재생목록 설정"], "todos": ["EP.01 업로드: 썸네일 A/B/C 테스트 등록", "EP.01 내레이션 직접 녹음 버전 검토", "EP.02 금리의 모든 것 기획서 작성", "EP.01 하이라이트로 쇼츠 3개 만들기", "YouTube Data API 키 발급 → 대시보드 연결"], "themes": [{"name": "navy", "label": "남색", "base": ["#16275E", "#070D24"]}, {"name": "charcoal", "label": "웜 차콜", "base": ["#34302A", "#161412"]}, {"name": "forest", "label": "딥 그린", "base": ["#21403A", "#0B1815"]}, {"name": "slate", "label": "슬레이트", "base": ["#313945", "#13171C"]}], "default_theme": "charcoal", "regions": {"frontal": {"lobe": "전두엽", "name": "기획·아이디어", "color": "#FFD43B", "c": [320, 260], "r": [130, 95], "label_at": [300, 330]}, "parietal": {"lobe": "두정엽", "name": "학습한 개념", "color": "#3BE07A", "c": [640, 210], "r": [110, 70], "label_at": [650, 280]}, "occipital": {"lobe": "후두엽", "name": "연출·썸네일", "color": "#B58CFF", "c": [790, 340], "r": [50, 60], "label_at": [800, 270]}, "temporal": {"lobe": "측두엽", "name": "영상 시리즈", "color": "#5AA9FF", "c": [480, 450], "r": [150, 35], "label_at": [470, 400]}, "cerebellum": {"lobe": "소뇌", "name": "루틴·습관", "color": "#FF8F8F", "c": [752, 515], "r": [70, 30], "label_at": [752, 568]}, "hippocampus": {"lobe": "해마", "name": "매일 학습", "color": "#4FD1C5", "c": [470, 352], "r": [90, 45], "label_at": [470, 360]}}, "learning": {"updated": "2026-11-02T18:52+09:00", "date": "2026-11-02", "source": "api", "entries": [{"date": "2026-11-02", "source": "api", "hot": [{"id": "uY8bXDJHswg", "title": "환율 1300원, 코스피 5000 폭락..!! 한국경제 대위기 터진다..??", "channel": "경제읽어주는남자", "cid": "UCXuqnlHXm4LcqIhlC607ZoQ", "type": "long", "views": 142538, "score": 157.8, "reason": "구독자 대비 조회수 157.8배", "age": 11, "mine": false, "via": "search", "tags": ["crisis", "question"]}, {"id": "03RXb2Akk70", "title": "환율 1200원대 오면 내 주식은? 항공주는 웃고, 수출주는 계산기 #경제 #환율 #항공주 #주식", "channel": "경제야! 놀자~", "cid": "UCiyTPjrEIUsc26rwb4_fyfw", "type": "short", "views": 142368, "score": 18.2, "reason": "구독자 대비 조회수 18.2배", "age": 7, "mine": false, "via": "search", "tags": ["question"]}, {"id": "kS6nQ3fICp4", "title": "재테크의 기초 상식 모르면 절대 부자 못 됩니다", "channel": "부자의습관", "cid": "UCcX4XO9fdX27k1FefMqZLAg", "type": "long", "views": 21986, "score": 4.5, "reason": "구독자 대비 조회수 4.5배", "age": 14, "mine": false, "via": "search", "tags": []}, {"id": "gJo3ruTjKtU", "title": "[10월 26일 라이브] 걱정과 증명. 실적발표와 금리발표의 일주일! 주주환원이 중요하다!", "channel": "주식명사수 주명", "cid": "UCAcesv8qLL5-4BLI6bhHKxg", "type": "long", "views": 237320, "score": 2.9, "reason": "구독자 대비 조회수 2.9배", "age": 8, "mine": false, "via": "search", "tags": []}, {"id": "qUzLcGVAEtc", "title": "[#장중엔] 김정은 사망설에 코스피 급락? 그런데 환율은 왜 조용할까… 증시 급락의 진실  | 박근형, 이건희, 이슬이, 김민수, 이화진", "channel": "815 캠퍼스", "cid": "UCnTZ9DHMo8oEoVIZrGlVoOA", "type": "long", "views": 158670, "score": 2.0, "reason": "구독자 대비 조회수 2.0배", "age": 14, "mine": false, "via": "search", "tags": ["question"]}, {"id": "FbLRwS_ZlN8", "title": "리라화 폭락 얼마나 심각하길래.. 튀르키예 현지 반응 들어봤더니 ㅣ 인사이트30", "channel": "연합뉴스경제TV", "cid": "UC6kZpTl39-_SqfBrF1-N2oQ", "type": "long", "views": 1820409, "score": 1.7, "reason": "구독자 대비 조회수 1.7배", "age": 10, "mine": false, "via": "search", "tags": ["crisis"]}, {"id": "JNDJWTz347k", "title": "[26년 10월 28일 수]  연준 금리 결정, FOMC 기자회견  ｜ 실적발표: 마이크로소프트, 구글 등 ｜ SK하이닉스 어닝서프라이즈 ｜  -  오선의 미국 증시 라이브", "channel": "오선의 미국 증시 라이브", "cid": "UC_JJ_NhRqPKcIOj5Ko3W_3w", "type": "long", "views": 1749140, "score": 1.4, "reason": "구독자 대비 조회수 1.4배", "age": 5, "mine": false, "via": "search", "tags": []}, {"id": "7JNz8hTLi4c", "title": "(10/28/26, 수) FOMC, 금리결정 및 연준 기자회견 | 실적발표: 마이크로소프트, 구글, GEV, VRT, 서비스나우 | 미국 증시 실시간", "channel": "미국 주식 채널 - 에디 Eddie", "cid": "UCMupe3fvv1-Hi3SRxZzSsTw", "type": "long", "views": 325503, "score": 1.2, "reason": "구독자 대비 조회수 1.2배", "age": 5, "mine": false, "via": "search", "tags": []}], "mine": {"name": "부의비상사태 911", "subs": 18, "subs_delta": null, "views": 16119, "views_delta": null, "videos": 22, "long_median": 16.5, "short_median": 1465.0, "top_gainers": []}, "insights": [{"id": "L_feat_hours", "kind": "format", "label": "'N시간' 몰아보기 ×4.09", "text": "제목에 'N시간' 몰아보기 패턴이 있으면 채널 평균 대비 조회수 4.09배 (표본 4개)", "weight": 3, "value": 4.09}, {"id": "L_feat_easy", "kind": "format", "label": "'초등학생도 이해' ×3.52", "text": "제목에 '초등학생도 이해' 패턴이 있으면 채널 평균 대비 조회수 3.52배 (표본 6개)", "weight": 3, "value": 3.52}, {"id": "L_feat_question", "kind": "format", "label": "물음표 ×2.2", "text": "제목에 물음표 패턴이 있으면 채널 평균 대비 조회수 2.2배 (표본 21개)", "weight": 3, "value": 2.2}, {"id": "L_feat_all_about", "kind": "format", "label": "'~의 모든 것' ×1.98", "text": "제목에 '~의 모든 것' 패턴이 있으면 채널 평균 대비 조회수 1.98배 (표본 23개)", "weight": 2, "value": 1.98}, {"id": "L_feat_minutes", "kind": "format", "label": "'N분 만에' ×1.75", "text": "제목에 'N분 만에' 패턴이 있으면 채널 평균 대비 조회수 1.75배 (표본 27개)", "weight": 2, "value": 1.75}, {"id": "L_feat_percent", "kind": "format", "label": "퍼센트 숫자 ×1.59", "text": "제목에 퍼센트 숫자 패턴이 있으면 채널 평균 대비 조회수 1.59배 (표본 12개)", "weight": 2, "value": 1.59}, {"id": "L_duration_best", "kind": "duration", "label": "1시간 이상 영상 ×7.6", "text": "길이는 1시간 이상이(가) 가장 강함: 채널 중앙값 대비 7.6배 (표본 3개)", "weight": 2, "value": 7.6}, {"id": "L_keywords", "kind": "keyword", "label": "떡상 키워드: 부자들, 주식, 상위", "text": "조회수가 높게 나오는 키워드: 부자들(×2.41, 6개), 주식(×1.93, 12개), 상위(×1.56, 3개)", "weight": 2, "value": 2.41}, {"id": "L_mine_shorts", "kind": "mine", "label": "내 쇼츠가 롱폼의 89배", "text": "내 채널 쇼츠 중앙값 1,465회 vs 롱폼 16회 → 쇼츠에서 롱폼으로 연결하는 장치 필요", "weight": 2, "value": 88.78787878787878}, {"id": "L_hot_pattern", "kind": "format", "label": "오늘 떡상 공통점: 물음표", "text": "오늘 떡상 영상 8개 중 3개가 물음표 패턴", "weight": 1, "value": 3}], "ideas": [{"id": "I_c443d5f9", "topic": "환율", "label": "아이디어: 환율", "text": "'환율 1300원, 코스피 5000 폭락..!! 한국경제 대위기 터진다..??' (경제읽어주는남자) 구독자 대비 조회수 157.8배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "video": "uY8bXDJHswg"}, {"id": "I_e861734b", "topic": "주식", "label": "아이디어: 주식", "text": "'환율 1200원대 오면 내 주식은? 항공주는 웃고, 수출주는 계산기 #경제 #환율 #항공주 #주식' (경제야! 놀자~) 구독자 대비 조회수 18.2배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "video": "03RXb2Akk70"}, {"id": "I_d2de6c63", "topic": "재테크", "label": "아이디어: 재테크", "text": "'재테크의 기초 상식 모르면 절대 부자 못 됩니다' (부자의습관) 구독자 대비 조회수 4.5배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "video": "kS6nQ3fICp4"}], "tracked": {"videos": 208, "channels": 2, "keywords": ["경제 모든것", "금리", "환율", "인플레이션", "재테크 기초"]}}], "model": {"n_long": 135, "features": [{"key": "hours", "label": "'N시간' 몰아보기", "n": 4, "lift": 4.09}, {"key": "easy", "label": "'초등학생도 이해'", "n": 6, "lift": 3.52}, {"key": "question", "label": "물음표", "n": 21, "lift": 2.2}, {"key": "all_about", "label": "'~의 모든 것'", "n": 23, "lift": 1.98}, {"key": "minutes", "label": "'N분 만에'", "n": 27, "lift": 1.75}, {"key": "percent", "label": "퍼센트 숫자", "n": 12, "lift": 1.59}, {"key": "summary", "label": "'총정리'", "n": 10, "lift": 1.13}, {"key": "crisis", "label": "'위기·폭락·붕괴'", "n": 21, "lift": 1.11}, {"key": "urgent", "label": "'[긴급]/[속보]'", "n": 11, "lift": 1.07}, {"key": "how", "label": "'~하는 방법'", "n": 22, "lift": 1.06}, {"key": "money", "label": "금액 숫자(만·억·조 원)", "n": 21, "lift": 1.03}, {"key": "shock", "label": "'충격·소름·ㄷㄷ'", "n": 30, "lift": 0.81}, {"key": "why", "label": "'~하는 이유'", "n": 53, "lift": 0.8}, {"key": "quote", "label": "따옴표 훅(“..”)", "n": 82, "lift": 0.78}], "durations": [{"label": "1시간 이상", "n": 3, "lift": 7.6}, {"label": "40~60분", "n": 3, "lift": 2.19}, {"label": "25~40분", "n": 29, "lift": 1.67}, {"label": "15~25분", "n": 90, "lift": 0.98}, {"label": "15분 미만", "n": 10, "lift": 0.49}], "keywords": [{"word": "부자들", "n": 6, "lift": 2.41}, {"word": "주식", "n": 12, "lift": 1.93}, {"word": "상위", "n": 3, "lift": 1.56}, {"word": "계좌", "n": 3, "lift": 1.56}, {"word": "은행", "n": 4, "lift": 1.47}, {"word": "국가", "n": 6, "lift": 1.45}, {"word": "투자", "n": 3, "lift": 1.33}, {"word": "자산", "n": 3, "lift": 1.27}, {"word": "위기", "n": 6, "lift": 1.2}, {"word": "환율", "n": 7, "lift": 1.11}, {"word": "가난해지", "n": 5, "lift": 1.11}, {"word": "급속도", "n": 7, "lift": 1.09}, {"word": "시대", "n": 6, "lift": 1.09}, {"word": "나라", "n": 3, "lift": 1.09}, {"word": "긴급", "n": 11, "lift": 1.03}, {"word": "비밀", "n": 5, "lift": 1.03}, {"word": "현실", "n": 3, "lift": 1.0}, {"word": "대한민국", "n": 4, "lift": 0.93}, {"word": "미국", "n": 3, "lift": 0.89}, {"word": "경제", "n": 15, "lift": 0.87}]}, "feed": [{"id": "L_feat_hours", "label": "N시간 ×4.09", "region": "hippocampus", "weight": 1, "status": "done", "memo": "[2026-11-02 학습] 제목에 'N시간' 몰아보기 패턴이 있으면 채널 평균 대비 조회수 4.09배 (표본 4개)", "auto": true, "date": "2026-11-02"}, {"id": "L_feat_easy", "label": "초등학생도 ×3.52", "region": "hippocampus", "weight": 1, "status": "done", "memo": "[2026-11-02 학습] 제목에 '초등학생도 이해' 패턴이 있으면 채널 평균 대비 조회수 3.52배 (표본 6개)", "auto": true, "date": "2026-11-02"}, {"id": "L_duration_best", "label": "1시간 이상 영상 ×7.6", "region": "hippocampus", "weight": 1, "status": "done", "memo": "[2026-11-02 학습] 길이는 1시간 이상이(가) 가장 강함: 채널 중앙값 대비 7.6배 (표본 3개)", "auto": true, "date": "2026-11-02"}, {"id": "L_keywords", "label": "부자들, 주식, 상위", "region": "hippocampus", "weight": 1, "status": "done", "memo": "[2026-11-02 학습] 조회수가 높게 나오는 키워드: 부자들(×2.41, 6개), 주식(×1.93, 12개), 상위(×1.56, 3개)", "auto": true, "date": "2026-11-02"}, {"id": "L_mine_shorts", "label": "내 쇼츠가 롱폼의 89배", "region": "hippocampus", "weight": 1, "status": "done", "memo": "[2026-11-02 학습] 내 채널 쇼츠 중앙값 1,465회 vs 롱폼 16회 → 쇼츠에서 롱폼으로 연결하는 장치 필요", "auto": true, "date": "2026-11-02"}, {"id": "I_c443d5f9", "label": "환율 아이디어", "region": "frontal", "weight": 1, "status": "idea", "memo": "[2026-11-02 학습] '환율 1300원, 코스피 5000 폭락..!! 한국경제 대위기 터진다..??' (경제읽어주는남자) 구독자 대비 조회수 157.8배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "auto": true, "date": "2026-11-02"}, {"id": "I_e861734b", "label": "주식 아이디어", "region": "frontal", "weight": 1, "status": "idea", "memo": "[2026-11-02 학습] '환율 1200원대 오면 내 주식은? 항공주는 웃고, 수출주는 계산기 #경제 #환율 #항공주 #주식' (경제야! 놀자~) 구독자 대비 조회수 18.2배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "auto": true, "date": "2026-11-02"}, {"id": "I_d2de6c63", "label": "재테크 아이디어", "region": "frontal", "weight": 1, "status": "idea", "memo": "[2026-11-02 학습] '재테크의 기초 상식 모르면 절대 부자 못 됩니다' (부자의습관) 구독자 대비 조회수 4.5배. 추천 포맷: 'N시간' 몰아보기 + 1시간 이상", "auto": true, "date": "2026-11-02"}], "days": 1}, "learning_url": "https://raw.githubusercontent.com/gyeoltaro/gyeoltaro/refs/heads/claude/optimistic-heisenberg-kpftc4/youtube/learning/latest.json", "features": [["all_about", "'~의 모든 것'"], ["minutes", "'N분 만에'"], ["hours", "'N시간' 몰아보기"], ["summary", "'총정리'"], ["quote", "따옴표 훅(“..”)"], ["why", "'~하는 이유'"], ["how", "'~하는 방법'"], ["shock", "'충격·소름·ㄷㄷ'"], ["crisis", "'위기·폭락·붕괴'"], ["money", "금액 숫자(만·억·조 원)"], ["percent", "퍼센트 숫자"], ["easy", "'초등학생도 이해'"], ["question", "물음표"], ["urgent", "'[긴급]/[속보]'"]], "visual_types": ["apples", "banknote", "bars", "cart", "chapter", "compare", "counter", "cycle", "flow", "gauge", "keytext", "line", "list", "outro", "pricetag", "printer", "ripple", "seesaw", "shrink", "title"], "chars_per_sec": 5.79, "brain": {"nodes": [{"id": "n_ep02", "label": "EP.02 금리의 모든 것", "region": "frontal", "weight": 3, "status": "doing", "x": 330, "y": 190, "memo": ""}, {"id": "n_comp", "label": "몰아보기 1시간 30분", "region": "frontal", "weight": 3, "status": "idea", "x": 285, "y": 255, "memo": ""}, {"id": "n_biz", "label": "보험사·카드사 돈 버는 법", "region": "frontal", "weight": 2, "status": "idea", "x": 300, "y": 318, "memo": ""}, {"id": "n_shorts2long", "label": "쇼츠 → 롱폼 확장", "region": "frontal", "weight": 1, "status": "idea", "x": 250, "y": 375, "memo": ""}, {"id": "n_infl", "label": "인플레이션", "region": "parietal", "weight": 3, "status": "done", "x": 575, "y": 140, "memo": ""}, {"id": "n_real", "label": "실질금리", "region": "parietal", "weight": 2, "status": "done", "x": 712, "y": 168, "memo": ""}, {"id": "n_72", "label": "72의 법칙", "region": "parietal", "weight": 2, "status": "done", "x": 560, "y": 205, "memo": ""}, {"id": "n_cant", "label": "칸티용 효과", "region": "parietal", "weight": 1, "status": "done", "x": 690, "y": 222, "memo": ""}, {"id": "n_defl", "label": "디플레이션", "region": "parietal", "weight": 1, "status": "done", "x": 565, "y": 262, "memo": ""}, {"id": "n_stag", "label": "스태그플레이션", "region": "parietal", "weight": 1, "status": "done", "x": 690, "y": 275, "memo": ""}, {"id": "n_theme", "label": "새 배경: 웜 차콜", "region": "occipital", "weight": 2, "status": "done", "x": 790, "y": 330, "memo": ""}, {"id": "n_thumb", "label": "썸네일 A/B/C 테스트", "region": "occipital", "weight": 2, "status": "idea", "x": 780, "y": 385, "memo": ""}, {"id": "n_ep01", "label": "EP.01 인플레이션", "region": "temporal", "weight": 3, "status": "done", "x": 360, "y": 432, "memo": ""}, {"id": "n_ep03", "label": "EP.03 환율", "region": "temporal", "weight": 2, "status": "idea", "x": 565, "y": 418, "memo": ""}, {"id": "n_ep04", "label": "EP.04 경기침체", "region": "temporal", "weight": 2, "status": "idea", "x": 680, "y": 460, "memo": ""}, {"id": "n_ep05", "label": "EP.05 주식 기초", "region": "temporal", "weight": 2, "status": "idea", "x": 470, "y": 478, "memo": ""}, {"id": "n_weekly", "label": "주 2회 롱폼", "region": "cerebellum", "weight": 1, "status": "idea", "x": 712, "y": 497, "memo": ""}, {"id": "n_short3", "label": "쇼츠 주 3개", "region": "cerebellum", "weight": 1, "status": "idea", "x": 815, "y": 514, "memo": ""}, {"id": "n_voice", "label": "내 목소리 녹음", "region": "cerebellum", "weight": 1, "status": "idea", "x": 722, "y": 548, "memo": ""}], "links": [["n_infl", "n_ep01"], ["n_infl", "n_real"], ["n_real", "n_ep02"], ["n_ep01", "n_ep02"], ["n_ep01", "n_comp"], ["n_ep05", "n_comp"], ["n_stag", "n_ep04"], ["n_defl", "n_ep04"], ["n_72", "n_real"], ["n_theme", "n_ep02"], ["n_thumb", "n_ep01"], ["n_voice", "n_ep02"], ["n_cant", "n_infl"], ["n_ep03", "n_comp"]]}, "links": [{"label": "YouTube 스튜디오", "url": "https://studio.youtube.com/channel/UCm879ZUxkV6mqZFqNVUcwZg"}, {"label": "내 채널", "url": "https://www.youtube.com/channel/UCm879ZUxkV6mqZFqNVUcwZg"}, {"label": "벤치마크: 유치한경제학", "url": "https://www.youtube.com/@%EC%9C%A0%EC%B9%98%ED%95%9C%EA%B2%BD%EC%A0%9C%ED%95%99/videos"}, {"label": "채널 분석 문서", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/docs/01_channel_analysis.md"}, {"label": "유튜브 규정 정리", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/docs/02_youtube_policy_2026.md"}, {"label": "제작 파이프라인 사용법", "url": "https://github.com/gyeoltaro/gyeoltaro/blob/main/youtube/README.md"}]}</script><!--SEED:END-->
 
 <script>
 (() => {
@@ -460,7 +518,7 @@ function buildBrain() {
   el('ellipse', { cx: 752, cy: 512, rx: 128, ry: 70, fill: 'url(#cb)', stroke: '#6B5F52', 'stroke-width': 3 }, svg);
   for (let i = 1; i <= 4; i++) el('path', { d: `M${640 + i * 4},${490 + i * 11} Q752,${470 + i * 15} ${866 - i * 5},${492 + i * 11}`, fill: 'none', stroke: '#6B5F52', 'stroke-width': 2, opacity: .7 }, svg);
   // 대뇌
-  el('path', { d: outline, fill: 'url(#bf)', stroke: '#7A6D5E', 'stroke-width': 4 }, svg);
+  el('path', { d: outline, fill: 'url(#bf)', stroke: '#7A6D5E', 'stroke-width': 4, id: 'outlinePath' }, svg);
   const gy = el('g', { 'clip-path': 'url(#clipBrain)', fill: 'none', stroke: '#8C7E6D', 'stroke-width': 2.4, 'stroke-linecap': 'round', opacity: .32 }, svg);
   const GYRI = ['M190,300 C230,270 210,230 260,215', 'M200,380 C250,360 240,320 300,310', 'M260,150 C300,190 280,230 330,240', 'M380,110 C360,160 400,180 380,230',
     'M470,100 C450,140 490,170 470,210', 'M640,110 C620,150 660,180 630,220', 'M720,140 C700,190 740,220 720,260', 'M800,220 C770,250 810,280 780,320',
@@ -471,6 +529,11 @@ function buildBrain() {
   el('path', { d: 'M290,452 C380,404 470,382 560,370 C612,364 652,378 700,398' }, su);   // 외측구
   el('path', { d: 'M578,80 C562,150 532,232 502,302 C492,330 490,350 494,372' }, su);  // 중심구
   el('path', { d: 'M776,150 C764,204 744,252 738,302' }, su);                           // 두정후두구
+  // 해마(매일 학습) 장식: 말려 있는 해마 모양
+  if (REG.hippocampus) {
+    const [hx, hy] = REG.hippocampus.c;
+    el('path', { d: `M${hx - 40},${hy + 30} C${hx - 62},${hy - 6} ${hx - 22},${hy - 40} ${hx + 14},${hy - 30} C${hx + 48},${hy - 20} ${hx + 50},${hy + 18} ${hx + 20},${hy + 26} C${hx},${hy + 30} ${hx - 8},${hy + 8} ${hx + 8},${hy}`, fill: 'none', stroke: REG.hippocampus.color, 'stroke-width': 5, 'stroke-linecap': 'round', opacity: .28 }, svg);
+  }
   // 영역 워터마크
   Object.entries(REG).forEach(([k, r]) => {
     const t = el('text', { x: r.label_at[0], y: r.label_at[1], 'text-anchor': 'middle', fill: r.color, opacity: .16, 'font-size': k === 'cerebellum' ? 22 : 34, 'font-family': 'Black Han Sans, sans-serif' }, svg);
@@ -516,7 +579,7 @@ function renderNodes() {
     const r = REG[n.region] || { color: '#ccc' };
     const g = el('g', { class: 'node ' + n.status + (selected === n.id ? ' sel' : '') + (filter && n.region !== filter ? ' dim' : ''), transform: `translate(${n.x},${n.y})`, 'data-id': n.id, tabindex: 0, style: `color:${r.color}` }, layerNodes);
     const fs = FS[n.weight] || 16;
-    const label = (n.status === 'done' ? '✓ ' : '') + n.label;
+    const label = (n.auto ? '✦ ' : (n.status === 'done' ? '✓ ' : '')) + n.label;
     const t = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': fs, fill: n.status === 'done' ? '#1A1712' : '#F7F2E9' }, g);
     t.textContent = label;
     let w = 0; try { w = t.getComputedTextLength(); } catch (e) { }
@@ -589,15 +652,18 @@ $('#dRegion').innerHTML = Object.entries(REG).map(([k, r]) => `<option value="${
 function select(id) {
   selected = id; const n = nodeById(id); if (!n) { det.classList.remove('show'); return; }
   $('#dLabel').value = n.label; $('#dRegion').value = n.region; $('#dWeight').value = n.weight; $('#dStatus').value = n.status; $('#dMemo').value = n.memo || '';
+  $('#dPin').style.display = n.auto ? '' : 'none'; $('#dPin').textContent = n.pinned ? '고정됨 ✓' : '고정 (계속 보관)';
+  $('#dAuto').textContent = n.auto ? `✦ 매일 학습으로 자동 적립${n.date ? ' · ' + n.date : ''}${n.pinned ? ' · 고정됨' : ' · 고정하지 않으면 새 학습으로 교체'}` : '';
   det.classList.add('show'); renderNodes();
 }
+$('#dPin').onclick = () => { const n = nodeById(selected); if (!n) return; n.pinned = !n.pinned; save(); select(n.id); toast(n.pinned ? '고정했습니다' : '고정을 풀었습니다'); };
 function closeDetail() { selected = null; det.classList.remove('show'); renderNodes(); }
 function upd(field, val) { const n = nodeById(selected); if (!n) return; n[field] = val; save(); renderBrain(); }
-$('#dLabel').oninput = e => upd('label', e.target.value || '이름 없음');
+$('#dLabel').oninput = e => { const n = nodeById(selected); if (n) n.userEdited = true; upd('label', e.target.value || '이름 없음'); };
 $('#dRegion').onchange = e => upd('region', e.target.value);
 $('#dWeight').onchange = e => upd('weight', +e.target.value);
 $('#dStatus').onchange = e => upd('status', e.target.value);
-$('#dMemo').oninput = e => { const n = nodeById(selected); if (n) { n.memo = e.target.value; save(); } };
+$('#dMemo').oninput = e => { const n = nodeById(selected); if (n) { n.memo = e.target.value; n.userEdited = true; save(); } };
 $('#dClose').onclick = closeDetail;
 $('#dDelete').onclick = () => {
   if (!selected) return;
@@ -776,6 +842,7 @@ $('#closeSettings').onclick = () => dlg.close();
 $('#saveSettings').onclick = () => {
   S.settings.apiKey = $('#apiKey').value.trim(); S.settings.disconnected = !S.settings.apiKey; S.settings.channelId = $('#chId').value.trim() || CH.id; S.settings.interval = +$('#interval').value;
   save(); dlg.close(); schedule(); refresh(true);
+  if (SERVER && S.settings.apiKey) api2('POST', '/api/settings/apikey', { key: S.settings.apiKey }).then(() => toast('학습 엔진에도 API 키를 저장했습니다')).catch(() => { });
 };
 $('#disconnect').onclick = () => { S.settings.apiKey = ''; S.settings.disconnected = true; S.live = null; save(); dlg.close(); schedule(); renderLive(); renderCalendar(); toast('연결을 해제했습니다'); };
 $('#refreshBtn').onclick = () => refresh(true);
@@ -823,6 +890,293 @@ $('#calPrev').onclick = () => { calMonth.setMonth(calMonth.getMonth() - 1); rend
 $('#calNext').onclick = () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); };
 $('#calToday').onclick = () => { calMonth = new Date(); calMonth.setDate(1); renderCalendar(); };
 
+// ------------------------------------------------------------ 매일 학습 백로그
+const $$ = (s, e = document) => [...e.querySelectorAll(s)];
+let LEARN = SEED.learning && SEED.learning.entries ? SEED.learning : null;
+let learnSrc = LEARN ? '파일에 포함된 데이터' : '', learnTab = 'hot', SERVER = false;
+const FEAT_LABEL = Object.fromEntries((SEED.features || []).map(f => [f[0], f[1]]));
+
+async function detectServer() {
+  if (!location.protocol.startsWith('http')) return false;
+  try { const r = await fetch('/api/ping', { cache: 'no-store' }); return r.ok; } catch (e) { return false; }
+}
+async function loadLearning() {
+  const srcs = [];
+  if (SERVER) srcs.push(['내 컴퓨터', '/api/learning']);
+  if (SEED.learning_url) srcs.push(['GitHub', SEED.learning_url + '?t=' + Math.floor(Date.now() / 60000)]);
+  for (const [name, url] of srcs) {
+    try {
+      const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) continue;
+      const d = await r.json();
+      if (d && d.entries && (!LEARN || (d.updated || '') >= (LEARN.updated || ''))) { LEARN = d; learnSrc = name; }
+    } catch (e) { /* 오프라인 등 */ }
+  }
+  renderLearning(); mergeFeed();
+}
+const sign = v => v == null ? '' : (v > 0 ? '+' : '') + fmt(v);
+function hotCard(h) {
+  const tags = (h.tags || []).map(t => `<span>${esc(FEAT_LABEL[t] || t)}</span>`).join('');
+  return `<a class="hot" href="https://www.youtube.com/watch?v=${encodeURIComponent(h.id)}" target="_blank" rel="noopener">
+    <div class="th"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${encodeURIComponent(h.id)}/mqdefault.jpg"><span class="badge ${h.mine ? 'mine' : ''}">×${h.score}</span></div>
+    <div class="bd"><div class="tt">${esc(h.title)}</div><div class="ch">${esc(h.channel)} · 조회 ${fmt(h.views)}${h.type === 'short' ? ' · 쇼츠' : ''}</div>
+    <div class="why">${esc(h.reason)}</div>${tags ? `<div class="chips">${tags}</div>` : ''}</div></a>`;
+}
+function hotHtml(e) {
+  const m = e.mine || {};
+  const mine = `<div class="mine-row">
+    <div class="stat"><div class="k">내 구독자</div><div class="v num">${fmt(m.subs)}</div><div class="delta ${m.subs_delta > 0 ? 'up' : ''}">${m.subs_delta == null ? '어제 기록 없음' : '어제보다 ' + sign(m.subs_delta)}</div></div>
+    <div class="stat"><div class="k">내 총 조회수</div><div class="v num">${fmt(m.views)}</div><div class="delta ${m.views_delta > 0 ? 'up' : ''}">${m.views_delta == null ? '어제 기록 없음' : '어제보다 ' + sign(m.views_delta)}</div></div>
+    <div class="stat"><div class="k">내 쇼츠 중앙값</div><div class="v num">${fmt(Math.round(m.short_median || 0))}</div></div>
+    <div class="stat"><div class="k">내 롱폼 중앙값</div><div class="v num">${fmt(Math.round(m.long_median || 0))}</div></div></div>`;
+  const gain = (m.top_gainers || []).length ? `<div class="sub-h">오늘 내 영상 중 많이 오른 것</div>` + m.top_gainers.map(g => `<div class="ins"><span class="k">+${fmt(g.gain)}</span><p>${esc(g.title)}</p></div>`).join('') : '';
+  const hot = (e.hot || []).length ? `<div class="sub-h">떡상 영상 ${e.hot.length}개 (배수 = 평소보다 몇 배 잘 됐는지)</div><div class="hotgrid">${e.hot.map(hotCard).join('')}</div>` : '<p class="dim">오늘 기준을 넘은 떡상 영상이 없습니다.</p>';
+  return mine + gain + hot;
+}
+function insHtml(e) {
+  const ins = (e.insights || []).map(i => `<div class="ins"><span class="k">배운 것</span><p>${esc(i.text)}</p><span class="acts"><button class="btn sm" data-pin="${esc(i.id)}">뇌에 고정</button></span></div>`).join('') || '<p class="dim">아직 없습니다.</p>';
+  const all = [];
+  (LEARN.entries || []).slice().reverse().forEach(en => (en.ideas || []).forEach(i => { if (!all.some(x => x.id === i.id)) all.push({ ...i, date: en.date }); }));
+  const ideas = all.slice(0, 12).map(i => `<div class="ins"><span class="k idea">${esc(i.date.slice(5))}</span><p><b>${esc(i.topic)}</b> · ${esc(i.text)}</p><span class="acts"><button class="btn sm" data-pin="${esc(i.id)}">뇌에 고정</button><button class="btn sm" data-ep="${esc(i.topic)}">에피소드 후보로</button></span></div>`).join('') || '<p class="dim">아직 없습니다.</p>';
+  return `<div class="sub-h">오늘 배운 것 (${esc(e.date)})</div>${ins}<div class="sub-h">아이디어 창고 (누적)</div>${ideas}`;
+}
+function liftRows(items, labelKey) {
+  const lo = Math.log(0.25), hi = Math.log(8), pos = x => Math.max(0, Math.min(100, (Math.log(Math.max(0.25, Math.min(8, x))) - lo) / (hi - lo) * 100));
+  return items.map(it => {
+    const p1 = pos(1), pv = pos(it.lift), up = it.lift >= 1;
+    return `<div class="lift"><span>${esc(it[labelKey])} <span class="n">(${it.n})</span></span><span class="track"><b style="left:${p1}%"></b><i style="left:${up ? p1 : pv}%;width:${Math.abs(pv - p1)}%;background:${up ? 'var(--green)' : 'var(--red)'}"></i></span><span class="num" style="text-align:right;color:${up ? 'var(--green)' : 'var(--red)'}">×${it.lift}</span></div>`;
+  }).join('');
+}
+function modelHtml() {
+  const m = LEARN.model || {};
+  if (!m.features || !m.features.length) return '<p class="dim">데이터가 더 쌓이면 학습 모델이 만들어집니다.</p>';
+  return `<p class="dim" style="margin:0 0 6px;font-size:12px">감시 채널 롱폼 ${fmt(m.n_long)}개를 채널 평균으로 나눠 비교한 값입니다. 가운데 선(×1)보다 오른쪽이면 잘 되는 패턴, 왼쪽이면 역효과입니다. 매일 데이터가 쌓이면서 다시 계산됩니다.</p>
+    <div class="sub-h">제목 패턴</div>${liftRows(m.features, 'label')}
+    <div class="sub-h">영상 길이</div>${liftRows(m.durations || [], 'label')}
+    <div class="sub-h">키워드</div>${liftRows((m.keywords || []).slice(0, 10), 'word')}`;
+}
+function histHtml() {
+  return (LEARN.entries || []).slice().reverse().map(e => `<details class="hist-item"><summary><b>${esc(e.date)}</b><span class="dim">떡상 ${(e.hot || []).length} · 배운 것 ${(e.insights || []).length} · 아이디어 ${(e.ideas || []).length}</span></summary>
+    <ul>${(e.hot || []).slice(0, 5).map(h => `<li>×${h.score} ${esc(h.title)} <span class="dim">(${esc(h.channel)})</span></li>`).join('')}${(e.insights || []).map(i => `<li>${esc(i.text)}</li>`).join('')}</ul></details>`).join('');
+}
+function renderLearning() {
+  const meta = $('#learnMeta'), body = $('#learnBody');
+  $$('#learnTabs button').forEach(b => b.classList.toggle('on', b.dataset.t === learnTab));
+  if (!LEARN || !(LEARN.entries || []).length) {
+    meta.textContent = '학습 기록 없음';
+    body.innerHTML = '<div class="notice">아직 학습 기록이 없습니다. 클라우드 자동 학습이 매일 아침 실행되거나, 제작실에서 <b>지금 학습</b>을 누르면 쌓이기 시작합니다.</div>';
+    return;
+  }
+  const e = LEARN.entries[LEARN.entries.length - 1];
+  meta.textContent = `${e.date} · ${LEARN.days || LEARN.entries.length}일째 학습 · ${learnSrc}`;
+  body.innerHTML = learnTab === 'hot' ? hotHtml(e) : learnTab === 'ins' ? insHtml(e) : learnTab === 'model' ? modelHtml() : histHtml();
+}
+$('#learnTabs').addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; learnTab = b.dataset.t; renderLearning(); });
+$('#learnBody').addEventListener('click', ev => {
+  const pin = ev.target.closest('[data-pin]'), ep = ev.target.closest('[data-ep]');
+  if (pin) {
+    const id = pin.dataset.pin; let n = nodeById(id);
+    if (!n) {
+      const f = (LEARN.feed || []).find(x => x.id === id) || findLearned(id); if (!f) return;
+      S.deleted = (S.deleted || []).filter(x => x !== id);
+      const p = findSpot(f.region, f.label, Math.min(f.weight || 1, 2)); n = { ...f, weight: Math.min(f.weight || 1, 2), x: p.x, y: p.y }; S.nodes.push(n);
+    }
+    n.pinned = true; save(); renderBrain(); toast('뇌구조에 고정했습니다');
+  }
+  if (ep) { S.extraEps.push({ id: 'u' + Date.now(), title: `후보: ${ep.dataset.ep}의 모든 것`, note: '학습 아이디어', user: true, steps: {} }); save(); renderEpisodes(); toast('에피소드 후보에 추가했습니다'); }
+});
+function findLearned(id) {
+  for (const e of (LEARN.entries || []).slice().reverse()) {
+    const i = (e.insights || []).find(x => x.id === id);
+    if (i) return { id, label: i.label, region: 'hippocampus', weight: i.weight, status: 'done', memo: `[${e.date} 학습] ${i.text}`, auto: true };
+    const d = (e.ideas || []).find(x => x.id === id);
+    if (d) return { id, label: d.label, region: 'frontal', weight: 1, status: 'idea', memo: `[${e.date} 학습] ${d.text}`, auto: true };
+  }
+  return null;
+}
+$('#learnRun').onclick = async () => {
+  if (!SERVER) { await loadLearning(); toast('최신 학습 결과를 다시 불러왔습니다 (학습은 매일 아침 자동 실행)'); return; }
+  try {
+    const { job } = await api2('POST', '/api/learn');
+    $('#learnMeta').textContent = '학습 중…';
+    await waitJob(job, () => { });
+    await loadLearning(); toast('오늘 학습을 마쳤습니다');
+  } catch (e) { toast('학습 실패: ' + e.message); }
+};
+
+// 뇌구조 자동 적립: 학습 피드를 노드로 합치기 (고정하지 않은 자동 노드는 최신 피드만 유지)
+function insideBrain(x, y) {
+  const outline = svg.querySelector('#outlinePath');
+  if (((x - 752) / 128) ** 2 + ((y - 512) / 70) ** 2 < 1) return true;
+  if (outline && outline.isPointInFill) { try { return outline.isPointInFill(new DOMPoint(x, y)); } catch (e) { } }
+  return ((x - 500) / 370) ** 2 + ((y - 300) / 220) ** 2 < 1;
+}
+let _mctx = null;
+function textW(label, fs) {
+  try {
+    _mctx = _mctx || document.createElement('canvas').getContext('2d');
+    _mctx.font = `700 ${fs}px "Noto Sans KR", sans-serif`;
+    return _mctx.measureText(String(label)).width;
+  } catch (e) { return String(label).length * fs * 0.8; }
+}
+function estBox(x, y, label, weight) {
+  const fs = FS[weight] || 16, w = textW('✦ ' + label, fs) + fs * 1.3, h = fs * 1.9;
+  return { x: x - w / 2, y: y - h / 2, w, h };
+}
+function nodeBox(n) {
+  const g = layerNodes.querySelector(`[data-id="${CSS.escape(n.id)}"]`);
+  if (g) { try { const b = g.getBBox(); if (b.width) return { x: n.x + b.x, y: n.y + b.y, w: b.width, h: b.height }; } catch (e) { } }
+  return estBox(n.x, n.y, n.label, n.weight);
+}
+function overlapArea(a, b) {
+  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+  return w > 0 && h > 0 ? w * h : 0;
+}
+function findSpot(region, label, weight) {
+  const r = REG[region] || { c: [500, 330] };
+  const boxes = S.nodes.map(nodeBox);
+  let best = null, bestCost = Infinity;
+  for (let rad = 0; rad < 460; rad += 10) {
+    const steps = Math.max(1, Math.floor(rad / 7));
+    for (let k = 0; k < steps; k++) {
+      const a = k / steps * Math.PI * 2 + rad * 0.07, x = r.c[0] + Math.cos(a) * rad * 1.5, y = r.c[1] + Math.sin(a) * rad * 0.75;
+      const e = estBox(x, y, label, weight), b = { x: e.x - 5, y: e.y - 4, w: e.w + 10, h: e.h + 8 };
+      if (![[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]].every(([px, py]) => insideBrain(px, py))) continue;
+      const cost = boxes.reduce((t, o) => t + overlapArea(b, o), 0);
+      if (cost === 0) return { x: Math.round(x), y: Math.round(y) };
+      if (cost + rad * 2 < bestCost) { bestCost = cost + rad * 2; best = { x: Math.round(x), y: Math.round(y) }; }
+    }
+  }
+  return best || { x: r.c[0], y: r.c[1] };
+}
+function mergeFeed() {
+  if (!LEARN || !Array.isArray(LEARN.feed)) return;
+  const del = new Set(S.deleted || []), ids = new Set(LEARN.feed.map(f => f.id));
+  const before = S.nodes.length;
+  S.nodes = S.nodes.filter(n => !n.auto || n.pinned || ids.has(n.id));
+  S.links = (S.links || []).filter(l => nodeById(l[0]) && nodeById(l[1]));
+  let added = 0;
+  renderNodes();
+  LEARN.feed.forEach(f => {
+    if (del.has(f.id) || !REG[f.region]) return;
+    const n = nodeById(f.id), wt = f.region === 'hippocampus' ? 1 : Math.min(f.weight || 1, 2);
+    if (n) { if (!n.userEdited) { n.label = f.label; n.memo = f.memo; n.weight = wt; } n.date = f.date; return; }
+    const p = findSpot(f.region, f.label, wt);
+    S.nodes.push({ ...f, weight: wt, x: p.x, y: p.y }); added++;
+  });
+  save(); renderBrain();
+  if (added) toast(`오늘 학습한 내용 ${added}개를 뇌구조에 적립했습니다`);
+}
+
+// ------------------------------------------------------------ 영상 제작실 (내 컴퓨터에서 제작 서버 실행 시)
+async function api2(method, path, body) {
+  const r = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+  return j;
+}
+async function waitJob(id, onTick) {
+  for (; ;) {
+    const j = await api2('GET', '/api/jobs/' + encodeURIComponent(id));
+    onTick(j);
+    if (j.status !== 'running') { if (j.status !== 'done') throw new Error((j.log || []).slice(-1)[0] || '실패'); return j; }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+let EPS = [], curEp = null, busy = false;
+function studioNotice() {
+  return `<div class="notice"><b>영상 제작실은 내 컴퓨터에서 실행됩니다.</b> 지금은 파일로 열려 있어서 학습·통계만 보입니다.
+  <ol><li>GitHub에서 저장소를 내려받아 압축을 풉니다.</li>
+  <li><code>youtube/launch</code> 폴더의 <b>제작실_시작</b> 파일을 더블클릭합니다 (Windows: <code>.bat</code>, Mac: <code>.command</code>).</li>
+  <li>브라우저에 <code>http://localhost:8911</code> 이 열리면 여기에서 <b>새 에피소드 → 대본 편집 → 미리보기 → 영상 만들기</b>를 할 수 있습니다.</li></ol>
+  <p style="margin:8px 0 0">처음 한 번은 Python 3.10+와 ffmpeg 설치가 필요합니다. 자세한 안내: <a href="${esc((SEED.links || []).find(l => l.label.includes('사용법'))?.url || '#')}" target="_blank" rel="noopener">제작 파이프라인 사용법</a></p></div>`;
+}
+function studioSkeleton() {
+  const themes = (SEED.themes || []).map(t => `<option value="${esc(t.name)}" ${t.name === SEED.default_theme ? 'selected' : ''}>${esc(t.label)}</option>`).join('');
+  return `<div class="toolbar"><select id="epSel" class="btn sm"></select><button class="btn sm" id="epNewBtn">+ 새 에피소드</button><span style="flex:1"></span>
+    <button class="btn sm" id="bStills">장면 미리보기</button><button class="btn sm" id="bPreview">앞 60초 영상</button><button class="btn sm primary" id="bFull">전체 영상 만들기</button></div>
+    <div id="epNewForm" class="add-row" style="display:none;margin:0 0 10px;flex-wrap:wrap"><input id="epTitle" placeholder="제목 (예: “빚이 무서운 진짜 이유..” 금리의 모든 것)"><input id="epSlug" placeholder="영문 폴더명 (예: interest)" style="flex:none;width:170px"><select id="epTheme" class="btn sm">${themes}</select><button class="btn sm primary" id="epCreate">만들기</button></div>
+    <div class="studio-grid"><div><div class="rowx"><b>대본·연출 (02_script.json)</b><span id="scriptInfo" class="dim"></span></div>
+      <textarea class="code" id="scriptEd" spellcheck="false"></textarea>
+      <div class="add-row"><button class="btn sm" id="sCheck">검사</button><button class="btn sm primary" id="sSave">저장</button><span id="sMsg" class="dim" style="align-self:center;font-size:12px"></span></div></div>
+      <div class="out"><div class="rowx"><b>진행 상황</b><span id="jobState" class="dim">대기 중</span></div><div class="bar"><i id="jobBar" style="width:0"></i></div><div class="log" id="jobLog">아직 실행한 작업이 없습니다.</div>
+      <div id="outVideo"></div><div class="thumbs" id="outThumbs"></div><div class="stills" id="outStills"></div></div></div>`;
+}
+function validateScript(txt) {
+  let d; try { d = JSON.parse(txt); } catch (e) { return { ok: false, msg: 'JSON 문법 오류: ' + e.message }; }
+  if (!d || !Array.isArray(d.scenes) || !d.scenes.length) return { ok: false, msg: 'scenes 배열이 비어 있습니다' };
+  const ids = new Set(), types = new Set(SEED.visual_types || []);
+  let lines = 0, chars = 0;
+  for (const [i, s] of d.scenes.entries()) {
+    if (!s.id) return { ok: false, msg: `${i + 1}번째 장면에 id가 없습니다` };
+    if (ids.has(s.id)) return { ok: false, msg: `장면 id 중복: ${s.id}` }; ids.add(s.id);
+    if (!s.visual || !types.has(s.visual.type)) return { ok: false, msg: `${s.id}: 알 수 없는 화면 종류 "${s.visual && s.visual.type}"` };
+    for (const ln of (s.lines || [])) { const t = typeof ln === 'string' ? ln : (ln && ln.text); if (!t) return { ok: false, msg: `${s.id}: 빈 문장` }; lines++; chars += t.replace(/\s/g, '').length; }
+  }
+  const sec = chars / (SEED.chars_per_sec || 4.2) + d.scenes.length * 0.5;
+  return { ok: true, msg: `장면 ${d.scenes.length}개 · 문장 ${lines}개 · 예상 길이 약 ${Math.round(sec / 60)}분`, data: d };
+}
+function bust(u, t) { return u + '?t=' + encodeURIComponent(t || Date.now()); }
+function renderOutputs(ep) {
+  const f = ep.files || {};
+  $('#outVideo').innerHTML = f.video || f.preview ? `<div class="rowx" style="margin-top:4px"><b>${f.video ? '완성 영상' : '미리보기 영상'}</b><a href="${esc(f.video || f.preview)}" target="_blank" rel="noopener">새 창</a></div><video controls preload="metadata" src="${esc(bust(f.video || f.preview, f.mtime))}"></video>` : '';
+  $('#outThumbs').innerHTML = (f.thumbs || []).map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img alt="썸네일" src="${esc(bust(u, f.mtime))}"></a>`).join('');
+  $('#outStills').innerHTML = (f.stills || []).map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img loading="lazy" alt="장면" src="${esc(bust(u, f.mtime))}"></a>`).join('');
+}
+async function loadEpisodesStudio(selectId) {
+  EPS = await api2('GET', '/api/episodes');
+  $('#epSel').innerHTML = EPS.map(e => `<option value="${esc(e.id)}">${esc(e.title)}${e.duration ? ' · ' + esc(e.duration) : ''}</option>`).join('');
+  curEp = selectId || curEp || (EPS[EPS.length - 1] || {}).id;
+  if (curEp) { $('#epSel').value = curEp; await selectEp(curEp); }
+}
+async function selectEp(id) {
+  curEp = id; const ep = EPS.find(e => e.id === id); if (!ep) return;
+  const s = await api2('GET', `/api/episodes/${encodeURIComponent(id)}/script`);
+  $('#scriptEd').value = JSON.stringify(s, null, 2);
+  const v = validateScript($('#scriptEd').value); $('#scriptInfo').textContent = v.msg;
+  renderOutputs(ep);
+}
+async function runBuild(mode) {
+  if (busy) return toast('이미 작업이 진행 중입니다');
+  const v = validateScript($('#scriptEd').value); if (!v.ok) return toast(v.msg);
+  busy = true;
+  $('#jobState').textContent = '시작 중…'; $('#jobBar').style.width = '0%'; $('#jobLog').textContent = '';
+  try {
+    await api2('PUT', `/api/episodes/${encodeURIComponent(curEp)}/script`, v.data);
+    const { job } = await api2('POST', `/api/episodes/${encodeURIComponent(curEp)}/build`, { mode });
+    await waitJob(job, j => {
+      $('#jobState').textContent = j.status === 'running' ? `${j.title} · ${Math.round(j.progress || 0)}%` : j.status;
+      $('#jobBar').style.width = (j.progress || 0) + '%';
+      const lg = $('#jobLog'); lg.textContent = (j.log || []).slice(-40).join('\n'); lg.scrollTop = lg.scrollHeight;
+    });
+    $('#jobState').textContent = '완료'; toast('제작을 마쳤습니다');
+    await loadEpisodesStudio(curEp);
+  } catch (e) { $('#jobState').textContent = '실패'; toast('제작 실패: ' + e.message); }
+  busy = false;
+}
+async function initStudio() {
+  const st = $('#studioStatus'), body = $('#studioBody');
+  if (!SERVER) { st.textContent = '내 컴퓨터에서 실행 필요'; body.innerHTML = studioNotice(); return; }
+  st.innerHTML = '<span class="dot live"></span>&nbsp;제작실 연결됨';
+  body.innerHTML = studioSkeleton();
+  $('#epSel').onchange = e => selectEp(e.target.value);
+  $('#epNewBtn').onclick = () => { const f = $('#epNewForm'); f.style.display = f.style.display === 'none' ? 'flex' : 'none'; };
+  $('#epCreate').onclick = async () => {
+    const title = $('#epTitle').value.trim(); if (!title) return toast('제목을 입력하세요');
+    try { const r = await api2('POST', '/api/episodes', { title, slug: $('#epSlug').value.trim(), theme: $('#epTheme').value }); $('#epNewForm').style.display = 'none'; toast('새 에피소드를 만들었습니다'); await loadEpisodesStudio(r.id); }
+    catch (e) { toast('만들기 실패: ' + e.message); }
+  };
+  $('#sCheck').onclick = () => { const v = validateScript($('#scriptEd').value); $('#sMsg').textContent = (v.ok ? '✓ ' : '✗ ') + v.msg; $('#sMsg').style.color = v.ok ? 'var(--green)' : 'var(--red)'; };
+  $('#sSave').onclick = async () => {
+    const v = validateScript($('#scriptEd').value); if (!v.ok) { $('#sMsg').textContent = '✗ ' + v.msg; $('#sMsg').style.color = 'var(--red)'; return; }
+    try { await api2('PUT', `/api/episodes/${encodeURIComponent(curEp)}/script`, v.data); $('#sMsg').textContent = '✓ 저장했습니다 · ' + v.msg; $('#sMsg').style.color = 'var(--green)'; }
+    catch (e) { toast('저장 실패: ' + e.message); }
+  };
+  $('#bStills').onclick = () => runBuild('stills');
+  $('#bPreview').onclick = () => runBuild('preview');
+  $('#bFull').onclick = () => { if (confirm('전체 영상을 만듭니다. 15분 영상 기준 수 분~수십 분 걸립니다. 진행할까요?')) runBuild('full'); };
+  try { await loadEpisodesStudio(); } catch (e) { toast('에피소드 목록을 불러오지 못했습니다'); }
+}
+
 // ------------------------------------------------------------ 할 일
 if (!Array.isArray(S.todos)) S.todos = (SEED.todos || []).map((t, i) => ({ id: 't' + i, text: t, done: false, due: '' }));
 function renderTodos() {
@@ -850,6 +1204,8 @@ ensureBrain(); save();
 renderEpisodes(); renderChecks(); renderThemes(); renderLinks();
 buildBrain(); renderFilters(); renderBrain();
 renderTodos(); renderLive(); renderCalendar(); schedule();
+renderLearning();
+(async () => { SERVER = await detectServer(); await loadLearning(); initStudio(); })();
 if (S.settings.apiKey) refresh(false);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.settings.apiKey && S.live && Date.now() - S.live.at > (+S.settings.interval || 300) * 1000) refresh(false); });
 })();

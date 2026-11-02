@@ -17,7 +17,7 @@ import re
 import shutil
 import subprocess
 
-from .core import DEFAULT_THEME, THEMES
+from .themes import DEFAULT_THEME, THEMES
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DASH = os.path.join(ROOT, "dashboard")
@@ -30,6 +30,7 @@ REGIONS = {
     "occipital": {"lobe": "후두엽", "name": "연출·썸네일", "color": "#B58CFF", "c": [790, 340], "r": [50, 60], "label_at": [800, 270]},
     "temporal": {"lobe": "측두엽", "name": "영상 시리즈", "color": "#5AA9FF", "c": [480, 450], "r": [150, 35], "label_at": [470, 400]},
     "cerebellum": {"lobe": "소뇌", "name": "루틴·습관", "color": "#FF8F8F", "c": [752, 515], "r": [70, 30], "label_at": [752, 568]},
+    "hippocampus": {"lobe": "해마", "name": "매일 학습", "color": "#4FD1C5", "c": [470, 352], "r": [90, 45], "label_at": [470, 360]},
 }
 
 BRAIN_NODES = [
@@ -51,12 +52,12 @@ BRAIN_NODES = [
     # 측두엽: 영상 시리즈
     ("n_ep01", "EP.01 인플레이션", "temporal", 3, "done", 360, 432),
     ("n_ep03", "EP.03 환율", "temporal", 2, "idea", 565, 418),
-    ("n_ep04", "EP.04 경기침체", "temporal", 2, "idea", 640, 452),
+    ("n_ep04", "EP.04 경기침체", "temporal", 2, "idea", 680, 460),
     ("n_ep05", "EP.05 주식 기초", "temporal", 2, "idea", 470, 478),
     # 소뇌: 루틴·습관
     ("n_weekly", "주 2회 롱폼", "cerebellum", 1, "idea", 712, 497),
-    ("n_short3", "쇼츠 주 3개", "cerebellum", 1, "idea", 805, 520),
-    ("n_voice", "내 목소리 녹음", "cerebellum", 1, "idea", 735, 545),
+    ("n_short3", "쇼츠 주 3개", "cerebellum", 1, "idea", 815, 514),
+    ("n_voice", "내 목소리 녹음", "cerebellum", 1, "idea", 722, 548),
 ]
 BRAIN_LINKS = [
     ["n_infl", "n_ep01"], ["n_infl", "n_real"], ["n_real", "n_ep02"], ["n_ep01", "n_ep02"],
@@ -162,6 +163,32 @@ def refresh_snapshot(path):
     print(f"  스냅샷 갱신: 영상 {len(vids)}개")
 
 
+def _git_branch():
+    try:
+        b = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=ROOT, capture_output=True,
+                           text=True, timeout=10).stdout.strip()
+        return b if b and b != "HEAD" else "main"
+    except Exception:
+        return "main"
+
+
+def _chars_per_sec(eps):
+    """완성된 에피소드의 '대본 글자 수 ÷ 영상 길이' — 새 대본의 예상 길이 계산용"""
+    rates = []
+    for e in eps:
+        if not e.get("duration"):
+            continue
+        sj = os.path.join(ROOT, "episodes", e["id"], "02_script.json")
+        d = json.load(open(sj, encoding="utf-8"))
+        chars = sum(len(re.sub(r"\s", "", ln if isinstance(ln, str) else ln.get("text", "")))
+                    for sc in d["scenes"] for ln in sc.get("lines", []))
+        m, sec = e["duration"].split(":")[-2:]
+        total = int(m) * 60 + int(sec) + (int(e["duration"].split(":")[0]) * 3600 if e["duration"].count(":") == 2 else 0)
+        if total:
+            rates.append(chars / total)
+    return round(sum(rates) / len(rates), 2) if rates else 4.2
+
+
 def build_seed():
     snap_path = os.path.join(DASH, "channel_snapshot.json")
     snap = json.load(open(snap_path, encoding="utf-8")) if os.path.exists(snap_path) else {}
@@ -169,6 +196,11 @@ def build_seed():
     have = {e["id"] for e in eps}
     nodes = [{"id": i, "label": l, "region": r, "weight": w, "status": s, "x": x, "y": y, "memo": ""}
              for i, l, r, w, s, x, y in BRAIN_NODES]
+    from .learn import FEATURES
+    vis_src = open(os.path.join(ROOT, "studio", "visuals.py"), encoding="utf-8").read()
+    VISUALS = re.findall(r'"(\w+)": v_\w+', vis_src[vis_src.index("VISUALS = {"):])
+    latest_path = os.path.join(ROOT, "learning", "latest.json")
+    learning = json.load(open(latest_path, encoding="utf-8")) if os.path.exists(latest_path) else None
     return {
         "generated": dt.date.today().isoformat(),
         "channel": {"id": CHANNEL_ID, "name": "부의비상사태 911"},
@@ -180,6 +212,11 @@ def build_seed():
         "themes": [{"name": k, "label": v["label"], "base": list(v["base"])} for k, v in THEMES.items()],
         "default_theme": DEFAULT_THEME,
         "regions": REGIONS,
+        "learning": learning,
+        "learning_url": f"https://raw.githubusercontent.com/gyeoltaro/gyeoltaro/refs/heads/{_git_branch()}/youtube/learning/latest.json",
+        "features": [[k, label] for k, label, _ in FEATURES],
+        "visual_types": sorted(VISUALS),
+        "chars_per_sec": _chars_per_sec(eps),
         "brain": {"nodes": nodes, "links": BRAIN_LINKS},
         "links": [
             {"label": "YouTube 스튜디오", "url": f"https://studio.youtube.com/channel/{CHANNEL_ID}"},
