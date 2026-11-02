@@ -141,7 +141,7 @@ def list_episodes():
     return out
 
 
-def create_episode(title, slug, theme):
+def create_episode(title, slug, theme, brief=""):
     existing = [n for n in os.listdir(EPI) if re.match(r"ep\d+", n)]
     num = max([int(re.match(r"ep(\d+)", n).group(1)) for n in existing] + [0]) + 1
     slug = re.sub(r"[^a-z0-9_]", "", (slug or "").lower().replace("-", "_").replace(" ", "_")) or "new"
@@ -158,12 +158,21 @@ def create_episode(title, slug, theme):
         v = sc.get("visual", {})
         if v.get("type") == "title":
             v["main"] = re.sub(r"^[“\"].*?[”\"]\s*", "", title)[:24] or v.get("main", "")
+    try:   # 기획 시점의 예측을 박제해 두면, 업로드 후 실제 성적과 비교해 규칙이 보정된다
+        from . import plan as PL
+        pr = PL.predict_episode(title, None)
+        if pr:
+            data["meta"]["plan"] = pr
+    except Exception:
+        pass
     json.dump(data, open(sj, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     if os.path.exists(os.path.join(dst, "01_script.txt")):
         SIMPLE.convert_episode(dst)   # 시작용 쉬운 대본 → 장면 자동 구성
     plan = os.path.join(dst, "01_plan.md")
     if os.path.exists(plan):
         txt = open(plan, encoding="utf-8").read().replace("{{TITLE}}", title).replace("{{EP}}", f"EP.{num:02d}")
+        if brief.strip():
+            txt = txt.replace("## 2. 왜 이 주제인가 (매일 학습 백로그 근거)", "## 2. 왜 이 주제인가 (매일 학습 백로그 근거)\n```\n" + brief.strip() + "\n```")
         open(plan, "w", encoding="utf-8").write(txt)
     os.makedirs(os.path.join(dst, "out"), exist_ok=True)
     return eid
@@ -250,6 +259,10 @@ class Handler(BaseHTTPRequestHandler):
             m = re.match(r"^/api/episodes/([^/]+)/script$", path)
             if m:
                 return self._send(200, open(os.path.join(self._ep(m.group(1)), "02_script.json"), encoding="utf-8").read())
+            m = re.match(r"^/api/episodes/([^/]+)/plan$", path)
+            if m:
+                f = os.path.join(self._ep(m.group(1)), "01_plan.md")
+                return self._send(200, {"text": open(f, encoding="utf-8").read() if os.path.exists(f) else ""})
             m = re.match(r"^/api/episodes/([^/]+)/simple$", path)
             if m:
                 f = os.path.join(self._ep(m.group(1)), "01_script.txt")
@@ -342,7 +355,7 @@ class Handler(BaseHTTPRequestHandler):
                 title = str(b.get("title", "")).strip()
                 if not title:
                     return self._err(400, "제목이 필요합니다")
-                eid = create_episode(title, str(b.get("slug", "")), str(b.get("theme", "")))
+                eid = create_episode(title, str(b.get("slug", "")), str(b.get("theme", "")), str(b.get("brief", "")))
                 return self._send(200, {"id": eid})
             m = re.match(r"^/api/episodes/([^/]+)/build$", path)
             if m:

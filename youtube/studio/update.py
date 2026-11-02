@@ -5,7 +5,8 @@
 
 교체하는 것: studio/ (제작 엔진), dashboard/index.html (화면), assets/ (폰트·이미지), docs/, README.md,
               requirements.txt, episodes/_template/ (새 에피소드 시작 양식)
-절대 건드리지 않는 것: episodes/ep*/ (내 에피소드), voice/ (내 녹음), learning/ (학습 기록),
+새로 추가하는 것: episodes/ep*/ 중 내 컴퓨터에 없는 새 에피소드 (기획서·대본만)
+절대 건드리지 않는 것: 이미 있는 episodes/ep*/ (내 에피소드), voice/ (내 녹음), learning/ (학습 기록),
               cache/ , .secrets/ (API 키), .venv/ , dashboard/dist/ , launch/ (실행 중인 .bat 보호)
 """
 from __future__ import annotations
@@ -125,6 +126,15 @@ def main():
                 os.makedirs(os.path.dirname(d), exist_ok=True)
                 shutil.copyfile(s, d)
                 changed.append(rel)
+        # 새 에피소드(내 컴퓨터에 없는 것)만 추가한다. 이미 있는 에피소드는 절대 덮어쓰지 않는다.
+        src_eps = os.path.join(src_root, "episodes")
+        if os.path.isdir(src_eps):
+            for name in sorted(os.listdir(src_eps)):
+                s_ep, d_ep = os.path.join(src_eps, name), os.path.join(ROOT, "episodes", name)
+                if name.startswith("_") or not os.path.isdir(s_ep) or os.path.exists(d_ep):
+                    continue
+                shutil.copytree(s_ep, d_ep, ignore=shutil.ignore_patterns("out", "voice", "__pycache__", "*.bak"))
+                changed.append(f"새 에피소드: episodes/{name}")
         wl = os.path.join(ROOT, "learning", "watchlist.json")
         if not os.path.exists(wl) and os.path.exists(os.path.join(src_root, "learning", "watchlist.json")):
             os.makedirs(os.path.dirname(wl), exist_ok=True)

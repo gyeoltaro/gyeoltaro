@@ -154,7 +154,7 @@ def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None)
     draw_coin(ctx, 640, 420, 28, rot=0.9)
     # 가격표
     _price_tag(ctx, 520, 230, v["tags"][0], rot=-12, scale=1.0)
-    _price_tag(ctx, 1150, 380, v["tags"][1], rot=10, scale=1.05)
+    _price_tag(ctx, 1178, 392, v["tags"][1], rot=10, scale=1.0)
     _price_tag(ctx, 470, 400, v["tags"][2], rot=8, scale=0.8)
     # 캐릭터
     pose = Pose(emotion=v["emotion"], arm_r=(120.0, 160.0), arm_l=ARM_POSES["lift"],

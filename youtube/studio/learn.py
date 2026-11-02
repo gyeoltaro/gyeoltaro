@@ -328,7 +328,7 @@ def dur_bucket(sec):
 
 def build_model(index, hist, watch):
     """감시 채널 롱폼 전체(채널별 중앙값으로 정규화)로 제목·길이·키워드 효과 계산"""
-    watched = {c["id"] for c in watch["channels"]}
+    watched = {c["id"] for c in watch["channels"] if c.get("role") != "mine"}   # 내 영상은 플레이북 보정에서 따로 반영
     views = hist["videos"]
     by_ch = {}
     for vid, m in index.items():
@@ -603,8 +603,11 @@ def analyze(date=None, quiet=False):
     feed += [{"id": i["id"], "label": i["topic"] + " 아이디어", "region": "frontal", "weight": 1, "status": "idea",
               "memo": f"[{i['date']} 학습] {i['text']}", "auto": True, "date": i["date"]} for i in all_ideas[:5]]
     jsave(os.path.join(LDIR, "brain_feed.json"), feed, indent=1)
+    from . import plan as P   # 순환 import 방지: 여기서만 불러온다
+    rec, own, pb = P.run(index, hist, model, hot, watch, date)
     latest = {"updated": now_kst().isoformat(timespec="minutes"), "date": date, "source": hist["source"],
-              "entries": backlog[-30:], "model": model, "feed": feed, "days": len(files)}
+              "entries": backlog[-30:], "model": model, "feed": feed, "days": len(files),
+              "recommend": rec, "own": own, "playbook": pb}
     jsave(os.path.join(LDIR, "latest.json"), latest)
     if not quiet:
         print(f"  분석 {date}: 떡상 {len(hot)}개, 배운 것 {len(insights)}개, 아이디어 {len(ideas)}개 (학습 일수 {len(files)}일)")
