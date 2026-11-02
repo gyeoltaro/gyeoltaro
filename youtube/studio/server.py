@@ -27,6 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlparse
 
 from . import dashboard as D
+from . import simple as SIMPLE
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EPI = os.path.join(ROOT, "episodes")
@@ -158,6 +159,8 @@ def create_episode(title, slug, theme):
         if v.get("type") == "title":
             v["main"] = re.sub(r"^[“\"].*?[”\"]\s*", "", title)[:24] or v.get("main", "")
     json.dump(data, open(sj, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    if os.path.exists(os.path.join(dst, "01_script.txt")):
+        SIMPLE.convert_episode(dst)   # 시작용 쉬운 대본 → 장면 자동 구성
     plan = os.path.join(dst, "01_plan.md")
     if os.path.exists(plan):
         txt = open(plan, encoding="utf-8").read().replace("{{TITLE}}", title).replace("{{EP}}", f"EP.{num:02d}")
@@ -247,6 +250,11 @@ class Handler(BaseHTTPRequestHandler):
             m = re.match(r"^/api/episodes/([^/]+)/script$", path)
             if m:
                 return self._send(200, open(os.path.join(self._ep(m.group(1)), "02_script.json"), encoding="utf-8").read())
+            m = re.match(r"^/api/episodes/([^/]+)/simple$", path)
+            if m:
+                f = os.path.join(self._ep(m.group(1)), "01_script.txt")
+                ok = os.path.exists(f)
+                return self._send(200, {"exists": ok, "text": open(f, encoding="utf-8").read() if ok else ""})
             m = re.match(r"^/api/jobs/([a-f0-9]+)$", path)
             if m:
                 j = JOBS.get(m.group(1))
@@ -308,6 +316,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = urlparse(self.path).path
         try:
+            if path == "/api/update":
+                if any(j["kind"] == "update" and j["status"] == "running" for j in JOBS.values()):
+                    return self._err(409, "이미 업데이트 중입니다")
+                job = start_job("update", "제작실 업데이트", [sys.executable, "-m", "studio.update"])
+                return self._send(200, {"job": job["id"]})
             if path == "/api/learn":
                 job = start_job("learn", "매일 학습", [sys.executable, "-m", "studio.learn", "--daily"])
                 return self._send(200, {"job": job["id"]})
@@ -354,6 +367,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_PUT(self):
         path = urlparse(self.path).path
         try:
+            ms = re.match(r"^/api/episodes/([^/]+)/simple$", path)
+            if ms:
+                ep = self._ep(ms.group(1))
+                text = str(self._json_body().get("text", ""))
+                script, info = SIMPLE.convert_episode(ep, text)
+                validate_script(script)
+                return self._send(200, {"script": script, "info": info})
             m = re.match(r"^/api/episodes/([^/]+)/script$", path)
             if not m:
                 return self._err(404, "없는 주소입니다")
