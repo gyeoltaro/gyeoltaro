@@ -198,13 +198,27 @@ def fetch_api(watch, key):
     return snap
 
 
-def _ytdlp(url, limit):
+def _ytdlp_raw(url, limit, ko=False):
     exe = shutil.which("yt-dlp")
     if not exe:
         raise RuntimeError("yt-dlp가 없습니다 (pip install yt-dlp)")
-    out = subprocess.run([exe, "--flat-playlist", "--dump-json", "--playlist-end", str(limit), url],
+    extra = ["--extractor-args", "youtube:lang=ko", "--extractor-args", "youtubetab:lang=ko"] if ko else []
+    out = subprocess.run([exe, "--flat-playlist", "--dump-json", "--playlist-end", str(limit)] + extra + [url],
                          capture_output=True, text=True, timeout=300).stdout
     return [json.loads(l) for l in out.splitlines() if l.strip()]
+
+
+def _ytdlp(url, limit):
+    """조회수는 기본 응답에서, 제목은 한국어 응답에서 (한국어 응답에는 조회수가 빠지는 경우가 있음)"""
+    rows = _ytdlp_raw(url, limit)
+    try:
+        ko = {r["id"]: r.get("title") for r in _ytdlp_raw(url, limit, ko=True)}
+    except Exception:
+        ko = {}
+    for r in rows:
+        if ko.get(r["id"]):
+            r["title"] = ko[r["id"]]
+    return rows
 
 
 def fetch_ytdlp(watch):
@@ -312,11 +326,13 @@ def build_model(index, hist, watch):
     views = hist["videos"]
     by_ch = {}
     for vid, m in index.items():
-        if m["cid"] in watched and m["type"] == "long" and vid in views:
-            by_ch.setdefault(m["cid"], []).append((vid, m, views[vid][0] or 0))
+        if m["cid"] in watched and m["type"] == "long" and vid in views and views[vid][0]:
+            by_ch.setdefault(m["cid"], []).append((vid, m, views[vid][0]))
     rows = []
     for cid, lst in by_ch.items():
-        med = _median([v for *_, v in lst], 1) or 1
+        med = _median([v for *_, v in lst], 0)
+        if med <= 0:
+            continue
         for vid, m, v in lst:
             rows.append({"vid": vid, "m": m, "score": v / med})
     model = {"n_long": len(rows), "features": [], "durations": [], "keywords": []}
@@ -355,10 +371,11 @@ def find_hot(index, hist, prev, watch, date):
     # 1) 감시 채널: 최근 영상 중 채널 평균 대비 배수 / 하루 증가량
     for cid in watched:
         for typ in ("long", "short"):
-            vids = [(vid, m) for vid, m in index.items() if m["cid"] == cid and m["type"] == typ and vid in views]
-            if not vids:
+            vids = [(vid, m) for vid, m in index.items() if m["cid"] == cid and m["type"] == typ and vid in views
+                    and views[vid][0] is not None]
+            med = _median([views[v][0] for v, _ in vids if views[v][0]], 0)
+            if not vids or med <= 0:
                 continue
-            med = _median([views[v][0] or 0 for v, _ in vids], 1) or 1
             gains = [(views[v][0] or 0) - (pv[v][0] or 0) for v, _ in vids if v in pv]
             gmed = _median([g for g in gains if g > 0], 0)
             for vid, m in vids:
