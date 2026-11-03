@@ -1217,6 +1217,20 @@ async function loadEpisodesStudio(selectId) {
   if (curEp) { $('#epSel').value = curEp; await selectEp(curEp); }
 }
 let edMode = 'easy', hadTxt = false, lastEp = null;
+function pubBox(u, id) {
+  // 게시 상태: 대시보드가 가진 유튜브 영상 목록에서 제목으로 찾는다(새로고침 시 갱신됨)
+  const core = (u.title || '').replace(/^\s*[“"‘'].*?[”"’']\s*/, '').slice(0, 12);
+  const hit = core ? videosNow().find(v => v.type !== 'short' && (v.title || '').includes(core)) : null;
+  const sched = (S.sched || {})[id] || '';
+  const state = hit
+    ? `<span class="ok">✓ 유튜브에 올라가 있습니다</span> · 조회수 ${hit.views} · ${ymd(new Date(hit.publishedAt))} 게시 <a href="https://youtu.be/${esc(hit.id)}" target="_blank" rel="noopener">영상 보기</a>`
+    : `<span class="dim">아직 유튜브에서 찾지 못했습니다${sched ? ' · 업로드 예정일 ' + esc(sched) : ''}</span>`;
+  return `<div class="notice" style="margin:10px 0"><b>게시 상태</b><br>${state}
+    <div class="add-row" style="margin-top:8px">업로드 예정일 <input type="date" id="schedDate" value="${esc(sched)}" style="margin:0 6px">
+    <button class="btn sm" id="schedSave">달력에 예정 표시</button>
+    <button class="btn sm" id="schedDone" title="유튜브에 직접 올린 날을 달력에 올림으로 표시">올렸어요(오늘)</button></div>
+    <div class="dim" style="font-size:11.5px;margin-top:4px">올린 뒤 대시보드를 새로고침(또는 '지금 가져오기')하면 영상이 자동으로 이 칸에 연결되고, 학습 엔진이 조회수 추적을 시작합니다.</div></div>`;
+}
 async function renderUpload(id) {
   const box = $('#uploadPane'); if (!box) return;
   let d; try { d = await api2('GET', `/api/episodes/${encodeURIComponent(id)}/upload`); } catch (e) { box.innerHTML = '<p class="dim">업로드 정보를 불러오지 못했습니다</p>'; return; }
@@ -1236,6 +1250,7 @@ async function renderUpload(id) {
       <li>아래 <b>스튜디오 설정</b>을 확인하고 게시합니다. 게시한 뒤 고정 댓글을 복사해 달아 주세요.</li></ol></div>
     <div class="add-row" style="margin:10px 0"><a class="btn sm primary" target="_blank" rel="noopener" href="https://studio.youtube.com/channel/${esc((SEED.channel || {}).id || '')}/videos/upload?d=ud">유튜브 스튜디오 열기</a><button class="btn sm" id="openOut">영상 폴더 열기</button></div>
     <div class="sub-h">만들어진 파일</div>${file('video.mp4', '영상 video.mp4')}${file('subtitles.srt', '자막 subtitles.srt')}${file('thumbnail_A.png', '썸네일 A')}${file('thumbnail_B.png', '썸네일 B')}${file('thumbnail_C.png', '썸네일 C')}
+    ${pubBox(u, id)}
     <p style="font-size:12px;margin:6px 0">${checks}</p>${warn}
     ${field('제목', u.title, 60)}${field('설명 (챕터 포함)', desc, 220)}${field('태그 (쉼표로 구분)', tags, 90)}${field('고정 댓글 (게시 후 달기)', u.pinned_comment || '', 80)}
     <div class="sub-h">스튜디오 설정</div><ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--muted)">
@@ -1247,6 +1262,8 @@ async function renderUpload(id) {
 document.addEventListener('click', ev => {
   const c = ev.target.closest('[data-copy]');
   if (c) { navigator.clipboard.writeText(c.dataset.copy).then(() => toast('복사했습니다. 유튜브 스튜디오에 붙여 넣으세요'), () => toast('복사하지 못했습니다. 직접 선택해서 복사하세요')); return; }
+  if (ev.target.closest('#schedSave')) { const v = $('#schedDate').value; if (!v) return toast('날짜를 고르세요'); S.sched = S.sched || {}; S.sched[curEp] = v; S.plans[v] = S.plans[v] || 'plan'; save(); renderCalendar(); renderUpload(curEp); toast(v + ' 에 업로드 예정으로 표시했습니다'); }
+  if (ev.target.closest('#schedDone')) { const k = ymd(new Date()); S.plans[k] = 'manual'; save(); renderCalendar(); toast('오늘을 업로드한 날로 표시했습니다'); }
   if (ev.target.closest('#openOut')) api2('POST', `/api/episodes/${encodeURIComponent(curEp)}/open`).then(r => toast('폴더를 열었습니다: ' + r.path), e => toast(e.message));
 });
 function mdToHtml(src) {
