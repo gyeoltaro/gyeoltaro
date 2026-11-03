@@ -132,6 +132,36 @@ def episode_info(eid):
             "theme": meta.get("theme"), "duration": dur, "files": files}
 
 
+def upload_info(eid):
+    """업로드 도우미용: 올릴 문구(upload.json), 파일 상태, 업로드 전 확인할 항목(기획서의 ⚠️ 줄)"""
+    d = os.path.join(EPI, eid)
+    out = os.path.join(d, "out")
+    up = {}
+    f = os.path.join(out, "upload.json")
+    if os.path.exists(f):
+        up = json.load(open(f, encoding="utf-8"))
+    files = {}
+    for name in ("video.mp4", "subtitles.srt", "thumbnail_A.png", "thumbnail_B.png", "thumbnail_C.png"):
+        p = os.path.join(out, name)
+        files[name] = {"exists": os.path.exists(p), "mb": round(os.path.getsize(p) / 1e6, 1) if os.path.exists(p) else None}
+    warns = []
+    plan = os.path.join(d, "01_plan.md")
+    if os.path.exists(plan):
+        for line in open(plan, encoding="utf-8").read().splitlines():
+            if "⚠️" in line and not line.lstrip().startswith(">"):
+                warns.append(re.sub(r"\s*\|\s*", " · ", line.strip().strip("|")).replace("**", "").replace("- [ ] ", "").strip(" ·")[:170])
+    return {"upload": up, "files": files, "out_dir": os.path.relpath(out, ROOT).replace(os.sep, "/"), "warnings": warns[:6]}
+
+
+def open_folder(path):
+    if sys.platform.startswith("win"):
+        os.startfile(path)  # noqa: S606 - 내 컴퓨터의 폴더 열기
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", path])
+    else:
+        subprocess.Popen(["xdg-open", path])
+
+
 def list_episodes():
     out = []
     for name in sorted(os.listdir(EPI)):
@@ -262,6 +292,10 @@ class Handler(BaseHTTPRequestHandler):
             m = re.match(r"^/api/yt/(channels|playlistItems|videos)$", path)
             if m:
                 return self._yt(m.group(1), urlparse(self.path).query)
+            m = re.match(r"^/api/episodes/([^/]+)/upload$", path)
+            if m:
+                self._ep(m.group(1))
+                return self._send(200, upload_info(m.group(1)))
             m = re.match(r"^/api/episodes/([^/]+)/plan$", path)
             if m:
                 f = os.path.join(self._ep(m.group(1)), "01_plan.md")
@@ -378,6 +412,16 @@ class Handler(BaseHTTPRequestHandler):
                     return self._err(400, "제목이 필요합니다")
                 eid = create_episode(title, str(b.get("slug", "")), str(b.get("theme", "")), str(b.get("brief", "")))
                 return self._send(200, {"id": eid})
+            m = re.match(r"^/api/episodes/([^/]+)/open$", path)
+            if m:
+                ep = self._ep(m.group(1))
+                out = os.path.join(ep, "out")
+                os.makedirs(out, exist_ok=True)
+                try:
+                    open_folder(out)
+                except Exception as e:
+                    return self._err(500, f"폴더를 열지 못했습니다: {e}")
+                return self._send(200, {"ok": True, "path": os.path.abspath(out)})
             m = re.match(r"^/api/episodes/([^/]+)/build$", path)
             if m:
                 ep = self._ep(m.group(1))
