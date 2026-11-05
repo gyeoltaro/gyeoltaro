@@ -3,7 +3,7 @@
 - 원본: `longform/ep10-tanghulu-fad.html` (LF.03 엔진 + 새 장면 묶음 + 대본 + 나레이션 내장, `?seek=초` 로 정지 화면) · 빌더 `longform/build-ep10.py` (대본·장면 `ep10-scenes.js`·썸네일 `ep10-thumbs.js` → html, 음성 JSON 을 인자로 주면 다시 내장)
 - 렌더: `node longform/render-longform.js longform/ep10-tanghulu-fad.html 결과.mp4 3` → 1920×1080 30fps, 썸네일 3안 같이 저장
 - 자막: `longform/ep10-tanghulu-fad.ko.srt` (`make-srt.js`, 133줄)
-- 결과: `secret-calculator_LF10_tanghulu-fad.mp4` — @RESULT@ · MP4 는 저장소에 넣지 않음(재렌더: 위 명령)
+- 결과: `secret-calculator_LF10_tanghulu-fad.mp4` 1920×1080 30fps, H.264 + AAC, 8:21.3 (나레이션 8:01.3 + 최종 화면 20초), −14.0 LUFS, 최고 −3.2 dBFS, LRA 3.2 LU, 127MB · 렌더 약 7.4분 (병렬 3) · MP4 는 저장소에 넣지 않음(재렌더: 위 명령)
 - 나레이션 공백 뺀 2,984자 · 문장 72개 · 장 8개 · TTS 3번 요청 (Neural2-C, 1.16, −1) · 나레이션 8:01.3 + 최종 화면 20초 = 8:21.3
 - 왜 이 주제: 대기열 6순위(1~5순위 완료). 쇼츠 EP.06(탕후루 유행 수명)과 LF.01(1라운드 1위 탕후루 → 2라운드 회수 불가)을 한 업종 끝까지로 깊게 판다. 어제 LF.09(권리금 = 두 번째 월세)·LF.08(부가 매출)과 반전이 다르다 — 이번 반전은 **언제 들어갔나(진입 시점)**: 같은 가게·같은 7,000만 원을 2023년 7월·10월·2024년 1월에 연 세 가게의 1년 누적.
 - 첫 30초: "1,300곳 넘게 열었다(숫자 훅) → 정점 한 달 1,240만, 6개월이면 본전(통념) → 문 연 달이 석 달 다르면 5,000만 원 넘게 갈린다(첫 답, 0:20 안팎)".
