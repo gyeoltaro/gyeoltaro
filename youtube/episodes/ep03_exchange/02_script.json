@@ -32,7 +32,9 @@
           "-230원"
         ],
         "screen": "up",
-        "emotion": "shock"
+        "emotion": "shock",
+        "layout": "zoom",
+        "palette": "forest"
       },
       "B": {
         "top": "여행 경비 1,000달러",
@@ -44,7 +46,13 @@
           "+25만"
         ],
         "screen": "alert",
-        "emotion": "worried"
+        "emotion": "worried",
+        "layout": "split",
+        "palette": "teal",
+        "labels": [
+          "환율 1,300원",
+          "환율 1,550원"
+        ]
       },
       "C": {
         "top": "22분 만에 끝내는",
@@ -56,7 +64,11 @@
           "1,341"
         ],
         "screen": "percent",
-        "emotion": "surprised"
+        "emotion": "surprised",
+        "layout": "bignum",
+        "palette": "amber",
+        "num": "1달러=?",
+        "mark": "$"
       }
     },
     "upload": {

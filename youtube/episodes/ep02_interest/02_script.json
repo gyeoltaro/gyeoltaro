@@ -32,7 +32,9 @@
           "+200만"
         ],
         "screen": "up",
-        "emotion": "shock"
+        "emotion": "shock",
+        "layout": "classic",
+        "palette": "wine"
       },
       "B": {
         "top": "대출 1억, 금리 3→5%",
@@ -44,19 +46,29 @@
           "+200만"
         ],
         "screen": "alert",
-        "emotion": "worried"
+        "emotion": "worried",
+        "layout": "bignum",
+        "palette": "plum",
+        "num": "3% → 5%",
+        "mark": "%"
       },
       "C": {
         "top": "25분 만에 끝내는",
         "main": "금리의 모든 것",
         "note": "기준금리부터\n내 대출까지",
         "tags": [
-          "5.25%",
-          "0.5%",
-          "3.00%"
+          "300만",
+          "500만",
+          "+200만"
         ],
         "screen": "percent",
-        "emotion": "surprised"
+        "emotion": "surprised",
+        "layout": "split",
+        "palette": "amber",
+        "labels": [
+          "금리 3%",
+          "금리 5%"
+        ]
       }
     },
     "upload": {

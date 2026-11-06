@@ -139,36 +139,180 @@ def auto_variants(title: str, minutes: int) -> dict:
     }
 
 
+# ---------------------------------------------------------------- 레이아웃·팔레트
+# 같은 틀을 매번 반복하면 시청자에게도, 유튜브 A/B 테스트에서도 구분이 안 됩니다.
+# 마스코트·글꼴·노랑/흰 글자 스타일(브랜드)은 고정하고, 구도와 배경색, 소품은 영상마다·안마다 바꿉니다.
+PALETTES = {
+    "wine":   {"bg": ("#3B0F22", "#07091C"), "a": "#7A1020", "b": "#0F5A3A"},
+    "teal":   {"bg": ("#0F3B3A", "#04100F"), "a": "#0B5A55", "b": "#6A2A10"},
+    "plum":   {"bg": ("#33174D", "#0B0614"), "a": "#5B2A86", "b": "#7A4A06"},
+    "amber":  {"bg": ("#4A2A06", "#140A02"), "a": "#7A4306", "b": "#0F4A3A"},
+    "forest": {"bg": ("#0F3B22", "#04120A"), "a": "#146B3A", "b": "#6A1020"},
+    "slate":  {"bg": ("#2B3440", "#0B0E12"), "a": "#3B4A5E", "b": "#7A2A10"},
+}
+LAYOUTS = ("classic", "bignum", "split", "zoom")
+DEFAULT_LAYOUT = {"A": "classic", "B": "split", "C": "zoom"}
+
+
+def _pick(v, variant):
+    h = sum(ord(c) for c in (v.get("main", "") + v.get("top", ""))) + ord(variant)
+    pal = v.get("palette") or list(PALETTES)[h % len(PALETTES)]
+    lay = v.get("layout") or DEFAULT_LAYOUT.get(variant, "classic")
+    return PALETTES.get(pal, PALETTES["wine"]), lay
+
+
+def _props(ctx, v, rect_safe=True):
+    """소품: 영상 주제에 맞게 고른다. props 로 직접 지정 가능."""
+    props = v.get("props") or ["chart", "bills", "coins"]
+    if "chart" in props:
+        if v.get("trend") == "down":
+            _falling_chart(ctx, 60, 90, 700, 470)
+        else:
+            _rising_chart(ctx, 60, 470, 700, 70)
+    if "bills" in props:
+        draw_bill(ctx, 160, 300, 220, 104, "10,000", rot=-18)
+        draw_bill(ctx, 1180, 190, 190, 90, "10,000", rot=22)
+    if "coins" in props:
+        draw_coin(ctx, 1060, 90, 34, rot=0.4)
+        draw_coin(ctx, 640, 420, 28, rot=0.9)
+
+
+def _falling_chart(ctx, x0, y0, x1, y1, color="#4DA3FF"):
+    rnd = random.Random(5)
+    pts = []
+    n = 14
+    for i in range(n + 1):
+        k = i / n
+        x = x0 + (x1 - x0) * k
+        y = y0 + (y1 - y0) * (k ** 1.4) + rnd.uniform(-26, 26) * (1 - k * 0.5)
+        pts.append((x, y))
+    for w, a in ((40, 0.10), (26, 0.18), (16, 0.35)):
+        ctx.new_path()
+        ctx.move_to(*pts[0])
+        for q in pts[1:]:
+            ctx.line_to(*q)
+        ctx.set_source_rgba(*hexc(color), a)
+        ctx.set_line_width(w)
+        ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+        ctx.stroke()
+    ctx.new_path()
+    ctx.move_to(*pts[0])
+    for q in pts[1:]:
+        ctx.line_to(*q)
+    ctx.set_source_rgb(*hexc(color))
+    ctx.set_line_width(10)
+    ctx.stroke()
+    ex, ey = pts[-1]
+    px, py = pts[-2]
+    arrow(ctx, px, py, ex + (ex - px) * 0.6, ey + (ey - py) * 0.6, color=color, width=10, head=46)
+
+
+def _mascot(ctx, v, x, y, h, flip=False):
+    pose = Pose(emotion=v["emotion"], arm_r=(120.0, 160.0), arm_l=ARM_POSES["lift"],
+                screen=v["screen"], talk=0.75, head_tilt=-5)
+    draw_mascot(ctx, x, y, h, pose, t=0.2, flip=flip, sticker=12, shadow=False)
+
+
+def _note(ctx, v, x=60, y=40, rot=-4):
+    text(ctx, v["note"], x, y, size=54, fname="title", color="#59FF6E", stroke=9, align="left",
+         anchor=(0, 0), rot=rot)
+
+
+def _layout_classic(ctx, v, pal):
+    _bg(ctx, *pal["bg"])
+    _props(ctx, v)
+    _price_tag(ctx, 520, 230, v["tags"][0], rot=-12, scale=1.0)
+    _price_tag(ctx, 1178, 392, v["tags"][1], rot=10, scale=1.0)
+    _price_tag(ctx, 470, 400, v["tags"][2], rot=8, scale=0.8)
+    _mascot(ctx, v, 930, 930, 860)
+    _bottom_band(ctx)
+    _note(ctx, v)
+    arrow(ctx, 330, 120, 470, 175, color="#FF3B3B", width=9, head=30)
+    text(ctx, v["top"], TW / 2, 505, size=88, fname="title", color="white", stroke=13, max_w=TW - 60)
+    text(ctx, v["main"], TW / 2, 628, size=126, fname="title", color="#FFE81A", stroke=15, max_w=TW - 40)
+
+
+def _layout_bignum(ctx, v, pal):
+    """큰 숫자 한 개가 주인공. 숫자 = v['num'] 또는 첫 번째 tag."""
+    _bg(ctx, *pal["bg"])
+    ctx.set_source_rgba(1, 1, 1, 0.05)
+    text(ctx, v.get("mark", "?"), 380, 330, size=700, fname="title", color="#FFFFFF", alpha=0.07, stroke=0)
+    _mascot(ctx, v, 1070, 940, 880)
+    num = v.get("num") or v["tags"][0]
+    text(ctx, v["top"], 400, 95, size=70, fname="title", color="white", stroke=11, max_w=760)
+    nsize = 300 if len(num) <= 4 else 215 if len(num) <= 6 else 165 if len(num) <= 9 else 125
+    text(ctx, num, 400, 330, size=nsize, fname="title", color="#FFE81A", stroke=20, max_w=780)
+    round_rect(ctx, 40, 505, 740, 150, 30)
+    ctx.set_source_rgba(0, 0, 0, 0.62)
+    ctx.fill()
+    text(ctx, v["main"], 410, 580, size=96, fname="title", color="white", stroke=13, max_w=700)
+    _note(ctx, v, x=40, y=170, rot=-3) if False else None
+    text(ctx, v["note"], 1090, 70, size=44, fname="title", color="#59FF6E", stroke=8, rot=3, max_w=330)
+
+
+def _layout_split(ctx, v, pal):
+    """왼쪽 숫자 vs 오른쪽 숫자 (전/후, 이전/지금)."""
+    _bg(ctx, *pal["bg"])
+    ctx.new_path()
+    ctx.move_to(0, 0); ctx.line_to(700, 0); ctx.line_to(560, 720); ctx.line_to(0, 720); ctx.close_path()
+    ctx.set_source_rgba(*hexc(pal["a"]), 0.92)
+    ctx.fill()
+    ctx.new_path()
+    ctx.move_to(700, 0); ctx.line_to(1280, 0); ctx.line_to(1280, 720); ctx.line_to(560, 720); ctx.close_path()
+    ctx.set_source_rgba(*hexc(pal["b"]), 0.92)
+    ctx.fill()
+    ctx.new_path()
+    ctx.move_to(700, 0); ctx.line_to(560, 720)
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.set_line_width(10)
+    ctx.stroke()
+    labels = v.get("labels") or ["", ""]
+    if labels[0]:
+        text(ctx, labels[0], 290, 60, size=60, fname="title", color="white", stroke=9)
+    if labels[1]:
+        text(ctx, labels[1], 940, 60, size=60, fname="title", color="white", stroke=9)
+    left, right = v["tags"][0], v["tags"][1]
+    text(ctx, left, 290, 230, size=150 if len(left) <= 6 else 110, fname="title", color="white", stroke=15, max_w=520)
+    text(ctx, right, 930, 230, size=150 if len(right) <= 6 else 110, fname="title", color="#FFE81A", stroke=15, max_w=520)
+    arrow(ctx, 480, 380, 780, 380, color="#FFE81A", width=18, head=56)
+    _bottom_band(ctx)
+    _mascot(ctx, v, 1150, 1000, 640)
+    text(ctx, v["top"], 450, 548, size=74, fname="title", color="white", stroke=12, max_w=880)
+    text(ctx, v["main"], 450, 650, size=104, fname="title", color="#FFE81A", stroke=14, max_w=880)
+
+
+def _split2(main):
+    """긴 제목은 단어 경계에서 두 줄로 나눈다."""
+    w = main.split()
+    if len(main) <= 6 or len(w) < 2:
+        return main, ""
+    best = min(range(1, len(w)), key=lambda i: max(len(" ".join(w[:i])), len(" ".join(w[i:]))))
+    return " ".join(w[:best]), " ".join(w[best:])
+
+
+def _layout_zoom(ctx, v, pal):
+    """캐릭터를 크게(왼쪽), 오른쪽에 글자를 세로로 쌓는 구도."""
+    _bg(ctx, *pal["bg"])
+    _props(ctx, dict(v, props=v.get("props") or ["coins"]))
+    _mascot(ctx, v, 330, 1010, 1060)
+    text(ctx, v["note"], 700, 70, size=50, fname="title", color="#59FF6E", stroke=9, align="left", anchor=(0, 0), rot=-3)
+    text(ctx, v["top"], 690, 290, size=66, fname="title", color="white", stroke=11, align="left", anchor=(0, 0.5), max_w=560)
+    l1, l2 = _split2(v["main"])
+    if l2:
+        text(ctx, l1, 690, 430, size=130, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
+        text(ctx, l2, 690, 565, size=130, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
+    else:
+        text(ctx, l1, 690, 480, size=118, fname="title", color="#FFE81A", stroke=15, align="left", anchor=(0, 0.5), max_w=580)
+    _price_tag(ctx, 1110, 90, v["tags"][0], rot=-8, scale=0.8)
+
+
 def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None):
     v = dict(VARIANTS.get(variant, VARIANTS["A"]))
     if overrides:
         v.update(overrides)
+    pal, lay = _pick(v, variant)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)
     ctx = cairo.Context(surf)
-    _bg(ctx)
-    _rising_chart(ctx, 60, 470, 700, 70)
-    # 떠다니는 지폐/동전
-    draw_bill(ctx, 160, 300, 220, 104, "10,000", rot=-18)
-    draw_bill(ctx, 1180, 190, 190, 90, "10,000", rot=22)
-    draw_coin(ctx, 1060, 90, 34, rot=0.4)
-    draw_coin(ctx, 640, 420, 28, rot=0.9)
-    # 가격표
-    _price_tag(ctx, 520, 230, v["tags"][0], rot=-12, scale=1.0)
-    _price_tag(ctx, 1178, 392, v["tags"][1], rot=10, scale=1.0)
-    _price_tag(ctx, 470, 400, v["tags"][2], rot=8, scale=0.8)
-    # 캐릭터
-    pose = Pose(emotion=v["emotion"], arm_r=(120.0, 160.0), arm_l=ARM_POSES["lift"],
-                screen=v["screen"], talk=0.75, head_tilt=-5)
-    draw_mascot(ctx, 930, 930, 860, pose, t=0.2, sticker=12, shadow=False)
-    _bottom_band(ctx)
-    # 상단 메모
-    text(ctx, v["note"], 60, 40, size=54, fname="title", color="#59FF6E", stroke=9, align="left",
-         anchor=(0, 0), rot=-4)
-    arrow(ctx, 330, 120, 470, 175, color="#FF3B3B", width=9, head=30)
-    # 하단 2줄
-    text(ctx, v["top"], TW / 2, 505, size=88, fname="title", color="white", stroke=13,
-         max_w=TW - 60)
-    text(ctx, v["main"], TW / 2, 628, size=126, fname="title", color="#FFE81A", stroke=15,
-         max_w=TW - 40)
+    {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom}.get(lay, _layout_classic)(ctx, v, pal)
     surf.write_to_png(path)
     return path

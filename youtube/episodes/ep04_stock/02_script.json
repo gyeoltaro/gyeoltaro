@@ -32,7 +32,10 @@
           "배당"
         ],
         "screen": "down",
-        "emotion": "shock"
+        "emotion": "shock",
+        "layout": "classic",
+        "palette": "slate",
+        "trend": "down"
       },
       "B": {
         "top": "코스피 5개월 만에",
@@ -44,7 +47,13 @@
           "-38.7%"
         ],
         "screen": "alert",
-        "emotion": "worried"
+        "emotion": "worried",
+        "layout": "split",
+        "palette": "wine",
+        "labels": [
+          "6월 1일",
+          "11월 5일"
+        ]
       },
       "C": {
         "top": "24분 만에 끝내는",
@@ -56,7 +65,9 @@
           "PER"
         ],
         "screen": "percent",
-        "emotion": "surprised"
+        "emotion": "surprised",
+        "layout": "zoom",
+        "palette": "teal"
       }
     },
     "upload": {
