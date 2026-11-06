@@ -150,7 +150,7 @@ PALETTES = {
     "forest": {"bg": ("#0F3B22", "#04120A"), "a": "#146B3A", "b": "#6A1020"},
     "slate":  {"bg": ("#2B3440", "#0B0E12"), "a": "#3B4A5E", "b": "#7A2A10"},
 }
-LAYOUTS = ("classic", "bignum", "split", "zoom")
+LAYOUTS = ("classic", "bignum", "split", "zoom", "banner")
 DEFAULT_LAYOUT = {"A": "classic", "B": "split", "C": "zoom"}
 
 
@@ -172,9 +172,29 @@ def _props(ctx, v, rect_safe=True):
     if "bills" in props:
         draw_bill(ctx, 160, 300, 220, 104, "10,000", rot=-18)
         draw_bill(ctx, 1180, 190, 190, 90, "10,000", rot=22)
+    if "pie" in props:
+        _pie(ctx, 215, 520, 150, [0.34, 0.26, 0.2, 0.12, 0.08])
     if "coins" in props:
         draw_coin(ctx, 1060, 90, 34, rot=0.4)
         draw_coin(ctx, 640, 420, 28, rot=0.9)
+
+
+def _pie(ctx, cx, cy, r, parts):
+    """분산투자를 상징하는 파이 차트."""
+    cols = ["#FFE81A", "#59FF6E", "#FF5A5A", "#4DA3FF", "#C58BFF"]
+    a0 = -math.pi / 2
+    for i, f in enumerate(parts):
+        a1 = a0 + math.tau * f
+        ctx.new_path()
+        ctx.move_to(cx, cy)
+        ctx.arc(cx, cy, r, a0, a1)
+        ctx.close_path()
+        ctx.set_source_rgb(*hexc(cols[i % len(cols)]))
+        ctx.fill_preserve()
+        ctx.set_source_rgb(0.07, 0.07, 0.07)
+        ctx.set_line_width(7)
+        ctx.stroke()
+        a0 = a1
 
 
 def _falling_chart(ctx, x0, y0, x1, y1, color="#4DA3FF"):
@@ -245,7 +265,7 @@ def _layout_bignum(ctx, v, pal):
     round_rect(ctx, 40, 505, 740, 150, 30)
     ctx.set_source_rgba(0, 0, 0, 0.62)
     ctx.fill()
-    text(ctx, v["main"], 410, 580, size=96, fname="title", color="white", stroke=13, max_w=700)
+    text(ctx, v["main"], 410, 580, size=96 if len(v["main"]) <= 8 else 72, fname="title", color="white", stroke=12, max_w=700)
     _note(ctx, v, x=40, y=170, rot=-3) if False else None
     text(ctx, v["note"], 1090, 70, size=44, fname="title", color="#59FF6E", stroke=8, rot=3, max_w=330)
 
@@ -299,11 +319,37 @@ def _layout_zoom(ctx, v, pal):
     text(ctx, v["top"], 690, 290, size=66, fname="title", color="white", stroke=11, align="left", anchor=(0, 0.5), max_w=560)
     l1, l2 = _split2(v["main"])
     if l2:
-        text(ctx, l1, 690, 430, size=130, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
-        text(ctx, l2, 690, 565, size=130, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
+        zs = 130 if max(len(l1), len(l2)) <= 5 else 100 if max(len(l1), len(l2)) <= 7 else 82
+        text(ctx, l1, 690, 430, size=zs, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
+        text(ctx, l2, 690, 565, size=zs, fname="title", color="#FFE81A", stroke=16, align="left", anchor=(0, 0.5), max_w=580)
     else:
         text(ctx, l1, 690, 480, size=118, fname="title", color="#FFE81A", stroke=15, align="left", anchor=(0, 0.5), max_w=580)
     _price_tag(ctx, 1110, 90, v["tags"][0], rot=-8, scale=0.8)
+
+
+def _layout_banner(ctx, v, pal):
+    """왼쪽 대각선 띠에 글자를 쌓고, 오른쪽에 캐릭터."""
+    _bg(ctx, *pal["bg"])
+    _props(ctx, dict(v, props=[x for x in (v.get("props") or ["pie"]) if x != "pie"]))
+    ctx.new_path()
+    ctx.move_to(0, 70); ctx.line_to(820, 20); ctx.line_to(760, 660); ctx.line_to(0, 700); ctx.close_path()
+    ctx.set_source_rgba(*hexc(pal["a"]), 0.94)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.set_line_width(9)
+    ctx.stroke()
+    if "pie" in (v.get("props") or ["pie"]):
+        _pie(ctx, 110, 600, 80, [0.34, 0.26, 0.2, 0.12, 0.08])
+    _mascot(ctx, v, 1040, 960, 880)
+    text(ctx, v["note"], 40, 100, size=52, fname="title", color="#59FF6E", stroke=9, align="left", anchor=(0, 0), rot=-3, max_w=700)
+    text(ctx, v["top"], 380, 330, size=64, fname="title", color="white", stroke=11, max_w=700)
+    l1, l2 = _split2(v["main"]) if len(v["main"]) > 6 else (v["main"], "")
+    if l2:
+        bs = 104 if max(len(l1), len(l2)) <= 6 else 88
+        text(ctx, l1, 400, 445, size=bs, fname="title", color="#FFE81A", stroke=15, max_w=700)
+        text(ctx, l2, 400, 565, size=bs, fname="title", color="#FFE81A", stroke=15, max_w=700)
+    else:
+        text(ctx, l1, 380, 500, size=118, fname="title", color="#FFE81A", stroke=15, max_w=700)
 
 
 def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None):
@@ -313,6 +359,6 @@ def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None)
     pal, lay = _pick(v, variant)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)
     ctx = cairo.Context(surf)
-    {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom}.get(lay, _layout_classic)(ctx, v, pal)
+    {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom, "banner": _layout_banner}.get(lay, _layout_classic)(ctx, v, pal)
     surf.write_to_png(path)
     return path
