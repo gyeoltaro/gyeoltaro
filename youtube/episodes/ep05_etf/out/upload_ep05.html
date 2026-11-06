@@ -1,0 +1,44 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EP.05 업로드 문구</title><style>
+body{font:15px/1.6 system-ui,sans-serif;max-width:820px;margin:0 auto;padding:16px;background:#fff;color:#222}
+@media(prefers-color-scheme:dark){body{background:#161a19;color:#e8eeec}textarea{background:#1d2422;color:#e8eeec;border-color:#3a4a45}.ab{border-color:#3a4a45}}
+textarea{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px}
+button{font:inherit;padding:4px 12px;border-radius:8px;border:1px solid #888;background:#ffd84a;cursor:pointer}
+h3{margin:18px 0 6px}.w{background:#fff3cd;color:#5a4500;padding:10px;border-radius:8px;margin:8px 0}.ab{border:1px solid #ccc;border-radius:10px;padding:10px;margin:8px 0}.dim{opacity:.7;font-size:13px}</style></head><body>
+<h2>EP.05 업로드 문구</h2>
+<div class="w"><b>올리기 전 확인</b><br>⚠️ 세금 문장(국내·해외 상장 ETF 과세, 증권거래세 면제)은 국세청·거래소 안내로 대조하세요. 국내 주식형 ETF의 매매차익 과세는 영상에서 "출처마다 엇갈려 확인 필요"로만 표현했습니다.<br>⚠️ ETF 순자산 297조 → 512조는 딜사이트 한 매체의 집계입니다.<br>⚠️ 설명란의 "검수는 채널 운영자가 직접" 문장은 실제로 검수했을 때만 남기세요.</div>
+<h3>A/B 테스트 세트 (제목 3안 + 짝 썸네일)</h3>
+<div class="dim">호출 방식과 썸네일 구도가 안마다 다릅니다. 예측 점수는 5.84 · 5.81 · 5.84로 거의 같습니다. 제목과 썸네일을 동시에 바꾸면 어느 쪽 효과인지 알 수 없으니 한 번에 하나씩 테스트하세요.</div>
+<div class="ab"><b>A안</b> · ETF가 인기인 이유를 묻는 질문형 (기본안)<br><span class="dim">짝 썸네일 → 썸네일 A: 보라 배너형 'ETF 뭐길래 다들 사지?'</span><textarea readonly rows="2">ETF가 뭐길래 다들 사는 걸까? 초등학생도 이해하는 ETF·펀드의 모든 것 (23분 총정리)</textarea><button onclick="cp2(this)">복사</button></div><div class="ab"><b>B안</b> · 실제 시장 규모(297조 → 512조)로 호기심을 주는 숫자형<br><span class="dim">짝 썸네일 → 썸네일 B: 청록 큰 숫자형 '+72%'</span><textarea readonly rows="2">ETF 순자산이 6개월 만에 297조에서 512조로? 초등학생도 이해하는 ETF·펀드의 모든 것 (23분 총정리)</textarea><button onclick="cp2(this)">복사</button></div><div class="ab"><b>C안</b> · 종목 고르기가 어려운 입문자를 직접 부르는 질문형<br><span class="dim">짝 썸네일 → 썸네일 C: 호박색 캐릭터 확대형 '종목 고르기 어렵다면?'</span><textarea readonly rows="2">종목 고르기 어렵다면? 초등학생도 이해하는 ETF·펀드의 모든 것 (23분 총정리)</textarea><button onclick="cp2(this)">복사</button></div>
+<h3>설명 (챕터 포함) <button onclick="cp(this)">복사</button></h3><textarea readonly rows="18">ETF와 펀드는 무엇이 다르고, 종목을 하나하나 고르지 않고 투자하는 방법은 무엇일까요? 올해 상반기 국내 ETF 순자산은 297조 원에서 512조 원으로 늘었습니다.
+펀드와 ETF의 구조, 종류, 비용과 세금, 올해 문제가 된 레버리지 상품의 위험, 그리고 내 돈에 적용하는 원칙까지 정리했습니다.
+※ 이 영상은 2026년 11월 초 기준 자료로 만들었으며, 특정 상품의 추천이나 투자 권유가 아닙니다.
+
+📌 목차
+0:00 인트로
+1:23 PART 1. 펀드란 무엇인가
+3:55 PART 2. ETF란 무엇인가
+6:55 PART 3. ETF와 펀드의 차이
+9:19 PART 4. 종류와 레버리지 위험
+14:17 PART 5. 비용과 세금
+17:38 PART 6. 내 돈에 적용하기
+21:50 정리. 오늘의 핵심
+
+📚 참고 자료
+- 국내 ETF 순자산총액 2025년 말 297조 1000억 원 → 2026년 6월 말 512조 4000억 원, 상장 종목 1,058개 → 1,143개 (딜사이트 ETF리그테이블 보도)
+- 금융감독원·금융위원회 레버리지·인버스 ETF 투자 유의 안내와 단일종목 레버리지 ETF 출시 예고(2026년 5월): 하루 최대 60% 손실 가능, 개인 기본예탁금 1,000만 원·교육 이수 요건 (헤럴드경제 등 보도)
+- 국내 상장 ETF 세금: 분배금 배당소득세 15.4%, 국내 상장 해외 ETF 매매차익 15.4%, 해외 상장 ETF 매매차익 양도소득세 22%(연 250만 원 공제), 국내 상장 ETF 매도 시 증권거래세 면제 (한국투자자교육협의회·언론 설명, 출처마다 표현 차이)
+- 코스피 2026년 6월 1일 8,788.38, 11월 5일 5,383.80 (이전 영상과 동일한 보도 기준)
+- ※ 영상 속 보수 비교, 레버리지 +10%·-10% 계산, 적립식 예시는 이해를 돕기 위한 가정값이며 어떤 수익도 보장하지 않습니다. 세법·상품 구조는 바뀔 수 있습니다.
+
+⚠️ 안내
+- 이 영상은 경제 원리를 설명하는 교육 콘텐츠이며, 특정 금융상품·자산에 대한 투자 권유가 아닙니다.
+  투자 결정은 본인의 상황에 맞게 신중히 내려주세요.
+- 기획·대본·자료 검수는 채널 운영자가 직접 했으며, 내레이션은 AI 음성(TTS)으로 제작했습니다.
+  영상 속 캐릭터는 실존 인물이 아닌 채널 마스코트입니다.
+
+#ETF #펀드 #경제공부
+</textarea><h3>태그 (쉼표로 구분) <button onclick="cp(this)">복사</button></h3><textarea readonly rows="4">ETF,펀드,ETF펀드의모든것,ETF란,ETF추천아님,ETF기초,ETF입문,펀드란,레버리지ETF,인버스ETF,총보수,패시브,액티브,적립식투자,분산투자,코스피200,경제공부,기초경제,부의비상사태911</textarea><h3>고정 댓글 (게시 후 달기) <button onclick="cp(this)">복사</button></h3><textarea readonly rows="4">지금 가장 궁금한 ETF나 투자 용어는 무엇인가요? 📊
+댓글로 알려주시면, 다음 영상 &#x27;채권의 모든 것&#x27;에서 금리와 채권 가격이 왜 반대로 움직이는지 함께 다뤄볼게요! (투자 권유가 아닌 정보 공유 목적입니다)</textarea>
+<h3>스튜디오 설정</h3><ul><li>변경되거나 합성된 콘텐츠: 아니요 · 시청자층: 아동용 아님 · 카테고리: 교육</li><li>자막은 subtitles.srt 업로드</li></ul>
+<script>function cp(b){var t=b.parentNode.nextElementSibling;t.select();navigator.clipboard.writeText(t.value).then(function(){b.textContent='복사됨'},function(){document.execCommand('copy');b.textContent='복사됨'});setTimeout(function(){b.textContent='복사'},1500)}
+function cp2(b){var t=b.previousElementSibling;t.select();navigator.clipboard.writeText(t.value).then(function(){b.textContent='복사됨'},function(){document.execCommand('copy');b.textContent='복사됨'});setTimeout(function(){b.textContent='복사'},1500)}</script></body></html>
