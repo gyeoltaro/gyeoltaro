@@ -25,52 +25,57 @@
     },
     "thumbnails": {
       "A": {
-        "top": "코스피 지난 일주일",
-        "main": "무슨 일이 있었나?",
-        "note": "코스피 -6.02%\n서킷브레이커",
+        "layout": "split2",
+        "palette": "slate",
+        "labels": [
+          "코스피 11월 4일",
+          "11월 6일"
+        ],
         "tags": [
           "5,684",
           "5,060"
         ],
+        "badge": "약 -11%",
+        "main": "무슨 일이 있었나?",
+        "top": "",
+        "note": "",
         "screen": "down",
-        "emotion": "worried",
-        "layout": "split",
-        "palette": "slate",
-        "labels": [
-          "11월 4일",
-          "11월 6일"
-        ]
+        "emotion": "worried"
       },
       "B": {
-        "top": "초등학생도 이해하는",
-        "main": "선거와 관련 있을까?",
-        "note": "반도체주 하락,\n원인은 하나가 아니다",
+        "layout": "duo",
+        "palette": "teal",
+        "icons": [
+          "vote",
+          "chip"
+        ],
+        "labels": [
+          "미국 선거",
+          "반도체주"
+        ],
+        "main": "정말 관련 있을까?",
+        "top": "",
+        "note": "",
         "tags": [
-          "선거",
-          "반도체"
+          "?"
         ],
         "screen": "percent",
-        "emotion": "neutral",
-        "layout": "zoom",
-        "palette": "teal",
-        "props": [
-          "coins"
-        ]
+        "emotion": "neutral"
       },
       "C": {
-        "top": "AI는 거품일까",
-        "main": "거품이란 뭘까?",
-        "note": "판정하지 않습니다",
+        "layout": "hero",
+        "palette": "plum",
+        "hero_icon": "chip",
+        "num": "거품?",
+        "main": "무엇일까?",
+        "main_size": 110,
+        "top": "",
+        "note": "",
         "tags": [
-          "거품?",
-          "AI"
+          "?"
         ],
         "screen": "percent",
-        "emotion": "surprised",
-        "layout": "bignum",
-        "palette": "plum",
-        "num": "거품?",
-        "mark": "?"
+        "emotion": "surprised"
       }
     },
     "upload": {

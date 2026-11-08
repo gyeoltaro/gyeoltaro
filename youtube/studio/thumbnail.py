@@ -150,7 +150,7 @@ PALETTES = {
     "forest": {"bg": ("#0F3B22", "#04120A"), "a": "#146B3A", "b": "#6A1020"},
     "slate":  {"bg": ("#2B3440", "#0B0E12"), "a": "#3B4A5E", "b": "#7A2A10"},
 }
-LAYOUTS = ("classic", "bignum", "split", "zoom", "banner")
+LAYOUTS = ("classic", "bignum", "split", "zoom", "banner", "duo", "hero", "split2")
 DEFAULT_LAYOUT = {"A": "classic", "B": "split", "C": "zoom"}
 
 
@@ -352,6 +352,109 @@ def _layout_banner(ctx, v, pal):
         text(ctx, l1, 380, 500, size=118, fname="title", color="#FFE81A", stroke=15, max_w=700)
 
 
+# ---------------------------------------------------------------- 한눈에 들어오는 구도 (메시지 1개 + 그림 1개)
+# 휴대폰 목록에서 썸네일은 손가락 한 마디 크기입니다. 글자 덩어리는 1~2개, 그림은 크게, 대비는 강하게.
+
+def _glow_disc(ctx, x, y, r, col, a=0.55):
+    g = cairo.RadialGradient(x, y, r * 0.2, x, y, r * 1.6)
+    rr, gg, bb = hexc(col)
+    g.add_color_stop_rgba(0, rr, gg, bb, a)
+    g.add_color_stop_rgba(1, rr, gg, bb, 0)
+    ctx.set_source(g)
+    ctx.new_path()
+    ctx.arc(x, y, r * 1.6, 0, math.tau)
+    ctx.fill()
+
+
+def _icon_badge(ctx, name, x, y, r, col):
+    from . import visuals  # noqa: F401 (순환 import 방지: visuals 먼저)
+    from .visuals2 import icon
+    _glow_disc(ctx, x, y, r, col, 0.45)
+    ctx.new_path()
+    ctx.arc(x, y, r, 0, math.tau)
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0.07, 0.07, 0.07)
+    ctx.set_line_width(12)
+    ctx.stroke()
+    icon(ctx, name, x, y, r / 62)
+
+
+def _layout_duo(ctx, v, pal):
+    """그림 A  →  ?  →  그림 B, 아래에 큰 질문 한 줄."""
+    _bg(ctx, *pal["bg"])
+    ics = v.get("icons") or ["vote", "chip"]
+    labels = v.get("labels") or ["", ""]
+    xs = (270, 1010)
+    for i, (nm, x) in enumerate(zip(ics, xs)):
+        _icon_badge(ctx, nm, x, 255, 175, pal["a"] if i == 0 else pal["b"])
+        if labels[i]:
+            text(ctx, labels[i], x, 485, size=76, fname="title", color="white", stroke=12, max_w=480)
+    ctx.set_dash([34, 22])
+    arrow(ctx, 470, 255, 820, 255, color="#FFE81A", width=16, head=52)
+    ctx.set_dash([])
+    text(ctx, v.get("mark", "?"), 640, 215, size=230, fname="title", color="#FFE81A", stroke=18)
+    text(ctx, v["main"], TW / 2, 625, size=v.get("main_size", 132), fname="title", color="#FFE81A", stroke=16, max_w=TW - 50)
+
+
+def _layout_hero(ctx, v, pal):
+    """큰 사물(거품 등) 하나 + 큰 단어 하나."""
+    _bg(ctx, *pal["bg"])
+    x, y, r = 360, 375, 290
+    _glow_disc(ctx, x, y, r, pal["a"], 0.5)
+    g = cairo.RadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r)
+    g.add_color_stop_rgba(0, 1, 1, 1, 0.55)
+    g.add_color_stop_rgba(0.7, 0.55, 0.75, 1, 0.22)
+    g.add_color_stop_rgba(1, 0.55, 0.75, 1, 0.6)
+    ctx.new_path()
+    ctx.arc(x, y, r, 0, math.tau)
+    ctx.set_source(g)
+    ctx.fill_preserve()
+    ctx.set_source_rgba(1, 1, 1, 0.95)
+    ctx.set_line_width(12)
+    ctx.stroke()
+    ctx.new_path()
+    ctx.arc(x - r * 0.42, y - r * 0.42, r * 0.13, 0, math.tau)
+    ctx.set_source_rgba(1, 1, 1, 0.85)
+    ctx.fill()
+    from . import visuals  # noqa: F401 (순환 import 방지: visuals 먼저)
+    from .visuals2 import icon
+    icon(ctx, v.get("hero_icon", "chip"), x, y + 10, 2.6)
+    num = v.get("num", "?")
+    text(ctx, num, 960, 300, size=v.get("num_size", 250), fname="title", color="#FFE81A", stroke=20, max_w=600)
+    text(ctx, v["main"], 960, 545, size=v.get("main_size", 96), fname="title", color="white", stroke=14, max_w=600)
+
+
+def _layout_split2(ctx, v, pal):
+    """전/후 숫자 두 개를 아주 크게. 위 날짜, 가운데 변화율 배지, 아래 질문 한 줄."""
+    _bg(ctx, *pal["bg"])
+    ctx.new_path()
+    ctx.move_to(0, 0); ctx.line_to(690, 0); ctx.line_to(590, 720); ctx.line_to(0, 720); ctx.close_path()
+    ctx.set_source_rgba(*hexc(pal["a"]), 0.95)
+    ctx.fill()
+    ctx.new_path()
+    ctx.move_to(690, 0); ctx.line_to(1280, 0); ctx.line_to(1280, 720); ctx.line_to(590, 720); ctx.close_path()
+    ctx.set_source_rgba(*hexc(pal["b"]), 0.95)
+    ctx.fill()
+    labels = v.get("labels") or ["", ""]
+    left, right = v["tags"][0], v["tags"][1]
+    text(ctx, labels[0], 315, 75, size=66, fname="title", color="white", stroke=10)
+    text(ctx, labels[1], 965, 75, size=66, fname="title", color="white", stroke=10)
+    text(ctx, left, 315, 255, size=200, fname="title", color="white", stroke=18, max_w=560)
+    text(ctx, right, 965, 255, size=200, fname="title", color="#FFE81A", stroke=18, max_w=560)
+    _bottom_band(ctx)
+    if v.get("badge"):
+        ctx.new_path()
+        round_rect(ctx, 640 - 175, 375, 350, 120, 60)
+        ctx.set_source_rgb(*hexc("#E8262E"))
+        ctx.fill_preserve()
+        ctx.set_source_rgb(1, 1, 1)
+        ctx.set_line_width(8)
+        ctx.stroke()
+        text(ctx, v["badge"], 640, 437, size=84, fname="title", color="white", stroke=8)
+    text(ctx, v["main"], TW / 2, 625, size=v.get("main_size", 128), fname="title", color="#FFE81A", stroke=16, max_w=TW - 50)
+
+
 def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None):
     v = dict(VARIANTS.get(variant, VARIANTS["A"]))
     if overrides:
@@ -359,6 +462,7 @@ def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None)
     pal, lay = _pick(v, variant)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)
     ctx = cairo.Context(surf)
-    {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom, "banner": _layout_banner}.get(lay, _layout_classic)(ctx, v, pal)
+    {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom, "banner": _layout_banner,
+     "duo": _layout_duo, "hero": _layout_hero, "split2": _layout_split2}.get(lay, _layout_classic)(ctx, v, pal)
     surf.write_to_png(path)
     return path
