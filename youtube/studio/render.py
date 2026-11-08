@@ -49,6 +49,248 @@ class Renderer:
                            rnd.uniform(0.05, 0.11)) for _ in range(16)]
         # 장면별 캐릭터 스펙 미리 계산
         self.specs = [self._scene_spec(s) for s in self.scenes]
+        # 모션 2.0: 장면 전환·카메라·배경 빛 (meta.motion >= 2 일 때)
+        self.motion = int(tl["meta"].get("motion", 1))
+        self._blob = self._make_blob()
+        self._vignette = self._make_vignette()
+        self._tape = None
+
+    # ------------------------------------------------------------ motion 2.0 helpers
+    @staticmethod
+    def _make_blob(r=520):
+        surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, r * 2, r * 2)
+        ctx = cairo.Context(surf)
+        g = cairo.RadialGradient(r, r, 0, r, r, r)
+        g.add_color_stop_rgba(0, 1, 1, 1, 1)
+        g.add_color_stop_rgba(0.5, 1, 1, 1, 0.35)
+        g.add_color_stop_rgba(1, 1, 1, 1, 0)
+        ctx.set_source(g)
+        ctx.paint()
+        return surf
+
+    @staticmethod
+    def _make_vignette():
+        surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+        ctx = cairo.Context(surf)
+        g = cairo.RadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, W * 0.72)
+        g.add_color_stop_rgba(0, 0, 0, 0, 0)
+        g.add_color_stop_rgba(1, 0, 0, 0, 0.55)
+        ctx.set_source(g)
+        ctx.paint()
+        return surf
+
+    def _draw_motion_bg(self, ctx, t):
+        # 천천히 떠도는 빛 덩어리 3개 (테마 위에 은은하게)
+        cols = [(1.0, 0.83, 0.23), (0.30, 0.64, 1.0), (0.23, 0.88, 0.48)]
+        for i, (r_, g_, b_) in enumerate(cols):
+            x = W * (0.5 + 0.42 * math.sin(t * (0.07 + 0.02 * i) + i * 2.1)) - 520
+            y = H * (0.5 + 0.38 * math.cos(t * (0.05 + 0.015 * i) + i * 1.3)) - 520
+            ctx.set_source_rgba(r_, g_, b_, 0.07)
+            ctx.mask_surface(self._blob, x, y)
+        # 대각선으로 지나가는 빛줄기 (약 14초 주기)
+        ph = (t % 14.0) / 14.0
+        bx = -600 + (W + 1200) * ph
+        ctx.save()
+        ctx.new_path()
+        ctx.move_to(bx, 0)
+        ctx.line_to(bx + 260, 0)
+        ctx.line_to(bx - 140, H)
+        ctx.line_to(bx - 400, H)
+        ctx.close_path()
+        g = cairo.LinearGradient(bx - 400, 0, bx + 260, 0)
+        g.add_color_stop_rgba(0, 1, 1, 1, 0)
+        g.add_color_stop_rgba(0.5, 1, 1, 1, 0.045)
+        g.add_color_stop_rgba(1, 1, 1, 1, 0)
+        ctx.set_source(g)
+        ctx.fill()
+        ctx.restore()
+
+    # 장면 전환 종류: 대본의 scene.trans 로 지정하거나, 없으면 순서대로 돌아가며 사용
+    TRANS_CYCLE = ("slide", "zoom", "wipe", "iris", "slideup", "wipe")
+    TRANS_DUR = 0.6
+
+    def _trans_type(self, si):
+        s = self.scenes[si]
+        if s.get("trans"):
+            return s["trans"]
+        if s["visual"]["type"] == "chapter":
+            return "tape"
+        return self.TRANS_CYCLE[si % len(self.TRANS_CYCLE)]
+
+    def _camera(self, s, lt, t):
+        """장면 카메라: 느린 줌 + 문장 시작마다 살짝 '펀치 인' + 미세한 흔들림"""
+        dur = max(1.0, s["dur"])
+        z = 1.0 + 0.03 * clamp(lt / dur)
+        if "_beats" not in s:
+            from .visuals import visual_events
+            bt = sorted({round(ln["start"] - s["start"], 2) for ln in s["lines"]} |
+                        {round(tt - s["start"], 2) for tt, _k in visual_events(s)})
+            s["_beats"] = bt
+        for b in s["_beats"]:
+            d = lt - b
+            if 0 <= d < 1.2:
+                z += 0.016 * (1 - math.exp(-d * 16)) * math.exp(-d * 3.2)
+        dx = 7 * math.sin(t * 0.23)
+        dy = 5 * math.cos(t * 0.19)
+        # 강조 흔들림 (visual.shake_at: 문장 번호 목록)
+        sh = s["visual"].get("shake_at") or []
+        S = SceneCtx(s, lt, t)
+        for a in sh:
+            d = lt - S.at(a)
+            if 0 <= d < 0.45:
+                amp = 14 * (1 - d / 0.45)
+                dx += amp * math.sin(d * 90)
+                dy += amp * math.cos(d * 77)
+        return z, dx, dy
+
+    def _draw_visual(self, ctx, si, lt, t):
+        s = self.scenes[si]
+        vis = s["visual"]
+        S = SceneCtx(s, lt, t)
+        z, dx, dy = self._camera(s, lt, t) if self.motion >= 2 else (1.0 + 0.018 * clamp(lt / max(1.0, s["dur"])), 0, 0)
+        ctx.save()
+        ctx.translate(W / 2 + dx, H / 2 + dy)
+        ctx.scale(z, z)
+        ctx.translate(-W / 2, -H / 2)
+        VISUALS[vis["type"]](ctx, S)
+        ctx.restore()
+
+    def _hazard(self, ctx, y0, h, shift, a=1.0):
+        ctx.save()
+        ctx.new_path()
+        ctx.rectangle(-400, y0, W + 800, h)
+        ctx.set_source_rgba(1.0, 0.83, 0.23, a)
+        ctx.fill()
+        ctx.rectangle(-400, y0, W + 800, h)
+        ctx.clip()
+        ctx.set_source_rgba(0.07, 0.07, 0.07, a)
+        for k in range(-12, 40):
+            x = k * 90 + shift % 90
+            ctx.new_path()
+            ctx.move_to(x, y0)
+            ctx.line_to(x + 45, y0)
+            ctx.line_to(x + 45 - h, y0 + h)
+            ctx.line_to(x - h, y0 + h)
+            ctx.close_path()
+            ctx.fill()
+        ctx.restore()
+
+    def _composite(self, ctx, A, B, k, kind):
+        e = ease_in_out(k)
+        if kind == "slide" or kind == "slideup":
+            horiz = kind == "slide"
+            ctx.save()
+            ctx.translate(-W * 0.55 * e if horiz else 0, 0 if horiz else -H * 0.55 * e)
+            ctx.set_source(A)
+            ctx.paint_with_alpha(1 - e)
+            ctx.restore()
+            ctx.save()
+            ctx.translate(W * (1 - e) if horiz else 0, 0 if horiz else H * (1 - e))
+            ctx.set_source(B)
+            ctx.paint()
+            ctx.restore()
+            # 속도선
+            a = 0.35 * math.sin(math.pi * e)
+            ctx.set_source_rgba(1, 1, 1, a)
+            rnd = random.Random(7)
+            for _ in range(14):
+                if horiz:
+                    y = rnd.uniform(120, H - 160)
+                    x = rnd.uniform(0, W)
+                    ctx.rectangle(x, y, rnd.uniform(160, 520), 3)
+                else:
+                    x = rnd.uniform(120, W - 120)
+                    y = rnd.uniform(0, H)
+                    ctx.rectangle(x, y, 3, rnd.uniform(120, 360))
+            ctx.fill()
+        elif kind == "zoom":
+            ctx.save()
+            ctx.translate(W / 2, H / 2)
+            ctx.scale(1 + 0.35 * e, 1 + 0.35 * e)
+            ctx.translate(-W / 2, -H / 2)
+            ctx.set_source(A)
+            ctx.paint_with_alpha(1 - e)
+            ctx.restore()
+            ctx.save()
+            sc = 0.82 + 0.18 * e
+            ctx.translate(W / 2, H / 2)
+            ctx.scale(sc, sc)
+            ctx.translate(-W / 2, -H / 2)
+            ctx.set_source(B)
+            ctx.paint_with_alpha(e)
+            ctx.restore()
+        elif kind == "wipe":
+            bx = -500 + (W + 1000) * e
+            ctx.save()
+            ctx.new_path()
+            ctx.move_to(bx + 300, 0)
+            ctx.line_to(W + 600, 0)
+            ctx.line_to(W + 600, H)
+            ctx.line_to(bx - 300, H)
+            ctx.close_path()
+            ctx.clip()
+            ctx.set_source(A)
+            ctx.paint()
+            ctx.restore()
+            ctx.save()
+            ctx.new_path()
+            ctx.move_to(-600, 0)
+            ctx.line_to(bx + 300, 0)
+            ctx.line_to(bx - 300, H)
+            ctx.line_to(-600, H)
+            ctx.close_path()
+            ctx.clip()
+            ctx.set_source(B)
+            ctx.paint()
+            ctx.restore()
+            # 노란 띠
+            ctx.save()
+            ctx.new_path()
+            ctx.move_to(bx + 300, 0)
+            ctx.line_to(bx + 360, 0)
+            ctx.line_to(bx - 240, H)
+            ctx.line_to(bx - 300, H)
+            ctx.close_path()
+            ctx.set_source_rgba(1.0, 0.83, 0.23, 0.95)
+            ctx.fill()
+            ctx.restore()
+        elif kind == "iris":
+            ctx.set_source(A)
+            ctx.paint_with_alpha(1 - 0.6 * e)
+            r = math.hypot(W, H) * 0.55 * e
+            ctx.save()
+            ctx.new_path()
+            ctx.arc(W / 2, H / 2, max(r, 1), 0, math.tau)
+            ctx.clip()
+            ctx.set_source(B)
+            ctx.paint()
+            ctx.restore()
+            ctx.new_path()
+            ctx.arc(W / 2, H / 2, max(r, 1), 0, math.tau)
+            ctx.set_source_rgba(1.0, 0.83, 0.23, 0.9 * (1 - e))
+            ctx.set_line_width(14)
+            ctx.stroke()
+        elif kind == "tape":
+            # 노랑·검정 경고 테이프가 화면을 덮었다가 걷히며 장면 교체
+            cover = math.sin(math.pi * e)
+            ctx.set_source(A if e < 0.5 else B)
+            ctx.paint()
+            ctx.save()
+            ctx.translate(W / 2, H / 2)
+            ctx.rotate(-0.12)
+            ctx.translate(-W / 2, -H / 2)
+            h = 220
+            for i in range(-1, 7):
+                y = -260 + i * h * 0.98
+                off = (W + 600) * (1 - cover) * (1 if i % 2 else -1)
+                ctx.save()
+                ctx.translate(off, 0)
+                self._hazard(ctx, y, h * 0.92, e * 900 * (1 if i % 2 else -1))
+                ctx.restore()
+            ctx.restore()
+        else:
+            ctx.set_source(B)
+            ctx.paint_with_alpha(e)
 
     # ------------------------------------------------------------ backgrounds
     def _bg(self, theme):
@@ -96,6 +338,8 @@ class Renderer:
             ctx.move_to(0, y + off * 0.5)
             ctx.line_to(W, y + off * 0.5)
         ctx.stroke()
+        if self.motion >= 2:
+            self._draw_motion_bg(ctx, t)
         # 떠다니는 기호
         for (x0, y0, sym, size, spd, ph, a) in self.particles:
             y = (y0 - t * spd) % (H + 200) - 100
@@ -265,25 +509,42 @@ class Renderer:
         ctx.set_antialias(cairo.ANTIALIAS_GOOD)
         self.draw_background(ctx, t, si, lt)
         vis = s["visual"]
-        S = SceneCtx(s, lt, t)
-        exit_k = prog(lt, s["dur"] - 0.22, 0.22) if vis["type"] != "chapter" else 0.0
-        zoom = 1.0 + 0.018 * clamp(lt / max(1.0, s["dur"]))
         if vis["type"] == "chapter":
             # 챕터 카드 뒤 이전 장면 대신 어두운 막
             ctx.set_source_rgba(0, 0, 0, 0.25)
             ctx.paint()
-        ctx.save()
-        ctx.translate(W / 2, H / 2)
-        ctx.scale(zoom * (1 - 0.04 * exit_k), zoom * (1 - 0.04 * exit_k))
-        ctx.translate(-W / 2, -H / 2)
-        if exit_k > 0:
-            ctx.push_group()
-        VISUALS[vis["type"]](ctx, S)
-        if exit_k > 0:
-            ctx.pop_group_to_source()
-            ctx.paint_with_alpha(1 - exit_k)
-        ctx.restore()
+        if self.motion >= 2:
+            TD = self.TRANS_DUR
+            if si > 0 and lt < TD:
+                ps = self.scenes[si - 1]
+                ctx.push_group()
+                self._draw_visual(ctx, si - 1, ps["dur"] - 1e-3, t)
+                A = ctx.pop_group()
+                ctx.push_group()
+                self._draw_visual(ctx, si, lt, t)
+                B = ctx.pop_group()
+                self._composite(ctx, A, B, lt / TD, self._trans_type(si))
+            else:
+                self._draw_visual(ctx, si, lt, t)
+        else:
+            S = SceneCtx(s, lt, t)
+            exit_k = prog(lt, s["dur"] - 0.22, 0.22) if vis["type"] != "chapter" else 0.0
+            zoom = 1.0 + 0.018 * clamp(lt / max(1.0, s["dur"]))
+            ctx.save()
+            ctx.translate(W / 2, H / 2)
+            ctx.scale(zoom * (1 - 0.04 * exit_k), zoom * (1 - 0.04 * exit_k))
+            ctx.translate(-W / 2, -H / 2)
+            if exit_k > 0:
+                ctx.push_group()
+            VISUALS[vis["type"]](ctx, S)
+            if exit_k > 0:
+                ctx.pop_group_to_source()
+                ctx.paint_with_alpha(1 - exit_k)
+            ctx.restore()
         self.draw_character(ctx, fi, t, si, lt)
+        if self.motion >= 2:
+            ctx.set_source_surface(self._vignette, 0, 0)
+            ctx.paint()
         ctx.set_source_surface(self._bottom, 0, H - 240)
         ctx.paint()
         self.draw_overlay(ctx, t, si)

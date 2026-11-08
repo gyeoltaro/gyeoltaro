@@ -46,12 +46,36 @@ class SceneCtx:
         n = len(self.line_starts)
         if n == 0:
             return float(a)
+        a = a * self._at_scale(n)
         i = int(math.floor(a))
         frac = a - i
         if i >= n:
             return self.dur + 1.0  # 이 장면에서는 등장하지 않음
         st, en = self.line_starts[i], self.line_ends[i]
         return st + (en - st) * frac
+
+    def _at_scale(self, n):
+        """대본 줄 수보다 큰 at 값이 있으면(예: 4단계 at 를 2줄 장면에 사용) 전체를 비율로 줄여서
+        모든 요소가 장면 안에서 등장하게 한다. 장면마다 한 번만 계산해 캐시한다."""
+        sc = self.s.get("_at_scale")
+        if sc is None:
+            mx = [0.0]
+
+            def walk(o):
+                if isinstance(o, dict):
+                    for k, v in o.items():
+                        if k.endswith("at") and k != "shake_at" and isinstance(v, (int, float)) and not isinstance(v, bool):
+                            mx[0] = max(mx[0], float(v))
+                        else:
+                            walk(v)
+                elif isinstance(o, list):
+                    for v in o:
+                        walk(v)
+
+            walk(self.v)
+            sc = 1.0 if mx[0] < n else (n - 0.25) / (mx[0] + 0.15)
+            self.s["_at_scale"] = sc
+        return sc
 
     @property
     def cx(self):
@@ -1166,6 +1190,11 @@ VISUALS = {
 }
 
 
+def _register2():
+    from .visuals2 import VISUALS2
+    VISUALS.update(VISUALS2)
+
+
 def visual_events(scene: dict):
     """효과음 이벤트 (장면 내부 시간, 종류) 목록."""
     S = SceneCtx(scene, 0.0, scene["start"])
@@ -1178,7 +1207,10 @@ def visual_events(scene: dict):
         if tt >= 0:
             ev.append((tt, kind))
 
-    if ty == "chapter":
+    from .visuals2 import VISUALS2, events2
+    if ty in VISUALS2:
+        ev = events2(scene, S)
+    elif ty == "chapter":
         ev.append((0.0, "whoosh"))
         ev.append((0.55, "boom"))
     elif ty == "title":
@@ -1223,3 +1255,6 @@ def visual_events(scene: dict):
         for i, s in enumerate(v["series"]):
             add(s.get("at", i), "whoosh")
     return [(scene["start"] + max(0.0, tt), k) for tt, k in ev]
+
+
+_register2()
