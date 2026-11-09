@@ -261,7 +261,10 @@ def icon(ctx, name, x, y, s=1.0, a=1.0, col=None):
     elif name == "won":
         draw_coin(ctx, 0, 0, 48, 0.0, a)
     elif name == "person":
-        draw_person(ctx, 0, 40, 0.9, a=a)
+        ctx.new_path(); ctx.arc(0, -26, 22, 0, math.tau)
+        ctx.set_source_rgba(1, 1, 1, a); ctx.fill_preserve(); stroke(5)
+        ctx.new_path(); ctx.move_to(-40, 50); ctx.curve_to(-40, 6, 40, 6, 40, 50); ctx.close_path()
+        set_col(ctx, col or "blue", a); ctx.fill_preserve(); stroke(5)
     elif name == "bubble":
         ctx.new_path()
         ctx.arc(0, 0, 48, 0, math.tau)
@@ -393,7 +396,9 @@ def v_timeline(ctx, S: SceneCtx):
     top = S.area[1] + _header(ctx, S, v.get("title"), v.get("title_color", "yellow"))
     ev = v["events"]
     n = len(ev)
-    x0, x1 = S.area[0] + 90, S.area[2] - 90
+    cw_est = min(330, (S.aw - 180) / max(1, n - 1) * 1.7)
+    pad = max(90, cw_est / 2 + 14)
+    x0, x1 = S.area[0] + pad, S.area[2] - pad
     ly = (top + S.area[3]) / 2 + 20
     times = [S.at(e.get("at", i)) for i, e in enumerate(ev)]
     # 축 그리기 (처음 0.6초 동안 그려짐)
@@ -445,7 +450,7 @@ def v_timeline(ctx, S: SceneCtx):
             text(ctx, e["date"], xs[i], ly + 52, size=34, fname="xbold", color="dim")
             continue
         up = (i % 2 == 0)
-        cw = min(330, (x1 - x0) / max(1, n - 1) * 1.7)
+        cw = min(330, (x1 - x0) / max(1, n - 1) * 1.7, pad * 2 - 20)
         ch = 210 if e.get("sub") else 170
         cy = ly - 70 - ch / 2 if up else ly + 70 + ch / 2
         # 연결선
