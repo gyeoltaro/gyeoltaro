@@ -300,6 +300,29 @@ def icon(ctx, name, x, y, s=1.0, a=1.0, col=None):
         set_col(ctx, col or "grey", a)
         ctx.fill_preserve()
         stroke(5)
+    elif name == "cart":
+        ctx.new_path()
+        ctx.move_to(-54, -40); ctx.line_to(-38, -40); ctx.line_to(-24, 26); ctx.line_to(40, 26); ctx.line_to(52, -22); ctx.line_to(-30, -22)
+        ctx.set_source_rgba(*ink); ctx.set_line_width(7); ctx.set_line_join(cairo.LINE_JOIN_ROUND); ctx.stroke()
+        ctx.new_path(); ctx.rectangle(-26, -18, 72, 40); set_col(ctx, col or "yellow", a); ctx.fill()
+        for cx_ in (-16, 32):
+            ctx.new_path(); ctx.arc(cx_, 42, 9, 0, math.tau); ctx.set_source_rgba(*ink); ctx.fill()
+    elif name == "bowl":
+        ctx.new_path(); ctx.arc(0, -4, 50, 0, math.pi); ctx.close_path()
+        set_col(ctx, col or "orange", a); ctx.fill_preserve(); stroke(6)
+        ctx.new_path(); ctx.rectangle(-22, 44, 44, 8); ctx.set_source_rgba(*ink); ctx.fill()
+        for sx in (-18, 0, 18):
+            ctx.new_path(); ctx.move_to(sx, -20); ctx.curve_to(sx - 10, -34, sx + 10, -40, sx, -54)
+            ctx.set_source_rgba(1, 1, 1, 0.8 * a); ctx.set_line_width(5); ctx.stroke()
+    elif name == "phone":
+        ctx.new_path(); round_rect(ctx, -30, -52, 60, 104, 12); set_col(ctx, col or "#2B2F3A", a); ctx.fill_preserve(); stroke(6)
+        ctx.new_path(); round_rect(ctx, -22, -40, 44, 70, 4); set_col(ctx, "blue", a); ctx.fill()
+        ctx.new_path(); ctx.arc(0, 40, 5, 0, math.tau); ctx.set_source_rgba(1, 1, 1, a); ctx.fill()
+    elif name == "bus":
+        ctx.new_path(); round_rect(ctx, -52, -42, 104, 76, 14); set_col(ctx, col or "green", a); ctx.fill_preserve(); stroke(6)
+        ctx.new_path(); ctx.rectangle(-40, -30, 80, 26); ctx.set_source_rgba(1, 1, 1, a); ctx.fill()
+        for cx_ in (-28, 28):
+            ctx.new_path(); ctx.arc(cx_, 38, 11, 0, math.tau); ctx.set_source_rgba(*ink); ctx.fill()
     elif name == "calendar":
         ctx.new_path()
         round_rect(ctx, -46, -40, 92, 88, 10)
