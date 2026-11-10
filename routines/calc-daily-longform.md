@@ -6,7 +6,7 @@
 
 ## 0. 준비
 1. `cd` 로 저장소 루트에서 `git fetch -q origin claude/clever-cray-tfw7qn && git checkout claude/clever-cray-tfw7qn && git pull -q --rebase origin claude/clever-cray-tfw7qn`.
-2. 읽는다: `CLAUDE.md`(롱폼·사실 확인 원칙·교훈 전부), `docs/longform-queue.md`, `docs/longform-plan.md`, `docs/longform-ep04.md`(가장 최근 완성본 = 문서·업로드 문구의 틀), `longform/build-ep04.py`, `longform/ep04-scenes.js`, `longform/ep04-thumbs.js`.
+2. 읽는다: `CLAUDE.md`(롱폼·사실 확인 원칙·교훈 전부), `docs/longform-queue.md`, `docs/longform-plan.md`, `docs/longform-ep04.md`(가장 최근 완성본 = 문서·업로드 문구의 틀), `longform/build-ep04.py`, `longform/ep04-scenes.js`, `longform/ep04-thumbs.js`, **`docs/title-thumbnail-playbook.md`(제목·썸네일 꼴과 시험 대기 — 매일 공부가 갱신한다)**.
 3. 도구 확인: `echo ${GOOGLE_TTS_API_KEY:+있음}` (값은 출력하지 않는다), `node -v`, `ffmpeg -version | head -1`, `python3 -c "import PIL"`, `NODE_PATH=$(npm root -g) node -e "require('playwright')"`. 키가 없으면 '못 만들 때'.
 4. 오늘 날짜 `TZ=Asia/Seoul date +%F`. 다음 편 번호 = `docs/longform-queue.md` 의 '다음 번호'.
 
@@ -31,10 +31,11 @@ curl -sS -m 30 "https://www.youtube.com/feeds/videos.xml?channel_id=UC179zQKEWyy
 3. **길이:** 나레이션 공백 뺀 3,000~3,500자(약 370자 = 1분). 빌더가 글자 수를 출력한다. 렌더 길이는 나레이션 + 장 제목 3초 × 장 수 + 최종 화면 20초 → 총 8~10분 30초.
 4. 단어 마크: 괄호는 단어 끝에서 닫는다(`[3만 원짜리]`). `^` 는 문장 첫 단어 앞에 넣지 않는다. 숫자는 말하는 단어 시점에 뜨게 `KT(id, j)` 를 쓰고 그 전에는 `?`(0으로 세어 올리지 않는다). 빌더 안 `SEQ` 는 계산기 키 시퀀스이고 0 개수를 센다.
 5. 빌드: `python3 longform/build-epNN.py` → `longform/epNN-*.html`(음성 없음). 음성: `node longform/gen-tts.js longform/epNN-*.html --dry` 로 묶음 크기를 보고, 키가 있으면 `node longform/gen-tts.js longform/epNN-*.html`(환경변수 `GOOGLE_TTS_API_KEY` 만 사용). 내장된 음성을 `/tmp/tts.json` 으로 따로 저장해 두면 장면만 고칠 때 `python3 longform/build-epNN.py /tmp/tts.json` 으로 다시 내장한다(API 를 또 부르지 않는다).
-6. **장면 점검은 필수:**
+6. **제목·썸네일:** `docs/title-thumbnail-playbook.md` 로 짠다. 썸네일 A안 = 지금 가장 센 꼴(1장 '우리 채널 성적'에서 조회 1위 꼴), B안 = '4. 시험 대기' 맨 위, C안 = 다른 감정(걱정하는 계산이·따옴표). 세 안은 같은 숫자를 쓰고 꼴만 다르게 한다. 제목 3안도 썸네일과 짝으로 같은 꼴을 따르고, `docs/longform-epNN.md` 에 안마다 꼴 번호(`[T6]`·`[S6]`)를 적는다. 피할 것(통계 숫자로 여는 제목·TOP 5·금액 없는 제목)은 쓰지 않는다.
+7. **장면 점검은 필수:**
    `NODE_PATH=$(npm root -g) node longform/tools/shoot.js $PWD/longform/epNN-*.html /tmp/f1 <문장id+초> …` 로 모든 장면의 프레임을 뽑고 `python3 -I longform/tools/sheet.py /tmp/f1 6` 로 모음 이미지를 만들어 Read 로 본다. 겹침·잘림·빈 화면·`0만 원` 같은 숫자 오류를 고치고 다시 본다. 막대 오른쪽 라벨이 1880px 를 넘지 않게, 출처 줄 y=872, 자막 아래 1050. 썸네일은 `longform/tools/thumbs.js` 로 3안을 뽑아 360px 로 줄여 본다(핵심 그림은 위 55%).
-7. 렌더: `NODE_PATH=$(npm root -g) node longform/render-longform.js longform/epNN-*.html /tmp/out/secret-calculator_LFNN_<slug>.mp4 3 > /tmp/out/render.log 2>&1` (약 10분, 백그라운드로 돌리고 로그를 본다). 끝나면 `ffprobe` 로 해상도·길이, `ffmpeg … ebur128` 로 −14.0 LUFS 근처인지 확인. 로그 끝에 `done` 이 없거나 길이가 짧으면(EPIPE) 다시 돌린다.
-8. 자막: `node longform/make-srt.js longform/epNN-*.html longform/epNN-*.ko.srt`.
+8. 렌더: `NODE_PATH=$(npm root -g) node longform/render-longform.js longform/epNN-*.html /tmp/out/secret-calculator_LFNN_<slug>.mp4 3 > /tmp/out/render.log 2>&1` (약 10분, 백그라운드로 돌리고 로그를 본다). 끝나면 `ffprobe` 로 해상도·길이, `ffmpeg … ebur128` 로 −14.0 LUFS 근처인지 확인. 로그 끝에 `done` 이 없거나 길이가 짧으면(EPIPE) 다시 돌린다.
+9. 자막: `node longform/make-srt.js longform/epNN-*.html longform/epNN-*.ko.srt`.
 
 ## 4. 문서 (CLAUDE.md '롱폼 업로드 문구' 규칙 그대로)
 1. `docs/longform-epNN.md`: 원본·렌더·결과(길이·LUFS), 구성 표(시각 표 = `window.__exp.info().chapters` 로 뽑는다), 계산표(식과 결과), **출처(원문 확인 여부 표시)**, 쓰지 않은 것, 업로드 문구(제목 3안·썸네일 3안 설명·설명란(5,000바이트 이하·`<` `>` 없음·첫 두 줄 훅·목차 0:00·결과 한눈에·계산 5가지·가정·출처 전부·해시태그 3개 맨 끝)·태그·고정 댓글·스튜디오 칸·올린 뒤 볼 것). `docs/longform-ep04.md` 를 틀로 쓴다.
