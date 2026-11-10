@@ -577,6 +577,8 @@ def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None)
     v = dict(VARIANTS.get(variant, VARIANTS["A"]))
     if overrides:
         v.update(overrides)
+    # '~'는 글자 꾸밈 기호(초록)로 쓰이므로 썸네일 글자에서는 '–'로 바꾼다
+    v = {k: (x.replace("~", "–") if isinstance(x, str) else x) for k, x in v.items()}
     pal, lay = _pick(v, variant)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)
     ctx = cairo.Context(surf)
