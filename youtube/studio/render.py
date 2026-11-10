@@ -27,6 +27,7 @@ LAYOUT_POS = {
     "center": (960, 1000, 430, False),
     "chapter": (330, 965, 520, False),
     "hidden": (-320, 935, 650, False),
+    "stage": (700, 1010, 780, False),
 }
 
 SYMBOLS = ["₩", "%", "$", "↑", "↓", "€", "¥", "₩", "%"]
@@ -51,6 +52,17 @@ class Renderer:
         self.specs = [self._scene_spec(s) for s in self.scenes]
         # 모션 2.0: 장면 전환·카메라·배경 빛 (meta.motion >= 2 일 때)
         self.motion = int(tl["meta"].get("motion", 1))
+        # 스토리 룩: 밝은 장소 배경 + 보드 위 정보 카드 (envs.py)
+        self.look = tl["meta"].get("look", "")
+        self._env_cache = {}
+        self._env_of = []
+        if self.look == "story":
+            seq = tl["meta"].get("envs") or ["office", "city", "home", "bank", "study", "market"]
+            ci = 0
+            for i, sc in enumerate(self.scenes):
+                if sc.get("chapter") and i > 0:
+                    ci += 1
+                self._env_of.append(sc.get("env") or seq[ci % len(seq)])
         self._blob = self._make_blob()
         self._vignette = self._make_vignette()
         self._tape = None
@@ -152,6 +164,9 @@ class Renderer:
         ctx.translate(W / 2 + dx, H / 2 + dy)
         ctx.scale(z, z)
         ctx.translate(-W / 2, -H / 2)
+        if self.look == "story" and vis["type"] not in ("chapter", "stage", "outro"):
+            from .envs import board
+            board(ctx, S.area, a=clamp(lt / 0.25) if si == 0 else 1.0)
         VISUALS[vis["type"]](ctx, S)
         ctx.restore()
 
@@ -317,7 +332,33 @@ class Renderer:
         ctx.paint()
         return surf
 
+    def _env(self, name):
+        if name not in self._env_cache:
+            from .envs import make_env
+            self._env_cache[name] = make_env(name, seed=len(name) * 7 + 3)
+        return self._env_cache[name]
+
+    def _draw_env(self, ctx, si, lt, alpha=1.0):
+        s = self.scenes[si]
+        dur = max(1.0, s["dur"])
+        k = clamp(lt / dur)
+        z = 1.04 + 0.05 * k                      # 느린 줌(켄 번즈)
+        dx = (-1 if si % 2 else 1) * 30 * (k - 0.5)
+        ctx.save()
+        ctx.translate(W / 2 + dx, H / 2)
+        ctx.scale(z, z)
+        ctx.translate(-W / 2, -H / 2)
+        ctx.set_source_surface(self._env(self._env_of[si]), 0, 0)
+        ctx.paint_with_alpha(alpha)
+        ctx.restore()
+
     def draw_background(self, ctx, t, scene_i, lt):
+        if self.look == "story":
+            self._draw_env(ctx, scene_i, lt)
+            if scene_i > 0 and lt < 0.6 and self._env_of[scene_i - 1] != self._env_of[scene_i]:
+                ps = self.scenes[scene_i - 1]
+                self._draw_env(ctx, scene_i - 1, ps["dur"], 1 - lt / 0.6)
+            return
         s = self.scenes[scene_i]
         theme = s.get("bg", "navy")
         ctx.set_source_surface(self._bg(theme), 0, 0)

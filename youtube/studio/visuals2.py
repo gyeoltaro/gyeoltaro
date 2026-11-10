@@ -1176,11 +1176,57 @@ def v_icongrid(ctx, S: SceneCtx):
         ctx.restore()
 
 
+# ---------------------------------------------------------------- stage (이야기 장면: 장소 안의 캐릭터 + 소품 + 말풍선)
+
+def v_stage(ctx, S: SceneCtx):
+    """props: [{icon, at, x, y, s, color}] 소품이 장면 안에 튀어나오고, bubble 말풍선, label 큰 한마디."""
+    v = S.v
+    for i, pr in enumerate(v.get("props", [])):
+        st = S.at(pr.get("at", 0))
+        d = S.lt - st
+        if d < 0:
+            continue
+        sc = ease_out_back(clamp(d / 0.5), 2.0)
+        x = pr.get("x", S.area[0] + 160 + (i % 3) * 230)
+        y = pr.get("y", S.area[1] + 360 + (i // 3) * 200) + math.sin(S.t * 2 + i) * 8
+        _glow_circle(ctx, x, y, 120 * pr.get("s", 1.4), pr.get("glow", "white"), 0.6)
+        icon(ctx, pr["icon"], x, y, pr.get("s", 1.4) * sc, clamp(d / 0.2), pr.get("color"))
+        if pr.get("text"):
+            text(ctx, pr["text"], x, y + 95 * pr.get("s", 1.4), size=40, fname="title", color="white", stroke=8,
+                 alpha=clamp(d / 0.3), max_w=360)
+    if v.get("bubble"):
+        st = S.at(v.get("bubble_at", 0))
+        d = S.lt - st
+        if d >= 0:
+            sc = ease_out_back(clamp(d / 0.4), 1.8)
+            bx, by = v.get("bubble_x", S.area[0] + 330), v.get("bubble_y", S.area[1] + 110)
+            bw, bh = 640, 170
+            ctx.save()
+            ctx.translate(bx, by)
+            ctx.scale(sc, sc)
+            ctx.new_path()
+            round_rect(ctx, -bw / 2, -bh / 2, bw, bh, 40)
+            ctx.move_to(-bw / 2 + 80, bh / 2 - 4)
+            ctx.line_to(-bw / 2 - 30, bh / 2 + 70)
+            ctx.line_to(-bw / 2 + 170, bh / 2 - 4)
+            ctx.set_source_rgba(1, 1, 1, 0.97)
+            ctx.fill_preserve()
+            ctx.set_source_rgba(0.07, 0.07, 0.07, 1)
+            ctx.set_line_width(7)
+            ctx.stroke()
+            text(ctx, v["bubble"], 0, 0, size=v.get("bubble_size", 52), fname="title", color="ink", max_w=bw - 60)
+            ctx.restore()
+    if v.get("label"):
+        sc, al = pop(S.lt, S.at(v.get("label_at", 0)), 0.5)
+        text(ctx, v["label"], v.get("label_x", S.cx), v.get("label_y", S.area[3] + 70), size=v.get("label_size", 78),
+             fname="title", color=v.get("label_color", "yellow"), stroke=12, scale=sc, alpha=al, max_w=S.aw + 100)
+
+
 VISUALS2 = {
     "kinetic": v_kinetic, "timeline": v_timeline, "ticker": v_ticker, "waterfall": v_waterfall,
     "worldflow": v_worldflow, "breaker": v_breaker, "donut": v_donut, "balance": v_balance,
     "stamps": v_stamps, "bubble": v_bubble, "dominoes": v_dominoes, "calendar": v_calendar,
-    "datacenter": v_datacenter, "icongrid": v_icongrid,
+    "datacenter": v_datacenter, "icongrid": v_icongrid, "stage": v_stage,
 }
 
 
@@ -1238,6 +1284,13 @@ def events2(scene, S):
     elif ty == "datacenter":
         for i, sp in enumerate(v.get("steps", [])):
             add(sp.get("at", i), "pop")
+    elif ty == "stage":
+        for i, pr in enumerate(v.get("props", [])):
+            add(pr.get("at", 0), "pop")
+        if v.get("bubble"):
+            add(v.get("bubble_at", 0), "whoosh")
+        if v.get("label"):
+            add(v.get("label_at", 0), "boom")
     elif ty == "icongrid":
         for i, it in enumerate(v["items"]):
             add(it.get("at", i), "pop")
