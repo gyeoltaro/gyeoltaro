@@ -150,7 +150,7 @@ PALETTES = {
     "forest": {"bg": ("#0F3B22", "#04120A"), "a": "#146B3A", "b": "#6A1020"},
     "slate":  {"bg": ("#2B3440", "#0B0E12"), "a": "#3B4A5E", "b": "#7A2A10"},
 }
-LAYOUTS = ("classic", "bignum", "split", "zoom", "banner", "duo", "hero", "split2")
+LAYOUTS = ("classic", "bignum", "split", "zoom", "banner", "duo", "hero", "split2", "scene")
 DEFAULT_LAYOUT = {"A": "classic", "B": "split", "C": "zoom"}
 
 
@@ -455,6 +455,124 @@ def _layout_split2(ctx, v, pal):
     text(ctx, v["main"], TW / 2, 625, size=v.get("main_size", 128), fname="title", color="#FFE81A", stroke=16, max_w=TW - 50)
 
 
+# ---------------------------------------------------------------- 장면형 (레퍼런스 학습 반영, 2026-11-10)
+# 잘 된 경제 썸네일(구독자 대비 조회수 상위 60개)과 우리 썸네일을 비교한 결과:
+#  - 밝기 0.40 vs 우리 0.30, 어두운 픽셀 37% vs 우리 64% → 더 밝고 따뜻하게
+#  - 디테일(가장자리 밀도) 0.25 vs 우리 0.16 → 빈 배경 대신 화면을 채우는 '장면'
+#  - 아래 2줄 큰 글자(흰 + 노랑), 감정이 큰 캐릭터, 핵심 숫자·화살표 하나는 우리와 같음
+SCENES = {
+    "city":   {"sky": ("#FFB347", "#FF7A3D"), "far": "#7A3B2E", "near": "#3A1E1A"},
+    "dawn":   {"sky": ("#7FD3FF", "#3E7BE0"), "far": "#2C4A7A", "near": "#16253F"},
+    "gold":   {"sky": ("#FFE08A", "#E59A2A"), "far": "#8A5A1E", "near": "#4A2E10"},
+    "mint":   {"sky": ("#B8F2D0", "#3FBF8A"), "far": "#1F6B52", "near": "#0E3A2C"},
+    "rose":   {"sky": ("#FFB3C1", "#E0557A"), "far": "#7A2A44", "near": "#3D1424"},
+}
+
+
+def _scene_bg(ctx, sc, seed=7):
+    g = cairo.LinearGradient(0, 0, 0, TH)
+    g.add_color_stop_rgb(0, *hexc(sc["sky"][0]))
+    g.add_color_stop_rgb(1, *hexc(sc["sky"][1]))
+    ctx.set_source(g)
+    ctx.paint()
+    # 햇빛
+    rg = cairo.RadialGradient(900, 260, 20, 900, 260, 520)
+    rg.add_color_stop_rgba(0, 1, 1, 0.9, 0.85)
+    rg.add_color_stop_rgba(1, 1, 1, 0.9, 0)
+    ctx.set_source(rg)
+    ctx.paint()
+    rnd = random.Random(seed)
+    # 먼 건물 / 가까운 건물 실루엣
+    for layer, col, base, hmin, hmax in ((0, sc["far"], 520, 120, 300), (1, sc["near"], 600, 80, 220)):
+        x = -20
+        while x < TW + 40:
+            w = rnd.randint(50, 120)
+            h = rnd.randint(hmin, hmax)
+            ctx.new_path()
+            ctx.rectangle(x, base - h, w, TH)
+            ctx.set_source_rgba(*hexc(col), 0.55 if layer == 0 else 0.85)
+            ctx.fill()
+            # 창문
+            ctx.set_source_rgba(1, 0.92, 0.6, 0.35 if layer == 0 else 0.5)
+            for wy in range(int(base - h + 14), int(base) - 10, 26):
+                for wx in range(int(x + 10), int(x + w - 12), 22):
+                    if rnd.random() < 0.55:
+                        ctx.rectangle(wx, wy, 10, 12)
+            ctx.fill()
+            x += w + rnd.randint(4, 18)
+
+
+def _money_rain(ctx, seed=3, n=14):
+    rnd = random.Random(seed)
+    for i in range(n):
+        x, y = rnd.uniform(40, TW - 40), rnd.uniform(40, 420)
+        if rnd.random() < 0.5:
+            draw_bill(ctx, x, y, 120, 58, "10,000", rot=rnd.uniform(-30, 30))
+        else:
+            draw_coin(ctx, x, y, rnd.uniform(18, 30), rot=rnd.uniform(0, 3))
+
+
+def _big_arrow_chart(ctx, down=True, color=None):
+    col = color or ("#FF2E2E" if down else "#21D16B")
+    pts = [(80, 120), (260, 200), (380, 160), (560, 300), (700, 260), (860, 430)] if down else \
+          [(80, 430), (260, 340), (380, 380), (560, 230), (700, 270), (860, 110)]
+    for w, a in ((46, 0.18), (30, 0.3)):
+        ctx.new_path()
+        ctx.move_to(*pts[0])
+        for q in pts[1:]:
+            ctx.line_to(*q)
+        ctx.set_source_rgba(*hexc(col), a)
+        ctx.set_line_width(w)
+        ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+        ctx.stroke()
+    ctx.new_path()
+    ctx.move_to(*pts[0])
+    for q in pts[1:-1]:
+        ctx.line_to(*q)
+    ctx.set_source_rgb(*hexc(col))
+    ctx.set_line_width(18)
+    ctx.stroke()
+    arrow(ctx, pts[-2][0], pts[-2][1], pts[-1][0], pts[-1][1], color=col, width=18, head=64)
+
+
+def _fit(ctx, s, x, y, size, max_w, **kw):
+    """한 줄로 유지하면서 폭에 맞게 글자 크기를 줄인다."""
+    from .core import text_surface
+    sz = size
+    while sz > 40:
+        w = text_surface(s, kw.get("fname", "title"), int(sz), kw.get("color", "white"), int(kw.get("stroke", 0)),
+                         "ink", "center", 0, 0.18, 0).get_width()
+        if w <= max_w:
+            break
+        sz -= 4
+    text(ctx, s, x, y, size=sz, **kw)
+
+
+def _layout_scene(ctx, v, pal):
+    """밝은 장면 배경 + 큰 캐릭터 + 핵심 숫자 하나 + 아래 2줄."""
+    sc = SCENES.get(v.get("scene"), SCENES["city"])
+    _scene_bg(ctx, sc, seed=len(v.get("main", "")) + 3)
+    if v.get("chart") in ("down", "up"):
+        _big_arrow_chart(ctx, down=v["chart"] == "down")
+    if v.get("money", True):
+        _money_rain(ctx, seed=len(v.get("top", "")) + 1, n=7)
+    # 캐릭터 뒤 빛
+    rg = cairo.RadialGradient(1010, 430, 30, 1010, 430, 380)
+    rg.add_color_stop_rgba(0, 1, 1, 1, 0.55)
+    rg.add_color_stop_rgba(1, 1, 1, 1, 0)
+    ctx.set_source(rg)
+    ctx.paint()
+    _mascot(ctx, v, 1010, 1010, 930)
+    if v.get("num"):
+        nb = v["num"]
+        _fit(ctx, nb, 380, 220, v.get("num_size", 170), 660, fname="title", color=v.get("num_color", "#FFE81A"), stroke=20, rot=-3)
+    if v.get("quote"):
+        text(ctx, v["quote"], 40, 34, size=48, fname="title", color="white", stroke=10, align="left", anchor=(0, 0), max_w=760)
+    _bottom_band(ctx)
+    _fit(ctx, v["top"], 470, 528, 84, 880, fname="title", color="white", stroke=14)
+    _fit(ctx, v["main"], 470, 640, v.get("main_size", 118), 900, fname="title", color="#FFE81A", stroke=16)
+
+
 def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None):
     v = dict(VARIANTS.get(variant, VARIANTS["A"]))
     if overrides:
@@ -463,6 +581,7 @@ def make_thumbnail(path: str, variant: str = "A", overrides: dict | None = None)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, TW, TH)
     ctx = cairo.Context(surf)
     {"classic": _layout_classic, "bignum": _layout_bignum, "split": _layout_split, "zoom": _layout_zoom, "banner": _layout_banner,
-     "duo": _layout_duo, "hero": _layout_hero, "split2": _layout_split2}.get(lay, _layout_classic)(ctx, v, pal)
+     "duo": _layout_duo, "hero": _layout_hero, "split2": _layout_split2,
+     "scene": _layout_scene}.get(lay, _layout_classic)(ctx, v, pal)
     surf.write_to_png(path)
     return path
