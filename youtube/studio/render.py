@@ -164,7 +164,7 @@ class Renderer:
         ctx.translate(W / 2 + dx, H / 2 + dy)
         ctx.scale(z, z)
         ctx.translate(-W / 2, -H / 2)
-        if self.look == "story" and vis["type"] not in ("chapter", "stage", "outro"):
+        if self.look == "story" and vis["type"] not in ("chapter", "stage"):
             from .envs import board
             board(ctx, S.area, a=clamp(lt / 0.25) if si == 0 else 1.0)
         VISUALS[vis["type"]](ctx, S)

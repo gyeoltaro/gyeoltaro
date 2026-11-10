@@ -1187,13 +1187,13 @@ def v_stage(ctx, S: SceneCtx):
         if d < 0:
             continue
         sc = ease_out_back(clamp(d / 0.5), 2.0)
-        x = pr.get("x", S.area[0] + 160 + (i % 3) * 230)
+        x = pr.get("x", S.area[0] + 130 + (i % 3) * 245)
         y = pr.get("y", S.area[1] + 360 + (i // 3) * 200) + math.sin(S.t * 2 + i) * 8
         _glow_circle(ctx, x, y, 120 * pr.get("s", 1.4), pr.get("glow", "white"), 0.6)
-        icon(ctx, pr["icon"], x, y, pr.get("s", 1.4) * sc, clamp(d / 0.2), pr.get("color"))
+        icon(ctx, pr["icon"], x, y, pr.get("s", 1.6) * sc, clamp(d / 0.2), pr.get("color"))
         if pr.get("text"):
-            text(ctx, pr["text"], x, y + 95 * pr.get("s", 1.4), size=40, fname="title", color="white", stroke=8,
-                 alpha=clamp(d / 0.3), max_w=360)
+            text(ctx, pr["text"], x, y + 95 * pr.get("s", 1.6) + (i % 2) * 46, size=38, fname="title", color="white", stroke=8,
+                 alpha=clamp(d / 0.3), max_w=235)
     if v.get("bubble"):
         st = S.at(v.get("bubble_at", 0))
         d = S.lt - st
