@@ -1,10 +1,69 @@
 {
   "channels": [
-    {"id": "UCm879ZUxkV6mqZFqNVUcwZg", "name": "부의비상사태 911", "role": "mine"},
-    {"id": "UC7cf7eZIucAAzkm_rwoawZw", "name": "유치한경제학", "role": "benchmark"}
+    {
+      "id": "UCm879ZUxkV6mqZFqNVUcwZg",
+      "name": "부의비상사태 911",
+      "role": "mine"
+    },
+    {
+      "id": "UC7cf7eZIucAAzkm_rwoawZw",
+      "name": "유치한경제학",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCn49LSg2JSP-9rXV5G2kt4A",
+      "name": "경제해적단",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCjSZSpjHEyuKwwa8U9_Faqw",
+      "name": "똑똑해지는 경제학",
+      "role": "benchmark"
+    },
+    {
+      "id": "UC16afF19sIGTcCi9Nfuokgw",
+      "name": "경제박사",
+      "role": "benchmark"
+    },
+    {
+      "id": "UC4uaNGU3_HMfJTjafd0yeew",
+      "name": "위대한 비밀",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCUh1cZXJZvUz4vC9gbdxVjw",
+      "name": "노후의 진실",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCfOhunfxnhP8H5bkNIXcg8g",
+      "name": "세계경제이야기",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCtAfLywLQHFG_83zCuhDYrA",
+      "name": "꾸준한 경제",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCY4FGn0d7ltiW6GDypGnaMA",
+      "name": "코믹스 경제",
+      "role": "benchmark"
+    },
+    {
+      "id": "UCskY2hb_QQrqLhCipN4MDVQ",
+      "name": "세상해설소",
+      "role": "benchmark"
+    }
   ],
-  "keywords": ["경제 모든것", "금리", "환율", "인플레이션", "재테크 기초"],
-  "max_videos_per_channel": 200,
+  "keywords": [
+    "경제 모든것",
+    "금리",
+    "환율",
+    "인플레이션",
+    "재테크 기초"
+  ],
+  "max_videos_per_channel": 150,
   "search_days": 14,
   "search_results": 15,
   "hot_days": 30,

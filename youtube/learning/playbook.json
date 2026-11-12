@@ -1,96 +1,60 @@
 {
- "version": 3,
- "updated": "2026-11-02",
+ "version": 4,
+ "updated": "2026-11-11",
  "rules": [
-  {
-   "key": "hours",
-   "label": "'N시간' 몰아보기",
-   "bench_lift": 4.09,
-   "bench_n": 4,
-   "own_lift": null,
-   "own_n": 0,
-   "own_min_group": 0,
-   "weight_own": 0.0,
-   "lift": 4.09,
-   "status": "벤치마크 기준"
-  },
   {
    "key": "easy",
    "label": "'초등학생도 이해'",
-   "bench_lift": 3.64,
+   "bench_lift": 3.24,
    "bench_n": 6,
    "own_lift": null,
    "own_n": 0,
    "own_min_group": 0,
    "weight_own": 0.0,
-   "lift": 3.64,
+   "lift": 3.24,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "minutes",
+   "label": "'N분 만에'",
+   "bench_lift": 2.22,
+   "bench_n": 28,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 2.22,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "hours",
+   "label": "'N시간' 몰아보기",
+   "bench_lift": 1.75,
+   "bench_n": 8,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.75,
    "status": "벤치마크 기준"
   },
   {
    "key": "all_about",
    "label": "'~의 모든 것'",
-   "bench_lift": 2.59,
-   "bench_n": 22,
+   "bench_lift": 1.73,
+   "bench_n": 23,
    "own_lift": null,
    "own_n": 0,
    "own_min_group": 0,
    "weight_own": 0.0,
-   "lift": 2.59,
-   "status": "벤치마크 기준"
-  },
-  {
-   "key": "question",
-   "label": "물음표",
-   "bench_lift": 2.2,
-   "bench_n": 17,
-   "own_lift": 1.33,
-   "own_n": 10,
-   "own_min_group": 4,
-   "weight_own": 0.29,
-   "lift": 1.91,
-   "status": "내 데이터 반영"
-  },
-  {
-   "key": "minutes",
-   "label": "'N분 만에'",
-   "bench_lift": 1.87,
-   "bench_n": 26,
-   "own_lift": null,
-   "own_n": 0,
-   "own_min_group": 0,
-   "weight_own": 0.0,
-   "lift": 1.87,
-   "status": "벤치마크 기준"
-  },
-  {
-   "key": "percent",
-   "label": "퍼센트 숫자",
-   "bench_lift": 1.64,
-   "bench_n": 12,
-   "own_lift": null,
-   "own_n": 0,
-   "own_min_group": 0,
-   "weight_own": 0.0,
-   "lift": 1.64,
+   "lift": 1.73,
    "status": "벤치마크 기준"
   },
   {
    "key": "crisis",
    "label": "'위기·폭락·붕괴'",
-   "bench_lift": 1.25,
-   "bench_n": 20,
-   "own_lift": null,
-   "own_n": 0,
-   "own_min_group": 0,
-   "weight_own": 0.0,
-   "lift": 1.25,
-   "status": "벤치마크 기준"
-  },
-  {
-   "key": "summary",
-   "label": "'총정리'",
    "bench_lift": 1.22,
-   "bench_n": 9,
+   "bench_n": 98,
    "own_lift": null,
    "own_n": 0,
    "own_min_group": 0,
@@ -99,22 +63,130 @@
    "status": "벤치마크 기준"
   },
   {
+   "key": "percent",
+   "label": "퍼센트 숫자",
+   "bench_lift": 1.2,
+   "bench_n": 53,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.2,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "list",
+   "label": "'N가지·TOP N'",
+   "bench_lift": 1.13,
+   "bench_n": 115,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.13,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "summary",
+   "label": "'총정리'",
+   "bench_lift": 1.11,
+   "bench_n": 17,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.11,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "quote",
+   "label": "따옴표 훅(“..”)",
+   "bench_lift": 1.07,
+   "bench_n": 417,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.07,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "bar",
+   "label": "세로줄로 나눈 두 문장(질문 | 사건)",
+   "bench_lift": 1.07,
+   "bench_n": 111,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.07,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "why",
+   "label": "'~하는 이유'",
+   "bench_lift": 1.03,
+   "bench_n": 375,
+   "own_lift": 1.71,
+   "own_n": 10,
+   "own_min_group": 3,
+   "weight_own": 0.23,
+   "lift": 1.16,
+   "status": "내 데이터 반영"
+  },
+  {
+   "key": "habit",
+   "label": "'습관·원칙·비밀'",
+   "bench_lift": 1.03,
+   "bench_n": 113,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.03,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "real_reason",
+   "label": "'진짜 이유'",
+   "bench_lift": 1.0,
+   "bench_n": 191,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 1.0,
+   "status": "벤치마크 기준"
+  },
+  {
    "key": "how",
    "label": "'~하는 방법'",
-   "bench_lift": 1.16,
+   "bench_lift": 0.94,
+   "bench_n": 36,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 0.94,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "year",
+   "label": "연도(사건 이야기)",
+   "bench_lift": 0.93,
    "bench_n": 22,
    "own_lift": null,
    "own_n": 0,
    "own_min_group": 0,
    "weight_own": 0.0,
-   "lift": 1.16,
+   "lift": 0.93,
    "status": "벤치마크 기준"
   },
   {
    "key": "money",
    "label": "금액 숫자(만·억·조 원)",
    "bench_lift": 0.91,
-   "bench_n": 20,
+   "bench_n": 89,
    "own_lift": null,
    "own_n": 0,
    "own_min_group": 0,
@@ -123,40 +195,40 @@
    "status": "벤치마크 기준"
   },
   {
-   "key": "why",
-   "label": "'~하는 이유'",
-   "bench_lift": 0.79,
-   "bench_n": 48,
-   "own_lift": 1.71,
+   "key": "senior",
+   "label": "'노후·연금·은퇴'",
+   "bench_lift": 0.86,
+   "bench_n": 31,
+   "own_lift": null,
+   "own_n": 0,
+   "own_min_group": 0,
+   "weight_own": 0.0,
+   "lift": 0.86,
+   "status": "벤치마크 기준"
+  },
+  {
+   "key": "question",
+   "label": "물음표",
+   "bench_lift": 0.85,
+   "bench_n": 164,
+   "own_lift": 1.33,
    "own_n": 10,
-   "own_min_group": 3,
-   "weight_own": 0.23,
-   "lift": 0.94,
+   "own_min_group": 4,
+   "weight_own": 0.29,
+   "lift": 0.97,
    "status": "내 데이터 반영"
   },
   {
    "key": "shock",
    "label": "'충격·소름·ㄷㄷ'",
-   "bench_lift": 0.76,
-   "bench_n": 27,
+   "bench_lift": 0.83,
+   "bench_n": 82,
    "own_lift": 1.29,
    "own_n": 10,
    "own_min_group": 3,
    "weight_own": 0.23,
-   "lift": 0.86,
+   "lift": 0.92,
    "status": "내 데이터 반영"
-  },
-  {
-   "key": "quote",
-   "label": "따옴표 훅(“..”)",
-   "bench_lift": 0.66,
-   "bench_n": 81,
-   "own_lift": null,
-   "own_n": 0,
-   "own_min_group": 0,
-   "weight_own": 0.0,
-   "lift": 0.66,
-   "status": "벤치마크 기준"
   }
  ],
  "changelog": [
@@ -287,8 +359,120 @@
    "old": 1.16,
    "new": 0.94,
    "why": "내 영상 결과를 반영"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "minutes",
+   "label": "'N분 만에'",
+   "old": 1.87,
+   "new": 2.22,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "hours",
+   "label": "'N시간' 몰아보기",
+   "old": 4.09,
+   "new": 1.75,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "all_about",
+   "label": "'~의 모든 것'",
+   "old": 2.59,
+   "new": 1.73,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "percent",
+   "label": "퍼센트 숫자",
+   "old": 1.64,
+   "new": 1.2,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "list",
+   "label": "'N가지·TOP N'",
+   "old": null,
+   "new": 1.13,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "quote",
+   "label": "따옴표 훅(“..”)",
+   "old": 0.66,
+   "new": 1.07,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "bar",
+   "label": "세로줄로 나눈 두 문장(질문 | 사건)",
+   "old": null,
+   "new": 1.07,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "why",
+   "label": "'~하는 이유'",
+   "old": 0.94,
+   "new": 1.16,
+   "why": "내 영상 결과를 반영"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "habit",
+   "label": "'습관·원칙·비밀'",
+   "old": null,
+   "new": 1.03,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "real_reason",
+   "label": "'진짜 이유'",
+   "old": null,
+   "new": 1.0,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "how",
+   "label": "'~하는 방법'",
+   "old": 1.16,
+   "new": 0.94,
+   "why": "벤치마크 표본이 늘면서 값이 바뀜"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "year",
+   "label": "연도(사건 이야기)",
+   "old": null,
+   "new": 0.93,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "senior",
+   "label": "'노후·연금·은퇴'",
+   "old": null,
+   "new": 0.86,
+   "why": "새 규칙 추가"
+  },
+  {
+   "date": "2026-11-11",
+   "key": "question",
+   "label": "물음표",
+   "old": 1.91,
+   "new": 0.97,
+   "why": "내 영상 결과를 반영"
   }
  ],
- "own_videos": 12,
+ "own_videos": 20,
  "own_ready": true
 }

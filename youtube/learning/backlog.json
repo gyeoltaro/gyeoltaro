@@ -260,5 +260,269 @@
     "재테크 기초"
    ]
   }
+ },
+ {
+  "date": "2026-11-11",
+  "source": "api",
+  "hot": [
+   {
+    "id": "8pmTwF-WdRo",
+    "title": "하이닉스·삼전 공매도 582만 주 숏스퀴즈 임박! 내일 아침 환율 1,360원만 깨면 다 터진다 #SK하이닉스",
+    "channel": "딜러네",
+    "cid": "UChDBVWhpPc2NzPMdsNu86nA",
+    "type": "short",
+    "views": 82529,
+    "score": 88.5,
+    "reason": "구독자 대비 조회수 88.5배",
+    "age": 4,
+    "mine": false,
+    "via": "search",
+    "tags": [
+     "money"
+    ]
+   },
+   {
+    "id": "q0u7OAutDtA",
+    "title": "\"이것들만 알면 끝입니다\" 2시간 52분만에 끝내는 기초 경제지식의 모든것",
+    "channel": "유치한경제학",
+    "cid": "UC7cf7eZIucAAzkm_rwoawZw",
+    "type": "long",
+    "views": 363167,
+    "score": 78.9,
+    "reason": "하루 +6,151회",
+    "age": 319,
+    "mine": false,
+    "via": "channel",
+    "tags": [
+     "all_about",
+     "minutes",
+     "hours",
+     "quote"
+    ]
+   },
+   {
+    "id": "QikGbRqrcxA",
+    "title": "환율 1200원 내려간다..?? 아무도 몰랐던 환율폭락의 비밀",
+    "channel": "경제읽어주는남자",
+    "cid": "UCXuqnlHXm4LcqIhlC607ZoQ",
+    "type": "long",
+    "views": 64591,
+    "score": 55.7,
+    "reason": "구독자 대비 조회수 55.7배",
+    "age": 13,
+    "mine": false,
+    "via": "search",
+    "tags": [
+     "crisis",
+     "question",
+     "habit"
+    ]
+   },
+   {
+    "id": "HfRE8ASV1n0",
+    "title": "\"여의도 849개만큼 커졌다?!\" 한국 영토가 계속 넓어지고 있는 진짜 이유",
+    "channel": "꾸준한 경제",
+    "cid": "UCtAfLywLQHFG_83zCuhDYrA",
+    "type": "long",
+    "views": 548671,
+    "score": 52.4,
+    "reason": "채널 평균의 52.4배",
+    "age": 15,
+    "mine": false,
+    "via": "channel",
+    "tags": [
+     "quote",
+     "why",
+     "question",
+     "real_reason"
+    ]
+   },
+   {
+    "id": "IkQ1c9zOST0",
+    "title": "작정하고 리뉴얼 해놨더니 환율 떨어져서 강제 할인 중이라는 130$ 해산물 뷔페",
+    "channel": "잇츠굿 It's Good",
+    "cid": "UCsfdLSKV7L9mPuZW4go-8BQ",
+    "type": "long",
+    "views": 194456,
+    "score": 34.9,
+    "reason": "구독자 대비 조회수 34.9배",
+    "age": 9,
+    "mine": false,
+    "via": "search",
+    "tags": []
+   },
+   {
+    "id": "Jm8I5FY3mtQ",
+    "title": "\"한국어 학교만 570곳?\" 글자만 세 가지 쓰는 일본 학생들이 지금 한글에 푹 빠진 진짜 이유",
+    "channel": "꾸준한 경제",
+    "cid": "UCtAfLywLQHFG_83zCuhDYrA",
+    "type": "long",
+    "views": 298635,
+    "score": 28.5,
+    "reason": "채널 평균의 28.5배",
+    "age": 24,
+    "mine": false,
+    "via": "channel",
+    "tags": [
+     "quote",
+     "why",
+     "question",
+     "real_reason"
+    ]
+   },
+   {
+    "id": "yga2MybAB0M",
+    "title": "\"모르면 당합니다..\" 충격적인 요즘 다단계 포섭법과 절대 돈을 벌 수 없는 이유",
+    "channel": "유치한경제학",
+    "cid": "UC7cf7eZIucAAzkm_rwoawZw",
+    "type": "long",
+    "views": 92333,
+    "score": 18.8,
+    "reason": "하루 +1,463회",
+    "age": 361,
+    "mine": false,
+    "via": "channel",
+    "tags": [
+     "quote",
+     "why",
+     "shock"
+    ]
+   },
+   {
+    "id": "tBqW-qNA1qg",
+    "title": "42분만에 알아보는 경제 대공황의 모든것",
+    "channel": "유치한경제학",
+    "cid": "UC7cf7eZIucAAzkm_rwoawZw",
+    "type": "long",
+    "views": 265666,
+    "score": 18.0,
+    "reason": "하루 +1,404회",
+    "age": 405,
+    "mine": false,
+    "via": "channel",
+    "tags": [
+     "all_about",
+     "minutes",
+     "crisis"
+    ]
+   }
+  ],
+  "mine": {
+   "name": "부의비상사태 911",
+   "subs": 19,
+   "subs_delta": 1,
+   "views": 16334,
+   "views_delta": 215,
+   "videos": 30,
+   "long_median": 12.5,
+   "short_median": 1465.0,
+   "top_gainers": [
+    {
+     "id": "6SKHwhiLezc",
+     "title": "“내 월급만 제자리인 진짜 이유..” 15분 만에 끝내는 인플레이션의 모든 것",
+     "gain": 130
+    }
+   ]
+  },
+  "insights": [
+   {
+    "id": "L_feat_easy",
+    "kind": "format",
+    "label": "'초등학생도 이해' ×3.24",
+    "text": "제목에 '초등학생도 이해' 패턴이 있으면 채널 평균 대비 조회수 3.24배 (표본 6개)",
+    "weight": 3,
+    "value": 3.24
+   },
+   {
+    "id": "L_feat_minutes",
+    "kind": "format",
+    "label": "'N분 만에' ×2.22",
+    "text": "제목에 'N분 만에' 패턴이 있으면 채널 평균 대비 조회수 2.22배 (표본 28개)",
+    "weight": 3,
+    "value": 2.22
+   },
+   {
+    "id": "L_feat_hours",
+    "kind": "format",
+    "label": "'N시간' 몰아보기 ×1.75",
+    "text": "제목에 'N시간' 몰아보기 패턴이 있으면 채널 평균 대비 조회수 1.75배 (표본 8개)",
+    "weight": 2,
+    "value": 1.75
+   },
+   {
+    "id": "L_feat_all_about",
+    "kind": "format",
+    "label": "'~의 모든 것' ×1.73",
+    "text": "제목에 '~의 모든 것' 패턴이 있으면 채널 평균 대비 조회수 1.73배 (표본 23개)",
+    "weight": 2,
+    "value": 1.73
+   },
+   {
+    "id": "L_duration_best",
+    "kind": "duration",
+    "label": "1시간 이상 영상 ×2.38",
+    "text": "길이는 1시간 이상이(가) 가장 강함: 채널 중앙값 대비 2.38배 (표본 7개)",
+    "weight": 2,
+    "value": 2.38
+   },
+   {
+    "id": "L_keywords",
+    "kind": "keyword",
+    "label": "떡상 키워드: 영토, 바꾼, 네덜란드",
+    "text": "조회수가 높게 나오는 키워드: 영토(×26.8, 4개), 바꾼(×23.88, 3개), 네덜란드(×12.24, 4개)",
+    "weight": 2,
+    "value": 26.8
+   },
+   {
+    "id": "L_mine_shorts",
+    "kind": "mine",
+    "label": "내 쇼츠가 롱폼의 117배",
+    "text": "내 채널 쇼츠 중앙값 1,465회 vs 롱폼 12회 → 쇼츠에서 롱폼으로 연결하는 장치 필요",
+    "weight": 2,
+    "value": 117.2
+   },
+   {
+    "id": "L_hot_pattern",
+    "kind": "format",
+    "label": "오늘 떡상 공통점: 따옴표 훅(“..”)",
+    "text": "오늘 떡상 영상 8개 중 4개가 따옴표 훅(“..”) 패턴",
+    "weight": 1,
+    "value": 4
+   }
+  ],
+  "ideas": [
+   {
+    "id": "I_39d1ffb0",
+    "topic": "SK하이닉스",
+    "label": "아이디어: SK하이닉스",
+    "text": "'하이닉스·삼전 공매도 582만 주 숏스퀴즈 임박! 내일 아침 환율 1,360원만 깨면 다 터진다 #SK하이닉스' (딜러네) 구독자 대비 조회수 88.5배. 추천 포맷: '초등학생도 이해' + 1시간 이상",
+    "video": "8pmTwF-WdRo"
+   },
+   {
+    "id": "I_600f5fa1",
+    "topic": "경제지식",
+    "label": "아이디어: 경제지식",
+    "text": "'\"이것들만 알면 끝입니다\" 2시간 52분만에 끝내는 기초 경제지식의 모든것' (유치한경제학) 하루 +6,151회. 추천 포맷: '초등학생도 이해' + 1시간 이상",
+    "video": "q0u7OAutDtA"
+   },
+   {
+    "id": "I_6d2d38bf",
+    "topic": "내려간다",
+    "label": "아이디어: 내려간다",
+    "text": "'환율 1200원 내려간다..?? 아무도 몰랐던 환율폭락의 비밀' (경제읽어주는남자) 구독자 대비 조회수 55.7배. 추천 포맷: '초등학생도 이해' + 1시간 이상",
+    "video": "QikGbRqrcxA"
+   }
+  ],
+  "tracked": {
+   "videos": 930,
+   "channels": 11,
+   "keywords": [
+    "경제 모든것",
+    "금리",
+    "환율",
+    "인플레이션",
+    "재테크 기초"
+   ]
+  }
  }
 ]

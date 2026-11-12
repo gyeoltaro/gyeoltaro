@@ -1,164 +1,106 @@
 {
- "date": "2026-11-02",
+ "date": "2026-11-11",
  "topics": [
   {
    "keyword": "금리",
-   "demand": 29665.0,
+   "demand": 23890.6,
    "n": 15,
    "covered": true,
    "examples": [
     {
      "title": "[26년 10월 28일 수]  연준 금리 결정, FOMC 기자회견  ｜ 실적발표: 마이크로소프트, 구글 등 ｜ SK하이닉스 어닝서프라이즈 ｜  -  오선의 미국 증시 라이브",
      "channel": "오선의 미국 증시 라이브",
-     "views": 1749140,
+     "views": 1758675,
      "id": "JNDJWTz347k"
     },
     {
-     "title": "[26년 10월 26일 월]  연준 금리 결정·빅테크 실적.. 슈퍼위크 개막｜ 메타, 최대 950억 달러 주식 발행 예정 ｜ 2년물 국채 경매  ｜  -  오선의 미국 증시 라이브",
-     "channel": "오선의 미국 증시 라이브",
-     "views": 1314408,
-     "id": "OPDa4rM1Tv4"
+     "title": "연 4% 예금·연 10% 적금…다시 은행으로 / KBS 2026.11.06.",
+     "channel": "KBS뉴스 경남",
+     "views": 989486,
+     "id": "b7kAe62Zgfs"
     }
    ],
-   "rel": 1.52
-  },
-  {
-   "keyword": "인플레이션",
-   "demand": 26847.8,
-   "n": 3,
-   "covered": true,
-   "examples": [
-    {
-     "title": "리라화 폭락 얼마나 심각하길래.. 튀르키예 현지 반응 들어봤더니 ㅣ 인사이트30",
-     "channel": "연합뉴스경제TV",
-     "views": 1820409,
-     "id": "FbLRwS_ZlN8"
-    },
-    {
-     "title": "코스피 급락? 물가냐 AI냐. 그것이 문제로다?! with. 문남중 대신증권 수석연구위원｜채상욱의 경제쇼｜KBS 261022 방송",
-     "channel": "KBS 1라디오",
-     "views": 322174,
-     "id": "KpqPBocfSko"
-    }
-   ],
-   "rel": 1.37
+   "rel": 1.16
   },
   {
    "keyword": "환율",
-   "demand": 19564.1,
+   "demand": 20564.7,
    "n": 15,
-   "covered": false,
+   "covered": true,
    "examples": [
     {
-     "title": "원화는 왜 강해지고 있을까? 환율 변화의 핵심 변수 | 오건영 신한 프리미어 패스파인더 단장 #2 [투자Insight]",
-     "channel": "증시각도기TV",
-     "views": 414856,
-     "id": "tn1cPZwoZCY"
+     "title": "코스피 급락 소식에 제가 왔습니다... (문홍철) | 인포맥스라이브 261106",
+     "channel": "연합뉴스경제TV",
+     "views": 918170,
+     "id": "ehFBrPSFO3Y"
     },
     {
-     "title": "금리 인상 끝나는 신호는 '장단기 금리차'… 연준·한국은행, 몇 번 더 올리나? [월간 오건영 2부]",
-     "channel": "머니올라_KBS",
-     "views": 359305,
-     "id": "VK6Tt8SYh2M"
+     "title": "환율 폭락으로 하루 만 원도 쓰기 힘든 나라… 대만에 입국했습니다",
+     "channel": "박엥겍 ParkEngKeck",
+     "views": 483750,
+     "id": "L4-92tPeur0"
     }
    ],
    "rel": 1.0
   },
   {
    "keyword": "재테크 기초",
-   "demand": 84.4,
+   "demand": 161.0,
    "n": 15,
    "covered": false,
    "examples": [
     {
-     "title": "재테크의 기초 상식 모르면 절대 부자 못 됩니다",
-     "channel": "부자의습관",
-     "views": 21986,
-     "id": "kS6nQ3fICp4"
+     "title": "동기 연봉 4천, 실수령은 얼마일까?",
+     "channel": "에듀윌 금융",
+     "views": 2034,
+     "id": "t52NJYUuXkk"
     },
     {
-     "title": "재테크 기초 상식 90%가 모르는 비밀, 이것 모르면 절대 부자 못 됩니다",
-     "channel": "돈의흐름",
-     "views": 1507,
-     "id": "kE1s_yzCDRk"
+     "title": "반도체 호황으로 폭락한 인텔",
+     "channel": "노태성 주식투자 구원투수",
+     "views": 1490,
+     "id": "QQi0VwZ0hB4"
     }
    ],
-   "rel": 0.0
-  },
-  {
-   "keyword": "경제 모든것",
-   "demand": 80.7,
-   "n": 3,
-   "covered": false,
-   "examples": [
-    {
-     "title": "한 사람이 미국의 중앙은행이었다 🏦 #도금시대 #모건",
-     "channel": "1분 경제모든것",
-     "views": 1173,
-     "id": "kUZoFMeBSqA"
-    },
-    {
-     "title": "\"이것\" 빼고 모든것이 긍정적인 기업 - 엠에스바이오  🎯 경제 주식 코스피 코스닥 주가전망 작전주 테마주 세력주",
-     "channel": "주식후견인_세력에게 투자자를 보호하는 수호자",
-     "views": 888,
-     "id": "LH1p4rWYb7A"
-    }
-   ],
-   "rel": 0.0
+   "rel": 0.01
   }
  ],
- "top_topic": "환율",
+ "top_topic": "재테크 기초",
  "length": {
   "best": {
-   "label": "25~40분",
-   "n": 29,
-   "lift": 1.67
+   "label": "40~60분",
+   "n": 83,
+   "lift": 1.31
   },
   "thin": {
    "label": "1시간 이상",
-   "n": 3,
-   "lift": 7.6
+   "n": 7,
+   "lift": 2.38
   },
-  "target_min": 28
+  "target_min": 45
  },
  "use": [
   {
-   "label": "'~의 모든 것'",
-   "lift": 2.59,
-   "n": 22
-  },
-  {
-   "label": "물음표",
-   "lift": 1.91,
-   "n": 27
-  },
-  {
    "label": "'N분 만에'",
-   "lift": 1.87,
-   "n": 26
+   "lift": 2.22,
+   "n": 28
   },
-  {
-   "label": "퍼센트 숫자",
-   "lift": 1.64,
-   "n": 12
-  }
- ],
- "avoid": [
-  {
-   "label": "따옴표 훅(“..”)",
-   "lift": 0.66,
-   "n": 81
-  }
- ],
- "maybe": [
   {
    "label": "'N시간' 몰아보기",
-   "lift": 4.09,
-   "n": 4
+   "lift": 1.75,
+   "n": 8
   },
   {
+   "label": "'~의 모든 것'",
+   "lift": 1.73,
+   "n": 23
+  }
+ ],
+ "avoid": [],
+ "maybe": [
+  {
    "label": "'초등학생도 이해'",
-   "lift": 3.64,
+   "lift": 3.24,
    "n": 6
   }
  ],
@@ -166,185 +108,189 @@
   {
    "skeleton": "question_all",
    "template": "“{hook}?” 초등학생도 이해하는 {topic}의 모든 것 ({n}분 총정리)",
-   "example": "“이거 모르면 손해 아닌가요?” 초등학생도 이해하는 환율의 모든 것 (28분 총정리)",
-   "score": 6.04,
+   "example": "“이거 모르면 손해 아닌가요?” 초등학생도 이해하는 재테크 기초의 모든 것 (45분 총정리)",
+   "score": 4.3,
    "hits": [
     {
      "label": "'초등학생도 이해'",
-     "lift": 3.64,
+     "lift": 3.24,
      "n": 6
     },
     {
-     "label": "'~의 모든 것'",
-     "lift": 2.59,
-     "n": 22
-    },
-    {
-     "label": "물음표",
-     "lift": 1.91,
-     "n": 27
-    },
-    {
      "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
+     "lift": 2.22,
+     "n": 28
+    },
+    {
+     "label": "'~의 모든 것'",
+     "lift": 1.73,
+     "n": 23
     },
     {
      "label": "'총정리'",
-     "lift": 1.22,
-     "n": 9
+     "lift": 1.11,
+     "n": 17
     },
     {
      "label": "따옴표 훅(“..”)",
-     "lift": 0.66,
-     "n": 81
+     "lift": 1.07,
+     "n": 417
+    },
+    {
+     "label": "물음표",
+     "lift": 0.97,
+     "n": 174
     }
    ],
    "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
    }
   },
   {
    "skeleton": "all_summary",
    "template": "{topic}의 모든 것 {n}분 총정리 (초등학생도 이해)",
-   "example": "환율의 모든 것 28분 총정리 (초등학생도 이해)",
-   "score": 5.7,
+   "example": "재테크 기초의 모든 것 45분 총정리 (초등학생도 이해)",
+   "score": 4.27,
    "hits": [
     {
      "label": "'초등학생도 이해'",
-     "lift": 3.64,
+     "lift": 3.24,
      "n": 6
     },
     {
-     "label": "'~의 모든 것'",
-     "lift": 2.59,
-     "n": 22
+     "label": "'N분 만에'",
+     "lift": 2.22,
+     "n": 28
     },
     {
-     "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
+     "label": "'~의 모든 것'",
+     "lift": 1.73,
+     "n": 23
     },
     {
      "label": "'총정리'",
-     "lift": 1.22,
-     "n": 9
+     "lift": 1.11,
+     "n": 17
     }
    ],
    "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
-   }
-  },
-  {
-   "skeleton": "minutes_all",
-   "template": "{n}분 만에 끝내는 {topic}의 모든 것",
-   "example": "28분 만에 끝내는 환율의 모든 것",
-   "score": 4.63,
-   "hits": [
-    {
-     "label": "'~의 모든 것'",
-     "lift": 2.59,
-     "n": 22
-    },
-    {
-     "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
-    }
-   ],
-   "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
    }
   },
   {
    "skeleton": "quote_minutes_all",
    "template": "“{hook}..” {n}분 만에 끝내는 {topic}의 모든 것",
-   "example": "“이거 모르면 손해 아닌가요..” 28분 만에 끝내는 환율의 모든 것",
-   "score": 4.17,
+   "example": "“이거 모르면 손해 아닌가요..” 45분 만에 끝내는 재테크 기초의 모든 것",
+   "score": 3.49,
    "hits": [
     {
-     "label": "'~의 모든 것'",
-     "lift": 2.59,
-     "n": 22
+     "label": "'N분 만에'",
+     "lift": 2.22,
+     "n": 28
     },
     {
-     "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
+     "label": "'~의 모든 것'",
+     "lift": 1.73,
+     "n": 23
     },
     {
      "label": "따옴표 훅(“..”)",
-     "lift": 0.66,
-     "n": 81
+     "lift": 1.07,
+     "n": 417
     }
    ],
    "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
    }
   },
   {
-   "skeleton": "why_question",
-   "template": "{topic}, 왜 {hook}? {n}분 만에 알아보기",
-   "example": "환율, 왜 이거 모르면 손해 아닌가요? 28분 만에 알아보기",
-   "score": 3.41,
+   "skeleton": "minutes_all",
+   "template": "{n}분 만에 끝내는 {topic}의 모든 것",
+   "example": "45분 만에 끝내는 재테크 기초의 모든 것",
+   "score": 3.44,
    "hits": [
     {
-     "label": "물음표",
-     "lift": 1.91,
-     "n": 27
+     "label": "'N분 만에'",
+     "lift": 2.22,
+     "n": 28
     },
     {
-     "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
+     "label": "'~의 모든 것'",
+     "lift": 1.73,
+     "n": 23
     }
    ],
    "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
    }
   },
   {
    "skeleton": "quote_summary",
    "template": "“{hook}..” {topic} {n}분 총정리",
-   "example": "“이거 모르면 손해 아닌가요..” 환율 28분 총정리",
-   "score": 2.24,
+   "example": "“이거 모르면 손해 아닌가요..” 재테크 기초 45분 총정리",
+   "score": 2.77,
    "hits": [
     {
      "label": "'N분 만에'",
-     "lift": 1.87,
-     "n": 26
+     "lift": 2.22,
+     "n": 28
     },
     {
      "label": "'총정리'",
-     "lift": 1.22,
-     "n": 9
+     "lift": 1.11,
+     "n": 17
     },
     {
      "label": "따옴표 훅(“..”)",
-     "lift": 0.66,
-     "n": 81
+     "lift": 1.07,
+     "n": 417
     }
    ],
    "duration": {
-    "label": "25~40분",
-    "n": 29,
-    "lift": 1.67
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
+   }
+  },
+  {
+   "skeleton": "why_question",
+   "template": "{topic}, 왜 {hook}? {n}분 만에 알아보기",
+   "example": "재테크 기초, 왜 이거 모르면 손해 아닌가요? 45분 만에 알아보기",
+   "score": 2.58,
+   "hits": [
+    {
+     "label": "'N분 만에'",
+     "lift": 2.22,
+     "n": 28
+    },
+    {
+     "label": "물음표",
+     "lift": 0.97,
+     "n": 174
+    }
+   ],
+   "duration": {
+    "label": "40~60분",
+    "n": 83,
+    "lift": 1.31
    }
   }
  ],
  "hot_patterns": [
+  "all_about",
   "crisis",
-  "question"
+  "habit",
+  "hours",
+  "minutes",
+  "money"
  ],
  "chapters_min": 8
 }
