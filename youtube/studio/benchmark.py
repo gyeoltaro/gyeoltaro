@@ -9,6 +9,7 @@
   python -m studio.benchmark candidates           # 풀에서 후보 채널을 점수순으로 조사해 표로 출력 (채널 고를 때)
   python -m studio.benchmark topic "스태그플레이션"   # 주제별 상위 영상 (새 편 제목·훅을 정하기 전에)
                                                   #   → learning/topic_refs.json
+  python -m studio.benchmark page                 # 보고서 페이지(dashboard/benchmark.html)를 저장된 자료로 다시 만들기 (API 키 불필요)
 
 API 키: 환경변수 B911_YT_API_KEY 또는 youtube/.secrets/youtube_api_key.txt (learn.py 와 같음). 키는 절대 출력·커밋하지 않습니다.
 조사 대상 채널 목록은 learning/benchmark_channels.json 에서 관리합니다(사람이 고른 목록 — 형식이 우리와 같은 '얼굴 없는 해설' 채널).
@@ -323,6 +324,140 @@ def write_data_md(out):
         f.write("\n".join(L) + "\n")
 
 
+# ---------------------------------------------------------------- 보고서 페이지
+
+PAGE_TPL = os.path.join(ROOT, "dashboard", "benchmark_template.html")
+PAGE_OUT = os.path.join(ROOT, "dashboard", "benchmark.html")
+PAGE_URL = "https://claude.ai/artifact/NunV95ZCpFj35p85uT53sH"   # 게시된 보고서 페이지 (같은 주소에 덮어쓰기. 다른 대화에서는 먼저 read)
+# 잘 된 영상 vs 나머지 제목 비교에 쓰는 정의 (바꾸면 docs/04_benchmark.md 의 표도 다시 적기)
+POOL_FEATURES = [("\"진짜 이유\"", r"진짜 이유"), ("\"이유\" 또는 \"왜\"", r"이유|왜"), ("\"N가지\" · \"TOP N\"", r"\d+\s*가지|TOP ?\d|Top ?\d"),
+                 ("노후·연금", r"노후|연금|은퇴"), ("위기·몰락류 낱말", r"위기|폭락|붕괴|몰락|파산|망한|망했|충격|소름|경악|대참사"),
+                 ("숫자", r"\d"), ("따옴표로 시작", r"^\s*[\"“'‘]"), ("\"모든 것\" · \"총정리\"", r"모든 것|총정리")]
+FREQ_BUCKETS = [("주 2편 미만", 0, 2), ("주 2~4편", 2, 4), ("주 4~7편", 4, 7), ("주 7편 이상", 7, 1e9)]
+
+
+def pool_compare(pool):
+    """풀에서 '잘 된 영상'(구독자 대비 3배 이상 + 5만 회 이상)과 '나머지'(구독자보다 조회수가 적음)의 제목을 비교한다."""
+    vs = [v for v in pool["videos"].values() if not EXCLUDE_TITLE.search(v["title"])]
+    hits = [v for v in vs if v["ratio"] >= 3 and v["views"] >= 50000]
+    rest = [v for v in vs if v["ratio"] < 1]
+
+    def share(group, rx):
+        r = re.compile(rx)
+        return sum(1 for v in group if r.search(v["title"])) / max(1, len(group))
+    return {"n": len(vs), "hits": len(hits), "rest": len(rest),
+            "features": [{"label": lab, "hit": share(hits, rx), "rest": share(rest, rx)} for lab, rx in POOL_FEATURES],
+            "len_hit": _med([len(v["title"]) for v in hits]), "len_rest": _med([len(v["title"]) for v in rest]),
+            "min_hit": round(_med([v["sec"] for v in hits]) / 60, 1), "min_rest": round(_med([v["sec"] for v in rest]) / 60, 1)}
+
+
+def freq_compare(cands):
+    """후보 채널: 최근 90일 주당 업로드 수별로 '최근 10편 중앙 ÷ 평소 중앙'의 한가운데 값."""
+    out = []
+    for lab, lo, hi in FREQ_BUCKETS:
+        xs = [c["recent10_med"] / c["long_med_views"] for c in cands
+              if c["per_week_90d"] > 0 and c["long_n"] >= 10 and c["long_med_views"] and lo <= c["per_week_90d"] < hi]
+        out.append({"label": lab, "n": len(xs), "ratio": round(_med(xs), 2)})
+    return out
+
+
+def cmd_page(args):
+    import html
+    e = html.escape
+    b = jload(OUT, None)
+    if not b:
+        raise SystemExit("learning/benchmark.json 이 없습니다 → 먼저 `python -m studio.benchmark profile`")
+    cfg = {c["id"]: c for c in jload(CH_FILE, {"channels": []})["channels"]}
+    pc = pool_compare(jload(POOL, {"videos": {}}))
+    fq = freq_compare(jload(os.path.join(LDIR, "benchmark_candidates.json"), {"channels": []})["channels"])
+    model = jload(os.path.join(LDIR, "model.json"), {"durations": [], "features": [], "n_long": 0})
+    durs = {d["label"]: d for d in model["durations"]}
+    feats = {f["key"]: f for f in model["features"]}
+    mine = b.get("mine", {})
+
+    def pct(x):
+        return f"{x:.0%}"
+
+    def bars2(rows):   # 두 계열(잘 된 영상 / 나머지)
+        mx = max(max(r["hit"], r["rest"]) for r in rows) or 1
+        h = []
+        for r in rows:
+            h.append(f'<div class="name">{e(r["label"])}</div><div class="track">'
+                     f'<div class="bar a" title="잘 된 영상 {pct(r["hit"])}"><i style="width:{r["hit"] / mx * 78:.1f}%"></i><span>{pct(r["hit"])}</span></div>'
+                     f'<div class="bar b" title="나머지 {pct(r["rest"])}"><i style="width:{r["rest"] / mx * 78:.1f}%"></i><span>{pct(r["rest"])}</span></div></div>')
+        return "".join(h)
+
+    def bars1(rows, key, emphasize=None):   # 한 계열 + 평소(1배) 기준선
+        mx = max(max(r[key] for r in rows), 1.0)
+        h = []
+        for r in rows:
+            cls = "bar a" if (emphasize is None or r["label"] == emphasize) else "bar b"
+            h.append(f'<div class="name">{e(r["label"])}<small>{r["n"]}{"개" if key == "lift" else "곳"}</small></div><div class="track one">'
+                     f'<i class="refline" style="left:{1 / mx * 78:.1f}%"></i>'
+                     f'<div class="{cls}" title="{e(r["label"])}: {r[key]}배"><i style="width:{r[key] / mx * 78:.1f}%"></i><span>{r[key]}배</span></div></div>')
+        return "".join(h)
+
+    # 우리 채널 숫자
+    recent = [v for v in mine.get("latest", []) if v["date"] >= b["date"][:8] + "01" and v["min"] >= 3]
+    rmed = int(_med([v["views"] for v in recent])) if recent else 0
+    rmax = max([v["views"] for v in recent], default=0)
+    subs = mine.get("subs", 0)
+    kpis = (f'<div class="kpi"><span class="label">구독자</span><span class="value num">{subs:,}명</span>'
+            f'<div class="meter" title="1,000명 중 {subs:,}명"><i style="width:{min(100, subs / 10):.1f}%"></i></div><span class="note">수익 조건 1,000명의 {subs / 10:.1f}%</span></div>'
+            f'<div class="kpi"><span class="label">누적 조회수</span><span class="value num">{mine.get("total_views", 0):,}회</span><span class="note">영상 {mine.get("video_count", 0)}개 (대부분 2월의 쇼츠)</span></div>'
+            f'<div class="kpi"><span class="label">이달 올린 긴 영상 {len(recent)}편</span><span class="value num">{rmed:,}회</span><span class="note">조회수 한가운데 값 · 가장 많은 편 {rmax:,}회</span></div>')
+
+    def row(p, me=False):
+        link = f'<a href="https://www.youtube.com/channel/{p["id"]}">{e(p["name"])}</a>'
+        return (f'<tr{" class=me" if me else ""}><td>{link if not me else "우리 채널"}</td><td>{p["subs"]:,}</td><td>{p["long_med_views"]:,}</td><td>{p["med_per_sub"]}배</td>'
+                f'<td>{p["hit_100k"]}개</td><td>{p["per_week_90d"]}편</td><td>{p["long_med_min"]}</td><td>{p["recent10_med"]:,}</td><td>{p["first_upload_days_ago"]}일 전</td></tr>')
+    rows = "".join(row(p) for p in b["channels"]) + (row(mine, True) if mine else "")
+
+    cards = []
+    for p in b["channels"]:
+        c = cfg.get(p["id"], {})
+        tops = "".join(f'<li><span class="v">{v["views"] / 10000:.0f}만 회</span><a href="https://youtu.be/{v["id"]}">{e(v["title"])}</a></li>' for v in p["top"][:3])
+        cards.append(f'<article class="card"><div><h3><a href="https://www.youtube.com/channel/{p["id"]}">{e(p["name"])}</a></h3>'
+                     f'<span class="topic">{e(c.get("topic", ""))} · {e(c.get("format", p.get("format", "")))}</span></div>'
+                     f'<dl><dt class="ok">배울 점</dt><dd>{e(c.get("lesson", c.get("why", "")))}</dd><dt class="warn">조심할 점</dt><dd>{e(c.get("caution", "–"))}</dd></dl>'
+                     f'<ul>{tops}</ul></article>')
+
+    months = sorted({m["ym"] for p in b["channels"] for m in p.get("monthly", [])})[-5:]
+    mrows = []
+    for p in b["channels"]:
+        mm = {m["ym"]: m for m in p.get("monthly", [])}
+        if sum(1 for k in months if k in mm) >= 3:
+            mrows.append(f'<tr><td>{e(p["name"])}</td>' + "".join(f'<td>{mm[k]["med"]:,}</td>' if k in mm else "<td>–</td>" for k in months) + "</tr>")
+
+    dur_rows = [durs[k] for k in ("15분 미만", "15~25분", "25~40분", "40~60분", "1시간 이상") if k in durs]
+    truth = pc["features"][0]
+    rep = {
+        "__DATE__": b["date"], "__KPIS__": kpis, "__ROWS__": rows, "__CARDS__": "".join(cards),
+        "__LEFT__": "그 전에 신청하려면 2027년 1월 31일까지입니다.",
+        "__F_TRUTH_HIT__": pct(truth["hit"]), "__F_TRUTH_REST__": pct(truth["rest"]),
+        "__D_4060__": str(durs.get("40~60분", {}).get("lift", "–")), "__D_U15__": str(durs.get("15분 미만", {}).get("lift", "–")),
+        "__D_1H_N__": str(durs.get("1시간 이상", {}).get("n", "–")), "__M_N__": f'{model.get("n_long", 0):,}',
+        "__FQ_7__": str(fq[-1]["ratio"]), "__FQ_N__": str(sum(x["n"] for x in fq)),
+        "__P_N__": f'{pc["n"]:,}', "__P_HIT__": str(pc["hits"]), "__P_REST__": str(pc["rest"]),
+        "__TITLE_BARS__": bars2(pc["features"]), "__LEN_HIT__": f'{pc["len_hit"]:.0f}', "__LEN_REST__": f'{pc["len_rest"]:.0f}',
+        "__SHOCK__": str(feats.get("shock", {}).get("lift", "–")),
+        "__DUR_BARS__": bars1(dur_rows, "lift"), "__FREQ_BARS__": bars1(fq, "ratio", emphasize=fq[-1]["label"]),
+        "__MONTH_HEAD__": "".join(f"<th>{int(k[5:])}월</th>" for k in months), "__MONTH_ROWS__": "".join(mrows),
+    }
+    page = open(PAGE_TPL, encoding="utf-8").read()
+    for k, v in rep.items():
+        page = page.replace(k, v)
+    left = re.findall(r"__[A-Z0-9_]+__", page)
+    if left:
+        raise SystemExit("틀에 채우지 못한 자리가 있습니다: " + ", ".join(sorted(set(left))))
+    with open(PAGE_OUT, "w", encoding="utf-8") as f:
+        f.write(page)
+    print(f"저장: {PAGE_OUT}")
+    print("  제목 비교: " + " · ".join(f'{x["label"]} {pct(x["hit"])}/{pct(x["rest"])}' for x in pc["features"]))
+    print("  빈도별 흐름: " + " · ".join(f'{x["label"]} {x["ratio"]}배({x["n"]}곳)' for x in fq))
+    print("  아티팩트로 게시: Artifact 도구에 file_path=" + PAGE_OUT + (f", url={PAGE_URL}" if PAGE_URL else " (처음이면 새로 게시한 뒤 주소를 PAGE_URL 에 적기)"))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="벤치마크 조사")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -330,6 +465,7 @@ def main(argv=None):
     a = sub.add_parser("candidates"); a.add_argument("--n", type=int, default=30); a.add_argument("--limit", type=int, default=150)
     a.add_argument("--include", nargs="*"); a.set_defaults(fn=cmd_candidates)
     a = sub.add_parser("profile"); a.set_defaults(fn=cmd_profile)
+    a = sub.add_parser("page"); a.set_defaults(fn=cmd_page)
     a = sub.add_parser("topic"); a.add_argument("q", nargs="+"); a.add_argument("--days", type=int, default=365); a.add_argument("--n", type=int, default=15)
     a.set_defaults(fn=cmd_topic)
     args = ap.parse_args(argv)

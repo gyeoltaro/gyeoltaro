@@ -1,0 +1,227 @@
+<title>채널 10곳 벤치마크</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 레이아웃: 한 단으로 읽는 보고서. 숫자 표는 가로로 넘치면 그 표만 스크롤. 색·글꼴은 업로드 센터와 같은 토큰. */
+/* 이 파일은 틀입니다. __이름__ 자리는 `python -m studio.benchmark page` 가 learning/ 의 자료로 채웁니다. 해석 문장은 여기서 직접 고칩니다. */
+:root{
+  --bg:#F6F5EF; --panel:#FFFFFF; --ink:#16181D; --muted:#5E6470; --line:#DEDCD2; --chip:#ECEAE1;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#B4530A; --warn-bg:#FFF3E2; --ok:#147A47; --ok-bg:#E6F6EC;
+  --series:#2a78d6; --rest:#8C8A82; --grid:#E1E0D9;
+  --display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121418; --panel:#1B1E24; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A; --chip:#262A31;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#FFB65C; --warn-bg:#2E2414; --ok:#5FD596; --ok-bg:#15291F;
+  --series:#3987e5; --rest:#7C808A; --grid:#2C2F36; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121418; --panel:#1B1E24; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A; --chip:#262A31;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#FFB65C; --warn-bg:#2E2414; --ok:#5FD596; --ok-bg:#15291F;
+  --series:#3987e5; --rest:#7C808A; --grid:#2C2F36; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.page{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+header h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,40px);line-height:1.2;margin:0;text-wrap:balance}
+header h1 .mark{background:var(--accent);color:var(--accent-ink);padding:0 8px;border-radius:4px}
+header p{color:var(--muted);margin:8px 0 0;font-size:15px}
+section{display:flex;flex-direction:column;gap:16px;min-width:0}
+h2{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.3;margin:0;text-wrap:balance}
+h3{font-size:17px;font-weight:700;margin:0}
+p{margin:0;max-width:68ch}
+a{color:inherit;text-decoration-color:var(--muted);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--series);outline-offset:2px;border-radius:2px}
+.muted{color:var(--muted)} .small{font-size:14px}
+.num{font-variant-numeric:tabular-nums}
+ol.findings{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:f}
+ol.findings li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;counter-increment:f}
+ol.findings li::before{content:counter(f);font-family:var(--display);font-size:20px;background:var(--ink);color:var(--bg);
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+ol.findings b{font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .label{font-size:13px;color:var(--muted)}
+.kpi .value{font-family:var(--display);font-size:32px;line-height:1.15}
+.kpi .note{font-size:13px;color:var(--muted)}
+.meter{height:8px;background:var(--chip);border-radius:4px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--series);border-radius:0 4px 4px 0;min-width:3px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--muted);font-size:13px;background:var(--panel);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
+td.wrap{white-space:normal;min-width:180px}
+tr:last-child td{border-bottom:0}
+tr.me td{background:var(--chip);font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .topic{font-size:13px;color:var(--muted)}
+.card dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;font-size:14px;line-height:1.55}
+.card dt{font-weight:700;white-space:nowrap}
+.card dt.ok{color:var(--ok)} .card dt.warn{color:var(--warn)}
+.card dd{margin:0}
+.card ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5}
+.card li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px}
+.card li .v{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.chart h3{font-size:15px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:2px;display:inline-block}
+.sw.a{background:var(--series)} .sw.b{background:var(--rest)}
+.bars{display:grid;grid-template-columns:minmax(92px,max-content) minmax(0,1fr);gap:10px 12px;align-items:center;font-size:14px}
+.bars .name{line-height:1.35}
+.bars .name small{display:block;color:var(--muted);font-size:12px}
+.track{display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--grid);position:relative;padding-block:2px;min-width:0}
+.bar{display:flex;align-items:center;gap:6px;min-width:0}
+.bar i{display:block;height:14px;border-radius:0 4px 4px 0;background:var(--series);min-width:2px;flex:none}
+.bar.b i{background:var(--rest)}
+.bar{position:relative;z-index:1}
+.bar span{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;background:var(--panel);padding:0 3px;border-radius:2px}
+.bar.b span{color:var(--muted)}
+.track.one .bar i{height:18px}
+.refline{position:absolute;top:0;bottom:0;border-left:1px solid var(--muted);pointer-events:none}
+.refnote{font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.frames{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.frames li{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.frames .tag{font-size:13px;font-weight:700}
+.frames .ex{font-size:14px;color:var(--muted)}
+ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:68ch}
+.callout{background:var(--warn-bg);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.6}
+.callout b{color:var(--warn)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:6px}
+@media (max-width:520px){ body{font-size:15px} th,td{padding:8px 10px} .kpi .value{font-size:28px} }
+</style>
+
+<div class="page">
+<header>
+  <h1><span class="mark">잘 되는 채널 10곳</span> 벤치마크</h1>
+  <p>얼굴 없이 캐릭터·그림과 내레이션으로 경제를 설명하는 채널 10곳과 우리 채널 「부의비상사태 911」을 비교했습니다. 조사일 __DATE__ · 공개 숫자 기준.</p>
+</header>
+
+<section>
+  <h2>한눈에 보기</h2>
+  <ol class="findings">
+    <li><span><b>우리 채널은 아직 출발선입니다.</b> 지금 풀어야 할 문제는 화면 품질이 아니라 사람들이 누르고 싶은 주제와 제목인가입니다.</span></li>
+    <li><span><b>잘 되는 영상은 개념 설명이 아니라 이야기로 포장되어 있습니다.</b> 제목에 "진짜 이유"가 든 비율이 잘 된 영상은 __F_TRUTH_HIT__, 나머지는 __F_TRUTH_REST__입니다. 우리가 쓰는 "모든 것·총정리"는 양쪽 모두 드뭅니다.</span></li>
+    <li><span><b>길수록 유리합니다.</b> 같은 채널 안에서 40~60분 영상은 평소 조회수의 __D_4060__배, 15분 미만은 __D_U15__배였습니다.</span></li>
+    <li><span><b>찍어내듯 많이 올리면 꺾입니다.</b> 일주일에 7편 넘게 올리는 채널은 최근 10편 조회수가 평소의 __FQ_7__배였습니다.</span></li>
+    <li><span><b>이 분야 전체가 10월부터 식었습니다.</b> 가장 잘 되는 채널들도 여름보다 크게 줄었습니다. 쉬운 시장이 아닙니다.</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>우리 채널의 위치</h2>
+  <div class="kpis">__KPIS__</div>
+  <p>수익 창출 조건은 구독자 1,000명과 최근 365일 공개 시청 4,000시간입니다. 4,000시간은 240,000분이라, 한 번 볼 때 평균 8분을 본다면 약 3만 회, 5분이면 약 4만 8천 회의 조회가 필요합니다.</p>
+  <p class="callout"><b>확인이 필요한 보도.</b> 2027년 2월 1일부터 새로 신청하는 채널은 8,000시간으로 오른다고 여러 매체가 보도했습니다. 유튜브 공식 안내에서 최종 확인이 필요합니다. <span id="left">__LEFT__</span></p>
+  <p>편당 조회수가 수십 회인 지금 속도로는 닿을 수 없습니다. 한두 편이 크게 퍼져야 하고, 우리가 할 수 있는 일은 그 확률을 높이는 것입니다. 결과는 장담할 수 없습니다.</p>
+</section>
+
+<section>
+  <h2>벤치마크 채널 10곳</h2>
+  <p class="muted small">중앙 조회수는 올린 지 7일~1년 된 긴 영상의 한가운데 값입니다. "구독자 대비"는 중앙 조회수 ÷ 구독자 수.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>채널</th><th>구독자</th><th>중앙 조회수</th><th>구독자 대비</th><th>10만 회↑</th><th>주당 업로드</th><th>길이(분)</th><th>최근 10편 중앙</th><th>첫 업로드</th></tr></thead>
+    <tbody>__ROWS__</tbody>
+  </table></div>
+  <div class="cards">__CARDS__</div>
+</section>
+
+<section>
+  <h2>잘 되는 영상의 제목</h2>
+  <p>최근 1년 한국어 긴 영상 __P_N__개 가운데, 구독자 수보다 조회수가 3배 넘게 나오고 5만 회를 넘긴 영상 __P_HIT__개(잘 된 영상)와 구독자 수보다 조회수가 적은 영상 __P_REST__개(나머지)의 제목을 비교했습니다.</p>
+  <div class="chart">
+    <h3>제목에 들어 있는 것 (해당 영상의 비율)</h3>
+    <div class="legend"><span><i class="sw a"></i>잘 된 영상</span><span><i class="sw b"></i>나머지</span></div>
+    <div class="bars">__TITLE_BARS__</div>
+    <p class="refnote">제목 길이의 한가운데 값은 잘 된 영상 __LEN_HIT__자, 나머지 __LEN_REST__자입니다.</p>
+  </div>
+  <p>차이가 큰 것은 "왜·진짜 이유"와 "N가지", 그리고 짧은 제목입니다. 숫자나 따옴표는 누구나 쓰고 있어서 차이가 없습니다. 같은 채널 안에서 비교하면 "충격·소름·경악"이 든 제목은 평소의 __SHOCK__배로 오히려 낮았습니다.</p>
+  <h3>잘 된 제목의 틀 세 가지</h3>
+  <ul class="frames">
+    <li><span class="tag">이야기형 · "인용 한마디" + 대상이 ~한 진짜 이유</span><span class="ex">"이 작은 땅에 이게 다 들어있다고?" 강대국들마저 한국 영토를 부러워하는 진짜 이유</span></li>
+    <li><span class="tag">질문 | 사건형 · 궁금증 한 문장 | 사건 이름 + 진짜 이유</span><span class="ex">물건은 넘치는데 왜 모두 가난해졌을까 | 1929 대공황의 진짜 이유</span></li>
+    <li><span class="tag">목록형 · 대상 + N가지</span><span class="ex">금융자산 10억 생기면 실제로 벌어지는 일 6가지</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>어떤 주제에 수요가 있나</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>갈래</th><th style="text-align:left">대표 채널 · 영상</th><th style="text-align:left">우리에게 맞는가</th></tr></thead>
+    <tbody>
+      <tr><td>경제사 사건 다큐</td><td class="wrap" style="text-align:left">경제박사 · 1929 대공황 58만 회</td><td class="wrap" style="text-align:left">잘 맞음. 같은 지식, 사실 확인이 쉽고 전망이 필요 없음</td></tr>
+      <tr><td>돈의 원리·생활 금융</td><td class="wrap" style="text-align:left">경제해적단 · 복리 91만 회 / 위대한 비밀 · 복리 42만 회</td><td class="wrap" style="text-align:left">잘 맞음. 계산과 원리 중심으로, 권유 없이</td></tr>
+      <tr><td>노후·연금</td><td class="wrap" style="text-align:left">노후의 진실 81만 회</td><td class="wrap" style="text-align:left">맞음. 제도와 계산 설명으로</td></tr>
+      <tr><td>세계 경제·생활 궁금증</td><td class="wrap" style="text-align:left">똑똑해지는 경제학, 세계경제이야기</td><td class="wrap" style="text-align:left">사실 확인이 되는 주제만</td></tr>
+      <tr><td>한국 기업·기술 이야기</td><td class="wrap" style="text-align:left">코믹스 경제, 꾸준한 경제</td><td class="wrap" style="text-align:left">과장 위험. 우리 채널 성격과 다름</td></tr>
+      <tr><td>산업 "몰락" 시리즈</td><td class="wrap" style="text-align:left">세상해설소</td><td class="wrap" style="text-align:left">따라 하지 않음. 급락 사례</td></tr>
+      <tr><td>경제 용어 교과서형</td><td class="wrap" style="text-align:left">유치한경제학 (2025년)</td><td class="wrap" style="text-align:left">지금은 새 영상이 거의 없음</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>용어를 앞세우면 불리합니다.</b> "스태그플레이션"으로 검색한 최근 1년 상위 영상은 전부 전문가·방송 채널이고 구독자 대비 조회수가 0.5배에 못 미칩니다. 반면 "대공황"에서는 경제박사가 구독자의 64배, "복리"에서는 경제해적단이 7.3배, 위대한 비밀이 17배를 냈습니다. 같은 지식이라도 용어 이름으로 부르면 전문가 채널과 경쟁하게 되고, 사건이나 생활 질문으로 들어가면 얼굴 없는 채널에도 기회가 있습니다.</p>
+</section>
+
+<section>
+  <h2>길이와 올리는 빈도</h2>
+  <div class="two">
+    <div class="chart">
+      <h3>영상 길이별 조회수 (그 채널 평소 대비, 배)</h3>
+      <div class="bars">__DUR_BARS__</div>
+      <p class="refnote">세로선 = 평소(1배). 벤치마크 채널 10곳의 긴 영상 __M_N__개. 1시간 이상은 표본이 __D_1H_N__개뿐입니다.</p>
+    </div>
+    <div class="chart">
+      <h3>주당 업로드 수별 최근 흐름 (최근 10편 ÷ 평소, 배)</h3>
+      <div class="bars">__FREQ_BARS__</div>
+      <p class="refnote">세로선 = 평소(1배). 최근 90일에 올린 적이 있고 긴 영상이 10편 넘는 후보 채널 __FQ_N__곳.</p>
+    </div>
+  </div>
+  <p>올리는 시각은 저녁 5~8시가 가장 흔했고, 쇼츠는 거의 쓰지 않습니다. 설명란에 출처를 적는 채널은 드뭅니다. 우리는 모든 영상에 출처와 AI 사용 사실을 적습니다. 대량 제작 채널과 구분되는 지점입니다.</p>
+</section>
+
+<section>
+  <h2>분야 전체의 흐름</h2>
+  <p>그달에 올린 긴 영상들의 조회수 한가운데 값입니다. 최근 달은 조회수가 덜 쌓였다는 점을 감안해도 10월부터 대부분 크게 줄었습니다. 원인은 밖에서 알 수 없습니다. 여름의 성공 사례가 지금도 그대로 통한다고 가정하면 안 됩니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>채널</th>__MONTH_HEAD__</tr></thead>
+    <tbody>__MONTH_ROWS__</tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>그래서 바꾸는 것</h2>
+  <ul class="plain">
+    <li><b>주제를 정하기 전에 조회합니다.</b> 그 주제로 얼굴 없는 채널이 성공한 각도가 있는지 먼저 봅니다.</li>
+    <li><b>이야기로 들어가서 개념을 가르칩니다.</b> 한 편마다 실제 사건·인물·숫자 하나를 줄거리로 삼습니다. 예: 스태그플레이션은 1970년대 오일쇼크 이야기로.</li>
+    <li><b>세 갈래를 번갈아 시험합니다.</b> 경제사 사건 다큐, 돈의 원리·생활 금융, 지금 이슈 해설.</li>
+    <li><b>제목 세 개에 서로 다른 틀을 넣습니다.</b> 이야기형, 목록형, 기존형("~의 모든 것")을 같은 영상에 붙여 직접 비교합니다. 45자 안팎으로.</li>
+    <li><b>길이는 30분을 기본으로</b>, 사건 다큐는 내용이 충분하면 40분 이상도 시험합니다.</li>
+    <li><b>비슷한 틀을 매일 올리기보다</b> 편마다 이야기가 다른 영상을 주 3~5편 올리는 쪽을 권합니다. 결정은 채널 주인이 합니다.</li>
+    <li><b>올린 지 7일 뒤 숫자를 기록</b>해서 다음 주제에 반영합니다.</li>
+  </ul>
+  <h3>따라 하지 않는 것</h3>
+  <ul class="plain">
+    <li>"충격·소름·몰락" 남발, 공포 예고, "지금 사야 할 자산" 같은 권유. 유튜브 정책에 걸릴 수 있고 성과도 낮았습니다.</li>
+    <li>하루에 여러 편씩 같은 틀로 찍어내기. 급락 사례가 여럿입니다.</li>
+    <li>확인되지 않은 과장, 남의 영상 구성·대본·그림을 가져다 쓰기.</li>
+  </ul>
+</section>
+
+<footer>
+  <span><b>한계.</b> 잘 된 채널만 보입니다(같은 방식으로 만들고도 안 된 채널은 조사에 잡히지 않음). 숫자는 함께 나타난다는 것만 보여 주고 원인을 증명하지 않습니다. 남의 영상은 내려받지 않았고 공개 숫자·제목·썸네일만 봤습니다.</span>
+  <span><b>자료.</b> YouTube Data API 공개 통계(조사일 __DATE__). 수익 기준 변경 보도: <a href="https://tbreak.com/youtube-partner-program-8000-watch-hours/">tbreak</a>, <a href="https://www.musicbusinessworldwide.com/new-youtube-creators-will-need-8000-watch-hours-to-start-earning-from-ads-double-the-current-bar/">Music Business Worldwide</a>, <a href="https://vidiq.com/blog/post/youtube-partner-program-changes-2027/">vidIQ</a>.</span>
+  <span>다시 만들기: <code>python -m studio.benchmark profile</code> → <code>python -m studio.benchmark page</code></span>
+</footer>
+</div>
+<script>
+(function(){ // 남은 날은 보는 날 기준으로 다시 계산 (실패해도 미리 적어 둔 문장이 남음)
+  try{
+    var end=new Date(2027,0,31,23,59,59), d=Math.ceil((end-new Date())/86400000), el=document.getElementById('left');
+    if(el&&d>0) el.textContent='그 전에 신청하려면 2027년 1월 31일까지, 오늘 기준 '+d+'일 남았습니다.';
+    else if(el) el.textContent='';
+  }catch(e){}
+})();
+</script>

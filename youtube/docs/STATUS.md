@@ -60,6 +60,7 @@ EP.01~13 제작 완료. 다음은 **EP.14**이고, 벤치마크 결과에 따라
 ## 고정 정보
 
 - 업로드 센터(아티팩트): https://claude.ai/artifact/2K5x4iWc7yodwfevhhTwJq (`studio/hub.py` 의 `HUB_URL`)
+- 벤치마크 보고서(아티팩트): https://claude.ai/artifact/NunV95ZCpFj35p85uT53sH (`studio/benchmark.py` 의 `PAGE_URL`, `python -m studio.benchmark page` 로 다시 만듦)
 - 작업 브랜치: `claude/optimistic-heisenberg-kpftc4` (기본 브랜치 `main` 에는 아직 합치지 않음)
 - 벤치마크: 2026-11-11 조사, 채널 10곳 (`learning/benchmark_channels.json`). 다음 갱신은 12월 중순쯤 `python -m studio.benchmark profile`
 - 채널 주인 컴퓨터용 '제작실' 업데이트는 `studio/update.py` 의 `DEFAULT_BRANCH` 에서 받습니다. 브랜치를 합치면 이 값도 바꿉니다.

@@ -274,7 +274,7 @@ git push -u origin <작업 브랜치>
 
 - [`STATUS.md`](STATUS.md) 갱신: 완료한 편, 다음 편, 열려 있는 일.
 - 올린 지 7일 지난 편의 조회수·(채널 주인이 알려 주면) 노출 클릭률·평균 시청 시간을 `STATUS.md` 의 성적표에 적고, 어느 제목 틀·갈래가 통했는지 한 줄로 남깁니다.
-- 한 달에 한 번 `python -m studio.benchmark profile` 로 벤치마크 숫자를 갱신합니다.
+- 한 달에 한 번 `python -m studio.benchmark profile` 로 벤치마크 숫자를 갱신하고, `python -m studio.benchmark page` 로 보고서 페이지를 다시 만들어 같은 주소에 게시합니다. 결론이 달라지면 `04_benchmark.md` 와 `dashboard/benchmark_template.html` 의 문장을 고칩니다.
 
 ## 3. 바꾸지 않는 규칙
 
