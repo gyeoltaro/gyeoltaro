@@ -38,6 +38,10 @@ POLITICS = ["민주당", "국민의힘", "공화당", "좌파", "우파"]
 KEY_RX = re.compile(r"AIza[0-9A-Za-z_\-]{30,}")
 
 LAYOUTS = {"left", "right", "corner", "center", "chapter", "stage", "none", "hidden"}
+EMOTIONS = {"neutral", "happy", "surprised", "worried", "angry", "smug", "shock"}
+POSES = {"hold", "present", "up", "look", "down"}
+SCREENS = {"logo", "up", "down", "won", "alert", "percent", "none"}
+ICON_TYPES = {"timeline", "ticker", "icongrid", "stage", "worldflow"}     # 아이콘 이름을 쓰는 그림 종류
 # 글자 수 권장 한도 (넘으면 줄 바꿈·겹침 가능 → 경고)
 LIMITS = {
     ("chapter", "title"): 16, ("stage", "bubble"): 18, ("stage", "label"): 18,
@@ -106,7 +110,12 @@ def _walk_at(o, key=""):
 def check_script(script, R: Report, ep_dir=None):
     meta, scenes = script.get("meta", {}), script.get("scenes", [])
     from .visuals import VISUALS
+    from .visuals2 import ICON_NAMES
+    from .envs import ENVS
     raw = json.dumps(script, ensure_ascii=False)
+    for e in meta.get("envs", []) or []:
+        if e not in ENVS:
+            R.err("env", f"META envs 에 없는 장소 '{e}' (쓸 수 있는 값: {', '.join(ENVS)})")
 
     # ---- 필수 항목
     for k in ("episode", "title", "thumbnails", "upload"):
@@ -150,8 +159,21 @@ def check_script(script, R: Report, ep_dir=None):
             continue
         if not lines:
             R.err("lines", "내레이션이 없습니다", sid)
-        if s.get("mascot", {}).get("layout", "left") not in LAYOUTS:
-            R.err("mascot", f"없는 캐릭터 배치 '{s['mascot'].get('layout')}'", sid)
+        mc = s.get("mascot", {})
+        if mc.get("layout", "left") not in LAYOUTS:
+            R.err("mascot", f"없는 캐릭터 배치 '{mc.get('layout')}'", sid)
+        for key, allowed in (("emotion", EMOTIONS), ("pose", POSES), ("screen", SCREENS)):
+            vals = [mc.get(key)] + [d.get(key) for d in (mc.get("at") or {}).values() if isinstance(d, dict)]
+            for val in vals:
+                if val is not None and val not in allowed:
+                    R.err("mascot", f"없는 캐릭터 {key} '{val}' (쓸 수 있는 값: {', '.join(sorted(allowed))})", sid)
+        if s.get("env") and s["env"] not in ENVS:
+            R.err("env", f"없는 장소 '{s['env']}' (쓸 수 있는 값: {', '.join(ENVS)})", sid)
+        if ty in ICON_TYPES:
+            for p, t in _walk_text(v):
+                leaf = re.sub(r"\[\d+\]", "", p).split(".")[-1]
+                if leaf in ("icon", "flag", "signal_icon") and t not in ICON_NAMES:
+                    R.err("icon", f"없는 아이콘 '{t}' (목록: docs/VISUALS.md 4장)", sid)
         for p, t in _walk_text(v):
             if t.startswith("@"):
                 R.err("at", f"등장 시점이 풀리지 않았습니다: {t}", sid)
@@ -220,7 +242,16 @@ def check_script(script, R: Report, ep_dir=None):
     th = meta.get("thumbnails", {}) or {}
     if sorted(th) != ["A", "B", "C"]:
         R.err("thumbs", "썸네일 설정은 A, B, C 세 개여야 합니다")
+    from .thumbnail import LAYOUTS as TH_LAYOUTS, PALETTES, SCENES
     for k, t in th.items():
+        if t.get("layout") and t["layout"] not in TH_LAYOUTS:
+            R.err("thumbs", f"썸네일 {k}: 없는 구도 '{t['layout']}' (쓸 수 있는 값: {', '.join(TH_LAYOUTS)})")
+        if t.get("scene") and t["scene"] not in SCENES:
+            R.err("thumbs", f"썸네일 {k}: 없는 배경 '{t['scene']}' (쓸 수 있는 값: {', '.join(SCENES)})")
+        if t.get("palette") and t["palette"] not in PALETTES:
+            R.err("thumbs", f"썸네일 {k}: 없는 색 조합 '{t['palette']}' (쓸 수 있는 값: {', '.join(PALETTES)})")
+        if t.get("emotion") and t["emotion"] not in EMOTIONS:
+            R.err("thumbs", f"썸네일 {k}: 없는 표정 '{t['emotion']}'")
         txt = " ".join(str(t.get(f, "")) for f in ("top", "main", "note", "num", "quote")) + " " + " ".join(t.get("tags", []) or [])
         for w in BANNED_TITLE:
             if w in txt:

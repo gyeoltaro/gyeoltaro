@@ -3,12 +3,19 @@
 **기획 → 대본 → TTS → 영상(움직이는 캐릭터 애니메이션) → 자막 → 썸네일 → 업로드 정보**를
 명령 한 번으로 만드는 도구입니다.
 
+> **다음 편을 만드는 작업자는 여기부터**: [`docs/STATUS.md`](docs/STATUS.md)(지금 상태) → [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md)(만드는 순서와 규칙) → [`docs/VISUALS.md`](docs/VISUALS.md)(그림 종류).
+> 벤치마크 조사는 [`docs/04_benchmark.md`](docs/04_benchmark.md). 아래 내용은 도구 구조와 채널 주인 컴퓨터용 '제작실' 설명입니다.
+
 ```
 youtube/
 ├─ docs/
+│  ├─ STATUS.md · PLAYBOOK.md · VISUALS.md   진행 상황 · 제작 설명서 · 그림 종류 (visuals/ 에 생김새 모음)
 │  ├─ 01_channel_analysis.md     벤치마크(유치한경제학) vs 내 채널 분석, 성장 전략
-│  └─ 02_youtube_policy_2026.md  2025~2026 바뀐 유튜브 규정 + 대응 + 업로드 체크리스트
+│  ├─ 02_youtube_policy_2026.md  2025~2026 바뀐 유튜브 규정 + 대응 + 업로드 체크리스트
+│  ├─ 03_roadmap_100.md          에피소드 로드맵
+│  └─ 04_benchmark.md            잘 되는 채널 10곳 조사 (숫자 표는 04_benchmark_data.md)
 ├─ episodes/
+│  ├─ _starter/            새 편 틀 (python -m studio.ep new 가 복사) · ep13_qe_qt/ 가 표준 예시(script.py)
 │  └─ ep01_inflation/
 │     ├─ 01_plan.md        기획서 (구성표, 사실 확인표)
 │     ├─ 02_script.json    대본 + 연출 (장면·캐릭터 표정·애니메이션 타이밍)
@@ -35,7 +42,10 @@ youtube/
 │  ├─ dashboard.py         대시보드에 에피소드·테마·스냅샷 데이터 넣기
 │  ├─ learn.py             매일 학습 엔진 (떡상 탐지 · 패턴 학습 · 백로그 · 뇌구조 피드)
 │  ├─ server.py            영상 제작실 서버 (대시보드에서 에피소드 생성·대본 편집·영상 제작)
-│  └─ build.py             전체 실행
+│  ├─ build.py             전체 실행
+│  ├─ ep.py                단계별 명령 (new·script·check·stills·render·verify·package·status·example·gallery·precommit)
+│  ├─ epkit.py · check.py  대본 작성 도구 · 자동 품질 점검
+│  └─ benchmark.py · hub.py · uploadpage.py   벤치마크 조사 · 업로드 센터 · 편별 업로드 페이지
 └─ assets/
    ├─ brand/mascot_original.jpg   대표 이미지 원본
    └─ fonts/                       Black Han Sans, Gothic A1 등 (OFL, 상업 이용 가능)

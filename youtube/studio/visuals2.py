@@ -64,6 +64,11 @@ def _shockwave(ctx, x, y, k, col="white", rmax=420):
 
 # ---------------------------------------------------------------- icons
 
+# 쓸 수 있는 아이콘 이름 (없는 이름을 쓰면 동그라미에 글자 두 자만 나옵니다 → studio.check 가 오류로 잡습니다)
+ICON_NAMES = ("won", "rate", "chart_up", "chart_down", "check", "x", "q", "warn", "news", "calendar", "clock", "pause", "person",
+              "house", "factory", "cart", "bowl", "phone", "bus", "chip", "server", "bolt", "water", "bubble", "vote", "flag_kr", "flag_us")
+
+
 def icon(ctx, name, x, y, s=1.0, a=1.0, col=None):
     """간단한 벡터 아이콘. (x, y) 중심, s=1 이면 약 100px."""
     if a <= 0:
