@@ -1,12 +1,15 @@
 {
   "meta": {
-    "episode": "EP.13",
     "series": "기초 경제 시리즈",
     "channel": "부의비상사태 911",
-    "title": "연준 자산 9조 달러, 이 돈은 다 어디서 왔을까? 초등학생도 이해하는 양적완화와 긴축의 모든 것 (30분 총정리)",
     "theme": "charcoal",
     "motion": 2,
     "look": "story",
+    "voice": "ko-KR-InJoonNeural",
+    "rate": "+8%",
+    "episode": "EP.13",
+    "title": "연준 자산 9조 달러, 이 돈은 다 어디서 왔을까? 초등학생도 이해하는 양적완화와 긴축의 모든 것 (30분 총정리)",
+    "target_min": 30,
     "envs": [
       "office",
       "home",
@@ -17,22 +20,20 @@
       "office",
       "night"
     ],
-    "voice": "ko-KR-InJoonNeural",
-    "rate": "+8%",
     "plan": {
-      "predicted": 6.31,
-      "playbook_version": 3,
-      "created": "2026-11-10",
+      "predicted": 3.99,
+      "playbook_version": 4,
+      "created": "2026-11-13",
       "minutes": 30,
       "hits": [
         "'초등학생도 이해'",
-        "'~의 모든 것'",
-        "물음표",
         "'N분 만에'",
+        "'~의 모든 것'",
         "'총정리'",
-        "금액 숫자(만·억·조 원)"
+        "금액 숫자(만·억·조 원)",
+        "물음표"
       ],
-      "basis": "학습 엔진 플레이북 v3, 제목 A/B/C 삼중 약속(9조 달러 / 물가는 왜 / 지금은), 영상은 스토리 룩 첫 적용"
+      "basis": "제목 A/B/C 삼중 약속(9조 달러 / 물가는 왜 / 지금은), 영상은 스토리 룩 첫 적용"
     },
     "thumbnails": {
       "A": {

@@ -1,0 +1,151 @@
+<title>부의비상사태 911 업로드 센터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 레이아웃: 왼쪽 회차 목록 + 오른쪽 업로드 작업대 (좁으면 위 칩 + 아래 작업대) */
+:root{
+  --bg:#F6F5EF; --panel:#FFFFFF; --ink:#16181D; --muted:#5E6470; --line:#DEDCD2;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#B4530A; --warn-bg:#FFF3E2; --ok:#147A47; --ok-bg:#E6F6EC;
+  --chip:#ECEAE1;
+  --display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121418; --panel:#1B1E24; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#FFB65C; --warn-bg:#2E2414; --ok:#5FD596; --ok-bg:#15291F; --chip:#262A31; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121418; --panel:#1B1E24; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A;
+  --accent:#FFE81A; --accent-ink:#16181D; --warn:#FFB65C; --warn-bg:#2E2414; --ok:#5FD596; --ok-bg:#15291F; --chip:#262A31; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px}
+header.top{max-width:1180px;margin:0 auto 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:400;font-size:30px;margin:0;letter-spacing:.5px;text-wrap:balance}
+h1 .mark{background:var(--accent);color:var(--accent-ink);padding:0 8px;border-radius:4px}
+.sub{color:var(--muted);margin:2px 0 0;font-size:14px}
+.progress{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.eps{display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start}
+nav.eps button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--ink)}
+nav.eps button:hover{background:var(--chip)}
+nav.eps button[aria-current="true"]{background:var(--ink);color:var(--bg)}
+nav.eps button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.epno{font-family:var(--display);font-size:15px;min-width:46px}
+.eptitle{font-size:13px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;margin-left:auto}
+.dot.done{background:var(--ok)}
+main{min-width:0;display:flex;flex-direction:column;gap:22px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.head h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0}
+.toggle{all:unset;cursor:pointer;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);font-weight:600;font-size:14px}
+.toggle[aria-pressed="true"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.toggle:focus-visible,.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px}
+.warn strong{display:block;margin-bottom:4px}
+.warn ul{margin:0;padding-left:18px}
+.label{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
+.abc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--chip)}
+.card .in{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}
+.ver{display:inline-block;font-family:var(--display);background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:0 7px;font-size:14px;align-self:flex-start}
+.card p{margin:0;font-weight:600;font-size:14.5px;line-height:1.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.copy{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:6px 12px;border-radius:7px;background:var(--ink);color:var(--bg)}
+.copy.ghost{background:var(--chip);color:var(--ink)}
+.copy.done{background:var(--ok);color:#fff}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.boxhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.boxhead .label{margin:0}
+pre.text{margin:0;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-family:var(--body);font-size:14px;line-height:1.65;max-height:340px;overflow:auto}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{background:var(--chip);border-radius:6px;padding:2px 9px;font-size:13px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.note{font-size:13px;color:var(--muted)}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.eps{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  nav.eps button{flex:none}
+  .eptitle{display:none}
+  .abc{grid-template-columns:minmax(0,1fr)}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div>
+    <h1><span class="mark">911</span> 업로드 센터</h1>
+    <p class="sub">회차를 고르고, 제목·설명·태그·고정 댓글을 복사해서 유튜브 스튜디오에 붙여 넣으세요.</p>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+<div class="wrap">
+  <nav class="eps" id="eps" aria-label="회차 목록"></nav>
+  <main id="main"></main>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const EPS = JSON.parse(document.getElementById('data').textContent);
+const KEY = 'b911-uploaded';
+let done = {};
+try { done = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { done = {}; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const short = t => t.replace(/\s*초등학생도 이해하는.*$/, '');
+
+function copy(btn, text){
+  const ok = () => { const o = btn.textContent; btn.textContent = '복사됨'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = o; btn.classList.remove('done'); }, 1400); };
+  const fallback = () => { const pre = btn.closest('.box,.card')?.querySelector('pre,p');
+    if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    btn.textContent = '선택됨 · Ctrl+C'; };
+  try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+}
+
+function renderNav(cur){
+  const nav = document.getElementById('eps');
+  nav.innerHTML = EPS.map(e => `<button type="button" data-k="${e.key}" aria-current="${e.key===cur}">
+      <span class="epno">${esc(e.ep)}</span><span class="eptitle">${esc(short(e.title[0]))}</span>
+      <span class="dot ${done[e.key]?'done':''}" title="${done[e.key]?'올림':'아직'}"></span></button>`).join('');
+  nav.querySelectorAll('button').forEach(b => b.onclick = () => { location.hash = b.dataset.k; });
+  const n = EPS.filter(e => done[e.key]).length;
+  document.getElementById('progress').textContent = `올린 회차 ${n} / ${EPS.length}`;
+}
+
+function render(k){
+  const e = EPS.find(x => x.key === k) || EPS[EPS.length-1];
+  renderNav(e.key);
+  const tags = e.tags.join(', ');
+  const m = document.getElementById('main');
+  m.innerHTML = `
+    <div class="head"><h2>${esc(e.ep)} · ${esc(short(e.title[0]))}</h2>
+      <button type="button" class="toggle" id="t-done" aria-pressed="${!!done[e.key]}">${done[e.key]?'✓ 올렸어요':'올렸으면 눌러 두기'}</button></div>
+    ${e.warn.length ? `<div class="warn"><strong>올리기 전 확인 (원문 대조 못 한 항목)</strong><ul>${e.warn.map(w=>`<li>${esc(w.replace(/⚠️/g,'').replace(/^[|\s-]+/,'').replace(/\|/g,' · ').trim())}</li>`).join('')}</ul></div>` : ''}
+    <section><p class="label">제목 A/B/C와 짝 썸네일 · 유튜브 '테스트 및 비교'에 함께 넣기</p>
+      <div class="abc">${['A','B','C'].map((v,i) => e.title[i] ? `
+        <article class="card">${e.thumbs[i]?`<img src="${e.thumbs[i]}" alt="${v}안 썸네일" loading="lazy">`:''}
+          <div class="in"><span class="ver">${v}안</span><p>${esc(e.title[i])}</p>
+            <div class="row"><button type="button" class="copy" data-t="${i}">제목 복사</button></div></div></article>` : '').join('')}</div>
+      <p class="note">썸네일 파일은 저장소 episodes/${esc(e.key)}/out/thumbnail_A·B·C.png 에 있어요. 여기 이미지는 미리보기용으로 줄인 것입니다.</p>
+    </section>
+    <section class="box"><div class="boxhead"><p class="label">설명란 (출처·챕터·고지 포함)</p><button type="button" class="copy" id="c-desc">설명 복사</button></div>
+      <pre class="text">${esc(e.desc)}</pre></section>
+    <div class="two">
+      <section class="box"><div class="boxhead"><p class="label">태그 ${e.tags.length}개</p><button type="button" class="copy ghost" id="c-tags">태그 복사</button></div>
+        <div class="tags">${e.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><pre class="text" hidden>${esc(tags)}</pre></section>
+      <section class="box"><div class="boxhead"><p class="label">고정 댓글</p><button type="button" class="copy ghost" id="c-pin">댓글 복사</button></div>
+        <pre class="text">${esc(e.pinned)}</pre></section>
+    </div>
+    <p class="note">공개 설정: 교육 카테고리 · 아동용 아님 · 'AI로 만든 사실적 콘텐츠'는 해당 없음(만화 캐릭터, 내레이션 TTS는 설명란에 고지).</p>`;
+  m.querySelectorAll('.copy[data-t]').forEach(b => b.onclick = () => copy(b, e.title[+b.dataset.t]));
+  m.querySelector('#c-desc').onclick = ev => copy(ev.currentTarget, e.desc);
+  m.querySelector('#c-tags').onclick = ev => copy(ev.currentTarget, tags);
+  m.querySelector('#c-pin').onclick = ev => copy(ev.currentTarget, e.pinned);
+  m.querySelector('#t-done').onclick = () => { done[e.key] = !done[e.key]; if(!done[e.key]) delete done[e.key]; save(); render(e.key); };
+}
+function route(){ render(location.hash.slice(1)); }
+addEventListener('hashchange', route);
+route();
+</script>
