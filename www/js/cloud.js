@@ -150,8 +150,10 @@
       var waiting = true;
       function done() { if (waiting) { waiting = false; clearTimeout(timer); resolve(); } }
       var timer = setTimeout(done, 8000);
-      var lastSig = null;
+      var lastSig = null, live = { cache: false };
+      liveFlags.push(live);
       var un = ref.onSnapshot({ includeMetadataChanges: true }, function (snap) {
+        live.cache = snap.metadata.fromCache;
         var hadChanges;
         if (snap.docChanges) hadChanges = snap.docChanges().length > 0;
         else {
@@ -324,6 +326,7 @@
   function stop() {
     unsubs.forEach(function (u) { try { u(); } catch (e) {} });
     unsubs = [];
+    liveFlags = [];
     ready = false;
     Cloud.started = false;
   }
@@ -529,7 +532,25 @@
 
   // ---------- 연결 상태 ----------
   function status() { if (window.App && App.updateShell) App.updateShell(); }
-  window.addEventListener('online', function () { Cloud.online = true; status(); });
+  window.addEventListener('online', function () { Cloud.online = true; status(); setTimeout(function () { revive('online'); }, 2000); });
+
+  // ---------- 실시간 받기가 멈춘 채 남지 않게 ----------
+  // 인터넷이 끊겼다 붙을 때 Firestore의 실시간 받기 연결이 다시 열리지 않고 멈춰 있는 일이 있어요(쓰기와 한 번 읽기는 돼요).
+  // 그러면 태블릿에 새 원생이나 바뀐 비밀번호가 안 들어와요. 그래서 다시 연결되면 한 번,
+  // 그리고 인터넷은 되는데 실시간 받기가 20초 넘게 기기 사본에만 머물러 있으면, 연결을 껐다 켜요(기다리는 저장은 그대로 남아요).
+  var liveFlags = [], lastRevive = 0, cacheSince = 0;
+  function revive(why) {
+    if (!db || !Cloud.started || Date.now() - lastRevive < (why === 'online' ? 5000 : 30000)) return;
+    lastRevive = Date.now();
+    console.warn('revive listeners:', why);
+    db.disableNetwork().then(function () { return db.enableNetwork(); }).catch(function (e) { console.warn('revive', e); });
+  }
+  setInterval(function () {
+    var stale = Cloud.started && navigator.onLine !== false && liveFlags.some(function (f) { return f.cache; });
+    if (!stale) { cacheSince = 0; return; }
+    if (!cacheSince) cacheSince = Date.now();
+    else if (Date.now() - cacheSince > 20000) { cacheSince = 0; revive('stale'); }
+  }, 5000);
   window.addEventListener('offline', function () { Cloud.online = false; status(); });
   Cloud.statusText = function () {
     if (!Cloud.enabled) return null;

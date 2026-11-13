@@ -451,6 +451,40 @@ await t('학부모 기기는 스케줄을 받지도 읽지도 못한다', async 
   if (await P.evaluate(() => (DB.state.schedules || []).length)) throw new Error('parent has schedules');
 });
 
+// ---------- 엑셀에서 원생 가져오기 ----------
+await t('엑셀에서 가져온 원생이 서버에 저장되고, 태블릿 출석과 형제 연결까지 된다', async () => {
+  // 한 명은 이미 앱에 연결된 학부모(P)와 같은 번호 → 형제로 자동 연결돼야 해요
+  const phone = await A.evaluate(id => DB.student(id).guardians[0].phone, kids[0]);
+  await A.evaluate(() => App.nav('students'));
+  await A.click('.page-head [data-act="import"]');
+  await A.waitForSelector('#imPaste');
+  await A.fill('#imPaste', `이름\t생년월일\t반\t어머니 연락처\n가져온동생\t2019-04-04\t1부\t${phone}\n가져온원생\t2016-08-08\t2부\t010-5858-6969\n`);
+  await A.click('.modal button:has-text("붙여 넣은 표 읽기")');
+  await A.waitForSelector('.im-prev');
+  await shot(A, 'c18-import');
+  await A.click('.modal button:has-text("2명 가져오기")');
+  await A.waitForSelector('.modal', { state: 'detached' });
+  const got = await A.evaluate(() => DB.state.students.filter(s => s.name.indexOf('가져온') === 0).map(s => ({ id: s.id, pin: s.pin, name: s.name, cls: s.className })));
+  if (got.length !== 2 || got.some(g => !/^\d{4}$/.test(g.pin))) throw new Error(JSON.stringify(got));
+  for (const g of got) {
+    const end = Date.now() + 15000;
+    let st = 0;
+    while (Date.now() < end && st !== 200) {
+      st = (await fetch(`http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/students/${g.id}`, { headers: { Authorization: 'Bearer owner' } })).status;
+      if (st !== 200) await new Promise(r => setTimeout(r, 300));
+    }
+    if (st !== 200) throw new Error('not on server: ' + g.name);
+  }
+  const sib = got.find(g => g.name === '가져온동생');
+  await until(K, id => !!DB.student(id), sib.id);
+  for (const d of sib.pin) await K.click(`[data-k="${d}"]`);
+  await K.waitForSelector('.k-result.ok');
+  await until(A, id => !!DB.day(U.today())[id], sib.id);
+  await until(P, id => Cloud.parentDoc && Cloud.parentDoc.studentIds.indexOf(id) >= 0 && !!DB.student(id), sib.id, 30000);
+  // 학부모 화면 위쪽 형제 버튼에도 나타나요
+  await P.waitForSelector(`#pHead [data-kid="${sib.id}"]`, { timeout: 15000 });
+});
+
 // ---------- 앱 푸시 켜기 ----------
 let pUid, aUid;
 await t('관장님이 앱 푸시를 켜면 학부모 화면에 알림 켜기가 보이고, 알림 주소를 저장한다', async () => {

@@ -29,7 +29,8 @@
     var classes = DB.settings().classes;
 
     var h = '<header class="page-head"><div><span class="eyebrow">재원 ' + counts.active + '명 · 휴원 ' + counts.paused + '명</span><h1>원생</h1></div>' +
-      '<div class="actions"><button class="btn primary" type="button" data-act="add">' + UI.icon('plus') + '원생 등록</button></div></header>';
+      '<div class="actions"><button class="btn" type="button" data-act="import">' + UI.icon('upload') + '엑셀로 가져오기</button>' +
+      '<button class="btn primary" type="button" data-act="add">' + UI.icon('plus') + '원생 등록</button></div></header>';
     h += '<div class="toolbar"><div class="search grow">' + UI.icon('search') + '<input class="input" type="search" id="stuSearch" placeholder="이름, 출석번호, 보호자 연락처로 찾기" value="' + esc(ls.q) + '"></div>' +
       '<div class="seg" role="tablist">' + [['active', '재원'], ['paused', '휴원'], ['left', '퇴원']].map(function (x) {
         return '<button type="button" data-act="status" data-v="' + x[0] + '" class="' + (ls.status === x[0] ? 'on' : '') + '">' + x[1] + '<span class="ct">' + (counts[x[0]] || 0) + '</span></button>';
@@ -44,7 +45,8 @@
     h += '<div class="card list" id="stuList">';
     if (!list.length) {
       h += all.length ? UI.empty('조건에 맞는 원생이 없어요', '검색어나 반 선택을 바꿔 보세요.')
-        : UI.empty('등록된 원생이 없어요', '첫 원생을 등록하면 출석번호가 자동으로 만들어져요.', '<button class="btn primary" type="button" data-act="add">' + UI.icon('plus') + '원생 등록</button>');
+        : UI.empty('등록된 원생이 없어요', '첫 원생을 등록하면 출석번호가 자동으로 만들어져요. 다른 프로그램에서 쓰던 엑셀 명단이 있으면 한 번에 가져올 수 있어요.',
+          '<div class="hstack"><button class="btn primary" type="button" data-act="add">' + UI.icon('plus') + '원생 등록</button><button class="btn" type="button" data-act="import">' + UI.icon('upload') + '엑셀로 가져오기</button></div>');
     }
     list.forEach(function (s) {
       var unpaid = s.status === 'active' && !fm[s.id] && (!s.joinDate || s.joinDate <= U.monthEnd(ym));
@@ -69,6 +71,7 @@
     el.querySelector('#stuSort').addEventListener('change', function (e) { ls.sort = e.target.value; renderList(el); });
     UI.bind(el, {
       add: function () { openForm(null); },
+      import: function () { Parts.importStudents(); },
       status: function (b) { ls.status = b.getAttribute('data-v'); renderList(el); },
       cls: function (b) { ls.cls = b.getAttribute('data-v'); renderList(el); },
       open: function (b) { App.go('students', { id: b.getAttribute('data-id') }); }

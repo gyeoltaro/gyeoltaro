@@ -369,7 +369,7 @@
       return;
     }
     if (!ids.length) { App.session = null; DB.device.session = null; DB.saveDevice(); setMode('start'); renderStart(); return; }
-    s.ids = ids;
+    // s.ids 는 그대로 둬요: 서버에서 형제 정보가 조금 늦게 와도, 오는 대로 화면에 나타나게
     if (ids.indexOf(s.cur) < 0) s.cur = ids[0];
     if (!root.querySelector('.p-app')) {
       root.innerHTML = (s.preview ? '<div class="preview-bar"><span>관리자 미리보기 · 학부모님이 보는 화면이에요</span><button class="btn sm" type="button" data-act="exit-preview">관리자로 돌아가기</button></div>' : '') +
@@ -461,10 +461,11 @@
       var head = root.querySelector('#pHead');
       if (head) {
         var pcs = Cloud.statusText();
+        // 다른 형제: 정보가 도착했고 퇴원하지 않은 아이만
+        var others = (s.ids || []).map(DB.student).filter(function (k) { return k && k.id !== s.cur && k.status !== 'left'; });
         head.innerHTML = '<div class="p-who">' + UI.av(kid, 'sm') + '<div class="main"><b>' + esc(kid.name) + '</b><small>' + esc(DB.settings().dojangName + ' · ' + kid.className) + (pcs && pcs.tone === 'warn' ? ' · ' + pcs.text : '') + '</small></div></div>' +
-          (s.ids.length > 1 ? '<div class="p-kids">' + s.ids.filter(function (id) { return id !== s.cur; }).map(function (id) {
-            var k = DB.student(id);
-            return '<button type="button" class="chip" data-kid="' + esc(id) + '" aria-label="' + esc(k.name) + ' 보기">' + esc(k.name) + '</button>';
+          (others.length ? '<div class="p-kids">' + others.map(function (k) {
+            return '<button type="button" class="chip" data-kid="' + esc(k.id) + '" aria-label="' + esc(k.name) + ' 보기">' + esc(k.name) + '</button>';
           }).join('') + '</div>' : '') +
           '<button class="icon-btn" type="button" data-act="p-menu" aria-label="메뉴">' + UI.icon('menu') + '</button>';
       }

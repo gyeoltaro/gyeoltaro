@@ -136,6 +136,7 @@ a{ color:var(--accent-ink); }
 .soft{ color:var(--ink-soft); }
 .good-t{ color:var(--good); }
 .bad-t{ color:var(--bad); }
+.warn-t{ color:var(--warn); }
 .small{ font-size:12.5px; }
 .nowrap{ white-space:nowrap; }
 .stack{ display:flex; flex-direction:column; gap:12px; min-width:0; }
@@ -317,6 +318,20 @@ table.t .num{ text-align:right; font-variant-numeric:tabular-nums; }
 table.t tr.click{ cursor:pointer; }
 table.t tr.click:hover td{ background:var(--surface-2); }
 table.t td.wrap{ white-space:normal; min-width:140px; }
+/* 엑셀에서 원생 가져오기: 칸 맞추기 · 미리 보기 */
+.im-map{ max-height:34vh; overflow-y:auto; border:1px solid var(--line); border-radius:var(--radius-sm); }
+.im-map td{ padding:6px 10px; }
+.im-map td.wrap{ min-width:120px; max-width:260px; overflow:hidden; text-overflow:ellipsis; }
+.im-map select{ min-width:150px; }
+.im-sum{ font-size:15px; padding-top:4px; }
+.im-prev{ max-height:38vh; overflow-y:auto; border:1px solid var(--line); border-radius:var(--radius-sm); }
+.im-prev td{ padding:7px 10px; }
+.im-prev tr.skip td{ color:var(--muted); }
+.im-prev tr.warn td{ background:var(--warn-soft); }
+@media (max-width:560px){
+  .im-map th:nth-child(2), .im-map td:nth-child(2){ display:none; }
+  .im-map select{ min-width:0; width:100%; }
+}
 
 .kv{ display:grid; grid-template-columns:max-content minmax(0, 1fr); gap:10px 18px; font-size:14px; }
 .kv dt{ color:var(--muted); font-weight:600; font-size:13px; }

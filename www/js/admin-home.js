@@ -33,7 +33,9 @@
       var lastMap = DB.lastAttMap();
       var away = active.map(function (s) {
         var last = lastMap[s.id];
-        return { s: s, last: last, days: last ? U.diffDays(last, today) : (s.joinDate ? U.diffDays(s.joinDate, today) : null) };
+        // 엑셀에서 가져온 원생은 가져온 날부터 세요 (예전 프로그램의 출석은 여기 없어서)
+        var since = s.importedAt && (!s.joinDate || s.importedAt > s.joinDate) ? s.importedAt : s.joinDate;
+        return { s: s, last: last, days: last ? U.diffDays(last, today) : (since ? U.diffDays(since, today) : null) };
       }).filter(function (x) { return x.days != null && x.days >= 7; })
         .sort(function (a, b) { return b.days - a.days; });
 
