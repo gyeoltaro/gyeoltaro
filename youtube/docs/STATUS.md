@@ -56,12 +56,15 @@ EP.01~13 제작 완료. 다음은 **EP.14**이고, 벤치마크 결과에 따라
 | 매일 학습 예약 작업 「부의비상사태911 매일 학습」 | 2026-11-02부터 꺼져 있음. 요청하면 다시 켬 |
 | 수익 신청 전 목소리 바꾸기 (본인 녹음 또는 사용권이 분명한 음성) | 권고만 함 ([`PLAYBOOK.md`](PLAYBOOK.md) 7장) |
 | 유튜브 공식 페이지에서 8,000시간 기준 확인 | 채널 주인이 스튜디오에서 확인하는 것이 가장 정확 |
+| 유튜브 조회용 키를 작업 환경 설정에 저장 | 지금은 키가 한 대화 안에만 있음. 새 대화에서 주제 조회·벤치마크 도구를 쓰려면 채널 주인이 작업 환경 설정에 직접 넣어야 함(아래 '고정 정보') |
 
 ## 고정 정보
 
 - 업로드 센터(아티팩트): https://claude.ai/artifact/2K5x4iWc7yodwfevhhTwJq (`studio/hub.py` 의 `HUB_URL`)
 - 벤치마크 보고서(아티팩트): https://claude.ai/artifact/NunV95ZCpFj35p85uT53sH (`studio/benchmark.py` 의 `PAGE_URL`, `python -m studio.benchmark page` 로 다시 만듦)
 - 작업 브랜치: `claude/optimistic-heisenberg-kpftc4` (기본 브랜치 `main` 에는 아직 합치지 않음)
+- 작업 환경 「영상만들기」: 2026-11-13에 준비 명령(영상 도구·그림 도구·파이썬 꾸러미 자동 설치)을 저장함. 새 대화가 시작될 때 실행되며, **새 대화에서 실제로 도는지는 아직 확인하지 못함**(안 되어 있으면 [`PLAYBOOK.md`](PLAYBOOK.md) 1장의 설치 명령을 직접 실행)
+- 유튜브 조회용 키 넣는 곳(채널 주인이 직접): 대화 제목 줄의 작업 환경 메뉴 → 편집. '네트워크 비밀' 칸이 있으면 주소 `www.googleapis.com`, 헤더 `X-Goog-Api-Key` 로, 없으면 환경 변수 이름 `B911_YT_API_KEY` 로 추가. 어느 쪽이든 도구가 알아서 씀. 키를 대화창에 적지 않음
 - 벤치마크: 2026-11-11 조사, 채널 10곳 (`learning/benchmark_channels.json`). 다음 갱신은 12월 중순쯤 `python -m studio.benchmark profile`
 - 채널 주인 컴퓨터용 '제작실' 업데이트는 `studio/update.py` 의 `DEFAULT_BRANCH` 에서 받습니다. 브랜치를 합치면 이 값도 바꿉니다.
 
