@@ -14,7 +14,7 @@ import cairo
 from .core import (C, PAL, W, H, arrow, card, clamp, draw_apple, draw_bill, draw_box, draw_coin,
                    draw_house, draw_person, ease_in_out, ease_out_back, ease_out_cubic,
                    ease_out_elastic, fmt_num, hexc, lerp, outline_fill, pop, prog, round_rect,
-                   set_col, text)
+                   set_col, text, fit_size)
 
 LAYOUT_AREA = {
     "left": (700, 150, 1850, 870),
@@ -100,6 +100,8 @@ def _header(ctx, S, title, color="yellow", y=None, size=54):
         return 0
     sc, al = pop(S.lt, 0.0, 0.5)
     yy = S.area[1] + 30 if y is None else y
+    # 제목이 길면 글자 크기를 줄여서 화면(그림 영역) 안에 넣는다
+    size = fit_size(title, "title", size, min(S.aw + 60, 2 * min(S.cx - 30, W - 30 - S.cx)), 6)
     text(ctx, title, S.cx, yy, size=size, fname="title", color=color, stroke=6,
          scale=sc, alpha=al)
     return 80
@@ -235,8 +237,8 @@ def v_chapter(ctx, S: SceneCtx):
          scale=sc, alpha=al, rot=-6)
     sc2, al2 = pop(S.lt, 0.55, 0.55)
     al2 *= 1 - out
-    text(ctx, v.get("title", ""), W / 2 + 120, H / 2 - 30, size=118, fname="title", color="ink",
-         scale=sc2, alpha=al2, rot=-6)
+    text(ctx, v.get("title", ""), W / 2 + 120, H / 2 - 30, size=fit_size(v.get("title", ""), "title", 118, 1100), fname="title",
+         color="ink", scale=sc2, alpha=al2, rot=-6)
 
 
 # ---------------------------------------------------------------- counter
@@ -1192,7 +1194,10 @@ VISUALS = {
 
 
 def _register2():
-    from .visuals2 import VISUALS2
+    try:
+        from .visuals2 import VISUALS2
+    except ImportError:   # visuals2 가 먼저 불려 아직 준비 중일 때 → visuals2 가 끝에서 스스로 등록한다
+        return
     VISUALS.update(VISUALS2)
 
 

@@ -14,7 +14,7 @@ import random
 import cairo
 
 from .core import (PAL, W, H, arrow, card, clamp, draw_coin, draw_person, ease_in_out, ease_out_back,
-                   ease_out_cubic, ease_out_elastic, fmt_num, hexc, pop, prog, round_rect, set_col, text)
+                   ease_out_cubic, ease_out_elastic, fit_size, fmt_num, hexc, pop, prog, round_rect, set_col, text)
 from .visuals import SceneCtx, _header
 
 
@@ -468,11 +468,11 @@ def v_timeline(ctx, S: SceneCtx):
         icon(ctx, e.get("icon", "news"), -cw / 2 + 58, -ch / 2 + 58, 0.62, al)
         text(ctx, e["date"], -cw / 2 + 110, -ch / 2 + 46, size=34, fname="title", color=col, alpha=al,
              anchor=(0, 0.5), align="left")
-        text(ctx, e["label"], 0, -ch / 2 + 118, size=34, fname="xbold", color="white", alpha=al,
-             max_w=int(cw - 26))
+        text(ctx, e["label"], 0, -ch / 2 + 118, size=fit_size(e["label"], "xbold", 34, cw - 26, min_size=26), fname="xbold",
+             color="white", alpha=al, max_w=int(cw - 26))
         if e.get("sub"):
-            text(ctx, e["sub"], 0, -ch / 2 + 176, size=28, fname="xbold", color="grey", alpha=al,
-                 max_w=int(cw - 26))
+            text(ctx, e["sub"], 0, -ch / 2 + 176, size=fit_size(e["sub"], "xbold", 28, cw - 26, min_size=22), fname="xbold",
+                 color="grey", alpha=al, max_w=int(cw - 26))
         ctx.restore()
 
 
@@ -534,7 +534,8 @@ def v_ticker(ctx, S: SceneCtx):
         ctx.fill()
         arrow_ch = "▼" if chg < 0 else ("▲" if chg > 0 else "■")
         lab = r.get("chg_label") or f"{arrow_ch} {abs(chg) * kk:.2f}%"
-        text(ctx, lab, bx + bw / 2, y + rh / 2, size=int(rh * 0.34), fname="black", color="ink", alpha=al)
+        text(ctx, lab, bx + bw / 2, y + rh / 2, size=fit_size(lab, "black", int(rh * 0.34), bw - 24), fname="black", color="ink",
+             alpha=al)
         y += rh + 16
 
 
@@ -920,7 +921,8 @@ def v_stamps(ctx, S: SceneCtx):
             ctx.set_line_width(7)
             ctx.stroke()
             ctx.restore()
-            text(ctx, r["stamp"], sx, sy, size=int(rh * 0.34), fname="title", color=col, alpha=k, rot=-7, scale=sc)
+            text(ctx, r["stamp"], sx, sy, size=fit_size(r["stamp"], "title", int(rh * 0.34), 268), fname="title", color=col,
+                 alpha=k, rot=-7, scale=sc)
             if sd < 0.5:
                 _burst(ctx, sx, sy, sd / 0.5, col, 10, 80, 170, seed=i)
         y += rh + 20
@@ -1168,11 +1170,11 @@ def v_icongrid(ctx, S: SceneCtx):
              lw=5 if active else 3, glow=col if active else None)
         bob = math.sin(S.t * 2.5 + i) * 5 if active else 0
         icon(ctx, it.get("icon", "news"), 0, -chh / 2 + chh * 0.3 + bob, chh / 300, al, it.get("icon_color"))
-        text(ctx, it["text"], 0, chh * 0.12, size=int(min(40, chh * 0.14, cw * 0.12)), fname="title", color="white", alpha=al,
-             max_w=int(cw - 24))
+        text(ctx, it["text"], 0, chh * 0.12, size=fit_size(it["text"], "title", int(min(40, chh * 0.14, cw * 0.12)), cw - 24, min_size=26),
+             fname="title", color="white", alpha=al, max_w=int(cw - 24))
         if it.get("sub"):
-            text(ctx, it["sub"], 0, chh * 0.32, size=int(min(30, chh * 0.1, cw * 0.095)), fname="xbold", color="grey", alpha=al,
-                 max_w=int(cw - 24))
+            text(ctx, it["sub"], 0, chh * 0.32, size=fit_size(it["sub"], "xbold", int(min(30, chh * 0.1, cw * 0.095)), cw - 24, min_size=20),
+                 fname="xbold", color="grey", alpha=al, max_w=int(cw - 24))
         ctx.restore()
 
 
@@ -1295,3 +1297,9 @@ def events2(scene, S):
         for i, it in enumerate(v["items"]):
             add(it.get("at", i), "pop")
     return ev
+
+
+# 어느 쪽을 먼저 불러도 새 그림 종류가 등록되도록 (순환 import 방지)
+from . import visuals as _visuals  # noqa: E402
+
+_visuals.VISUALS.update(VISUALS2)

@@ -287,6 +287,21 @@ def text(ctx, s, x, y, size=60, fname="xbold", color="white", stroke=0, stroke_c
     return surf.get_width() * scale, surf.get_height() * scale
 
 
+_FIT = {}
+
+
+def fit_size(s, fname, size, max_w, stroke=0, min_size=30):
+    """한 줄 글자가 max_w(픽셀) 안에 들어오도록 글자 크기를 줄여서 돌려준다. (제목이 화면 밖으로 나가는 것을 막는 안전장치)"""
+    key = (s, fname, int(size), int(max_w), int(stroke))
+    if key not in _FIT:
+        plain = strip_marks(s)
+        sz = int(size)
+        while sz > min_size and font(fname, sz).getlength(plain) + 2 * stroke > max_w:
+            sz -= 2
+        _FIT[key] = sz
+    return _FIT[key]
+
+
 # ---------------------------------------------------------------- shapes
 
 def round_rect(ctx, x, y, w, h, r):

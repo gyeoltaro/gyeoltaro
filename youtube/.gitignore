@@ -11,3 +11,7 @@ dashboard/dist/
 .secrets/
 .venv/
 episodes/*/02_script.json.bak
+episodes/*/out/check.json
+episodes/*/out/sheets/
+episodes/*/out/video_send.mp4
+dashboard/th/
