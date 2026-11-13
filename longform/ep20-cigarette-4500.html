@@ -732,7 +732,7 @@ function nightBG(){
 function drawThumb(v=0){
   const tc=document.createElement('canvas');tc.width=1920;tc.height=1080;const keep=ctx;ctx=tc.getContext('2d');R=1.3;
   if(v===0){
-    nightBG();cvsFront(520,330,.72,{});cigPack(1200,300,1.05,{price:'4,500원'});
+    nightBG();cvsFront(520,330,.72,{});cigPack(1200,330,1.0,{price:'4,500원'});
     group(1640,270,1,.04,1,()=>{ctx.fillStyle='#fff';rr(-200,-110,400,220,22);ctx.fill();text('사장님 몫',0,-50,{s:38,w:900,c:'#59627c'});text('405원',0,30,{f:'D',s:96,c:'#1f8a50'});});
     bottomShade(520);grain();
     tagBox('세금 3,323원 · 마진율 9% (보도) · 예시 편의점',50,640,'#FFC531','#1d2433',44);
@@ -742,8 +742,7 @@ function drawThumb(v=0){
     nightBG();
     const x0=120,y0=60,cell=104,r=cell*.44;
     for(let i=0;i<45;i++){const cx=x0+(i%9)*cell+cell/2,cy=y0+Math.floor(i/9)*cell+cell/2;ctx.fillStyle=i<33?'#FF4D4D':i<41?'#6FA8FF':'#35E08A';ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=3;ctx.stroke();}
-    text('세금 33개',x0+330,y0+560,{f:'D',s:44,c:'#FF4D4D'});
-    cigPack(1500,280,1.15,{price:'4,500원'});
+    cigPack(1500,330,1.1,{price:'4,500원'});
     bottomShade(560);grain();
     tagBox('100원 동전 45개 중 사장님 몫은 4개',50,650,'#35E08A','#0d1a12',48);
     bigLine('"담배 많이 팔면',50,800,150,'#fff',{max:1820});
