@@ -41,7 +41,7 @@
    ```
 3. **API 키(선택)**: 주제 조회·벤치마크·학습 도구만 YouTube Data API 키가 필요합니다. 영상 제작 자체에는 필요 없습니다.
    - 키는 환경변수 `B911_YT_API_KEY` 또는 `youtube/.secrets/youtube_api_key.txt`(저장소에 안 올라감)에서 읽습니다.
-   - 클라우드 작업 환경에 키를 '네트워크 비밀'(호스트 `www.googleapis.com`, 헤더 `X-Goog-Api-Key`)로 저장해 두었다면 `B911_YT_API_KEY=proxy` 로 실행합니다.
+   - 클라우드 작업 환경에 키를 '네트워크 비밀'(호스트 `www.googleapis.com`, 헤더 `X-Goog-Api-Key`)로 저장해 두었다면 아무 설정 없이 그대로 동작합니다(키가 코드·파일·화면에 보이지 않음).
    - 키가 없으면 주제 조회는 건너뛰고 [`04_benchmark.md`](04_benchmark.md)의 결론과 웹 검색으로 대신합니다. **키를 대화창에 붙여 달라고 하지 않습니다.**
 4. **브랜치**: 작업 공간이 정해 준 브랜치에서 작업합니다. 지금까지의 작업은 `claude/optimistic-heisenberg-kpftc4`에 있습니다([`STATUS.md`](STATUS.md) 참고).
 

@@ -15,8 +15,8 @@
   python -m studio.learn --daily --source ytdlp
 
 API 키 위치: 환경변수 B911_YT_API_KEY 또는 youtube/.secrets/youtube_api_key.txt (저장소에 올라가지 않음)
-  클라우드 작업 환경에서는 키를 '네트워크 비밀'(호스트 www.googleapis.com, 헤더 X-Goog-Api-Key)로 저장하고
-  환경변수 B911_YT_API_KEY=proxy 로 두면, 키가 코드에 보이지 않은 채로 요청에 자동으로 붙습니다.
+  클라우드 작업 환경에서는 키를 '네트워크 비밀'(호스트 www.googleapis.com, 헤더 X-Goog-Api-Key)로 저장해 두면
+  환경변수나 파일이 없어도 요청에 자동으로 붙습니다 (키가 코드·파일·화면 어디에도 보이지 않음).
 """
 from __future__ import annotations
 
@@ -101,10 +101,28 @@ def jsave(path, obj, indent=None):
     os.replace(tmp, path)
 
 
+_PROXY_OK = None
+
+
+def _proxy_has_key():
+    """작업 환경의 '네트워크 비밀'이 요청에 키를 붙여 주는지 한 번 확인한다 (키 없이 가벼운 요청 1회, 할당량 1)."""
+    global _PROXY_OK
+    if _PROXY_OK is None:
+        try:
+            with urllib.request.urlopen(API + "i18nLanguages?part=snippet&hl=ko", timeout=10) as r:
+                _PROXY_OK = r.status == 200
+        except Exception:
+            _PROXY_OK = False
+    return _PROXY_OK
+
+
 def api_key():
+    """키를 찾는 순서: 환경변수 → .secrets 파일 → (둘 다 없으면) 작업 환경이 키를 붙여 주는지 확인해 "proxy"."""
     k = os.environ.get("B911_YT_API_KEY", "").strip()
     if not k and os.path.exists(SECRET):
         k = open(SECRET, encoding="utf-8").read().strip()
+    if not k and _proxy_has_key():
+        k = "proxy"
     return k
 
 
