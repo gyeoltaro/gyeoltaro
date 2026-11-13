@@ -35,7 +35,6 @@ CAUTION_TITLE = ["폭락", "붕괴", "몰락", "파산", "망한", "망했", "�
 ADVICE = re.compile(r"사세요|파세요|매수하세요|매도하세요|담으세요|추천합니다|추천드립니다|추천드려요|오를 겁니다|오를 것입니다|"
                     r"내릴 겁니다|내릴 것입니다|폭등할 것|폭락할 것|반드시 오릅니다|무조건 오릅니다|지금이 기회입니다|지금 사야")
 POLITICS = ["민주당", "국민의힘", "공화당", "좌파", "우파"]
-MODEL_NAMES = re.compile(r"\b(Opus|Sonnet|Haiku|Fable)\b|claude-[a-z]+-\d", re.I)
 KEY_RX = re.compile(r"AIza[0-9A-Za-z_\-]{30,}")
 
 LAYOUTS = {"left", "right", "corner", "center", "chapter", "stage", "none", "hidden"}
@@ -119,6 +118,9 @@ def check_script(script, R: Report, ep_dir=None):
         R.err("titles", f"제목은 A/B/C 세 개여야 합니다 (지금 {len(titles)}개: title + upload.alt_titles 2개)")
     if "{MIN}" in raw:
         R.err("min", "'{MIN}' 이 아직 채워지지 않았습니다 → `python -m studio.ep script <폴더>` 를 먼저 실행")
+    n_ph = raw.count("○")
+    if n_ph:
+        R.err("placeholder", f"틀의 빈칸(○)이 {n_ph}글자 남아 있습니다 → script.py 에서 모두 실제 내용으로 바꾸세요 (퀴즈의 O/X 는 영문 O 로)")
     if not scenes:
         R.err("scenes", "장면이 없습니다")
         return
@@ -251,9 +253,6 @@ def check_script(script, R: Report, ep_dir=None):
         if best > RUN_MAX:
             R.warn("run", f"정보 장면이 {best}개 연속입니다 — 사이에 이야기 장면(stage)을 넣어 리듬을 바꾸세요 (최대 {RUN_MAX}개 권장)")
 
-    if MODEL_NAMES.search(raw):
-        R.warn("model-name", "대본에 AI 모델 이름이 들어 있습니다 — 저장소 파일에는 모델 이름을 쓰지 않습니다 ('AI(Claude)의 도움' 정도만)")
-
     # ---- 기획서·사실 확인
     if ep_dir:
         plan = os.path.join(ep_dir, "01_plan.md")
@@ -263,6 +262,13 @@ def check_script(script, R: Report, ep_dir=None):
             ptxt = open(plan, encoding="utf-8").read()
             if "사실 확인" not in ptxt:
                 R.err("plan", "01_plan.md 에 '사실 확인표'가 없습니다")
+            if "○" in ptxt:
+                R.err("plan", f"01_plan.md 에 빈칸(○)이 {ptxt.count('○')}글자 남아 있습니다 → 기획서를 먼저 완성하세요")
+            fact = ptxt.split("사실 확인", 1)[1] if "사실 확인" in ptxt else ""
+            fact = re.split(r"\n## ", fact)[0]
+            rows = [ln for ln in fact.splitlines() if ln.startswith("|") and not re.match(r"\|\s*-+", ln) and "출처" not in ln and len(ln.strip("| ").strip()) > 8]
+            if len(rows) < 5:
+                R.warn("facts", f"사실 확인표가 {len(rows)}줄뿐입니다 — 영상에 나오는 숫자·날짜를 모두 적었는지 확인 (보통 6줄 이상)")
             nw = sum(1 for ln in ptxt.splitlines() if "⚠️" in ln and not ln.lstrip().startswith(">"))
             R.info(f"사실 확인표: 원문 대조 못 한 항목(⚠️) {nw}줄 — 영상에서 '보도·대략값'으로 완충했는지 확인")
         for f in glob.glob(os.path.join(ep_dir, "*.*")) + glob.glob(os.path.join(ep_dir, "out", "*.json")) + glob.glob(os.path.join(ep_dir, "out", "*.html")):

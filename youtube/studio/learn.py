@@ -15,6 +15,8 @@
   python -m studio.learn --daily --source ytdlp
 
 API 키 위치: 환경변수 B911_YT_API_KEY 또는 youtube/.secrets/youtube_api_key.txt (저장소에 올라가지 않음)
+  클라우드 작업 환경에서는 키를 '네트워크 비밀'(호스트 www.googleapis.com, 헤더 X-Goog-Api-Key)로 저장하고
+  환경변수 B911_YT_API_KEY=proxy 로 두면, 키가 코드에 보이지 않은 채로 요청에 자동으로 붙습니다.
 """
 from __future__ import annotations
 
@@ -122,7 +124,8 @@ class Api:
         self.units = 0
 
     def get(self, path, cost=1, **params):
-        params["key"] = self.key
+        if self.key and self.key != "proxy":   # "proxy": 작업 환경의 네트워크 비밀이 요청에 키를 넣어 주는 방식 (키가 코드·파일에 없음)
+            params["key"] = self.key
         url = API + path + "?" + urllib.parse.urlencode(params)
         for attempt in range(3):
             try:

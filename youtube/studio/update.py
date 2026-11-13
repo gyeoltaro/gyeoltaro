@@ -27,7 +27,7 @@ REPO = "gyeoltaro/gyeoltaro"
 DEFAULT_BRANCH = "claude/optimistic-heisenberg-kpftc4"
 
 # (상대 경로, 폴더 여부)
-MANAGED = [("studio", True), ("assets", True), ("docs", True), ("episodes/_template", True),
+MANAGED = [("studio", True), ("assets", True), ("docs", True), ("episodes/_template", True), ("episodes/_starter", True),
            ("dashboard/index.html", False), ("README.md", False), ("requirements.txt", False)]
 SKIP_NAMES = {"__pycache__", ".DS_Store"}
 
