@@ -40,7 +40,12 @@ async function t(name, fn) {
     // E2E_DEBUG=1 이면 열린 화면마다 상태를 보여 줘요
     if (process.env.E2E_DEBUG) for (const [k, p] of Object.entries(pages)) {
       if (p.isClosed()) continue;
-      const d = await p.evaluate(() => ({ url: location.search, role: window.Cloud && Cloud.role, modal: (document.querySelector('.modal') || {}).innerText, app: (document.getElementById('app') || {}).innerText })).catch(e => ({ err: e.message }));
+      const d = await p.evaluate(async () => ({
+        url: location.search, role: window.Cloud && Cloud.role, started: window.Cloud && Cloud.started, online: navigator.onLine, pending: window.Cloud && Cloud.pending,
+        pin: window.DB && DB.settings().adminPin, sched: window.DB && (DB.state.schedules || []).map(x => x.id).join(','),
+        server: window.firebase && firebase.apps.length ? await firebase.firestore().doc('config/admin').get({ source: 'server' }).then(x => 'pin ' + (x.data() || {}).adminPin, e => e.code) : null,
+        modal: (document.querySelector('.modal') || {}).innerText, app: ((document.getElementById('app') || {}).innerText || '').slice(0, 120)
+      })).catch(e => ({ err: e.message }));
       console.log(`    [${k}] ` + JSON.stringify(d).slice(0, 500));
     }
   }
@@ -403,6 +408,47 @@ await t('보안 규칙이 예전 것이면 관리자 홈에 다시 붙여 넣으
   } finally { await setRules(rulesFor([EMAIL])); }
   await A.evaluate(() => Cloud.checkRules());
   await A.waitForSelector('text=Firebase 보안 규칙이 예전 것이에요', { state: 'detached' });
+});
+
+// ---------- 스케줄 (관리자만 보는 달력) ----------
+await t('관리자가 스케줄에 일정을 넣으면 서버에 저장되고 다른 관리자 기기(태블릿)에도 들어간다', async () => {
+  await A.evaluate(() => App.nav('schedule'));
+  await A.waitForSelector('.sched');
+  await A.click('.page-head [data-act="add"]');
+  await A.waitForSelector('#scTitle');
+  await A.fill('#scTitle', '심사 접수 마감 확인'); await A.fill('#scTime', '19:40'); await A.fill('#scMemo', '협회 사이트');
+  await A.click('.modal button:has-text("저장")');
+  await A.waitForSelector('.modal', { state: 'detached' });
+  const id = await A.evaluate(() => DB.state.schedules.find(x => x.title === '심사 접수 마감 확인').id);
+  await A.waitForSelector(`.sd[data-d="${await A.evaluate(() => U.today())}"] .it.k-mine`);
+  const end = Date.now() + 15000;
+  let fields = {};
+  while (Date.now() < end && !fields[id]) {
+    const r = await fetch('http://127.0.0.1:8080/v1/projects/demo-tkd/databases/(default)/documents/config/schedule', { headers: { Authorization: 'Bearer owner' } });
+    fields = (await r.json()).fields || {};
+    if (!fields[id]) await new Promise(r => setTimeout(r, 300));
+  }
+  const saved = fields[id] && fields[id].mapValue.fields;
+  if (!saved || saved.title.stringValue !== '심사 접수 마감 확인' || saved.time.stringValue !== '19:40') throw new Error('server: ' + JSON.stringify(fields).slice(0, 300));
+  await until(K, id => DB.state.schedules.some(x => x.id === id && x.time === '19:40'), id);
+  await shot(A, 'c17-schedule');
+});
+await t('두 관리자 기기에서 거의 동시에 다른 일정을 넣어도 둘 다 남고, 지우기도 서로 반영된다', async () => {
+  await Promise.all([
+    A.evaluate(() => DB.upsert('schedules', { id: 'schA', date: U.today(), time: '', title: '차량 점검', memo: '', createdAt: Date.now() })),
+    K.evaluate(() => DB.upsert('schedules', { id: 'schK', date: U.today(), time: '', title: '도복 주문', memo: '', createdAt: Date.now() }))
+  ]);
+  const both = () => ['schA', 'schK'].every(id => DB.state.schedules.some(x => x.id === id));
+  await until(A, both); await until(K, both);
+  await K.evaluate(() => DB.remove('schedules', 'schA'));
+  await until(A, () => !DB.state.schedules.some(x => x.id === 'schA') && DB.state.schedules.some(x => x.id === 'schK'));
+  await A.waitForTimeout(800);
+  if (!(await K.evaluate(() => DB.state.schedules.some(x => x.id === 'schK') && !DB.state.schedules.some(x => x.id === 'schA')))) throw new Error('kiosk state');
+});
+await t('학부모 기기는 스케줄을 받지도 읽지도 못한다', async () => {
+  const code = await P.evaluate(() => firebase.firestore().doc('config/schedule').get({ source: 'server' }).then(() => 'read', e => e.code));
+  if (code !== 'permission-denied') throw new Error('parent read schedule: ' + code);
+  if (await P.evaluate(() => (DB.state.schedules || []).length)) throw new Error('parent has schedules');
 });
 
 // ---------- 앱 푸시 켜기 ----------

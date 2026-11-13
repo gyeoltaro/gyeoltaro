@@ -59,6 +59,16 @@
       var purgeN = DB.purgeDue().length + DB.oldApps().length;
       if (purgeN) todos.push(['보관 기간(1년)이 지난 개인정보가 ' + purgeN + '건 있어요.', '정리하기', 'purge', '']);
       var bars = '';
+      // 오늘 생일인 원생과 오늘 일정 (스케줄)
+      var bToday = Parts.birthdaysIn(ym).filter(function (x) { return x.date === today; });
+      var sToday = (st.schedules || []).filter(function (x) { return x.date === today; });
+      if (bToday.length || sToday.length) {
+        bars += '<div class="notice-bar">' + UI.icon('cake') + '<span>' +
+          (bToday.length ? '오늘 생일: <b>' + bToday.map(function (x) { return esc(x.s.name); }).join(', ') + '</b>' : '') +
+          (bToday.length && sToday.length ? ' · ' : '') +
+          (sToday.length ? '오늘 일정 ' + sToday.length + '개: ' + sToday.map(function (x) { return esc((x.time ? x.time + ' ' : '') + x.title); }).join(', ') : '') +
+          '</span><button class="btn sm" type="button" data-act="go" data-v="schedule">스케줄</button></div>';
+      }
       todos.forEach(function (t) {
         bars += '<div class="notice-bar">' + UI.icon('lock') + '<span>' + esc(t[0]) + '</span><button class="btn sm" type="button" data-act="' + t[2] + '" data-v="' + t[3] + '">' + esc(t[1]) + '</button></div>';
       });

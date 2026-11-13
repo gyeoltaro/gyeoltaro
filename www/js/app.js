@@ -6,7 +6,7 @@
   var leaveFns = [];
 
   var ADMIN_NAV = [
-    ['home', '홈', 'home'], ['attendance', '출석부', 'check'], ['fees', '회비장부', 'ledger'],
+    ['home', '홈', 'home'], ['schedule', '스케줄', 'calendar'], ['attendance', '출석부', 'check'], ['fees', '회비장부', 'ledger'],
     ['students', '원생', 'users'], ['notices', '알림장', 'bell'], ['events', '참가신청', 'clipboard'],
     ['fitness', '체력측정', 'activity'], ['exams', '승급심사', 'belt'], ['settings', '설정', 'sliders']
   ];

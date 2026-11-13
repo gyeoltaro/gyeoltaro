@@ -160,6 +160,15 @@ await t('홈 화면 아이콘(새 기기)이 옮기기 코드로 연결된다', 
 })()));
 await t('관리자는 옮기기 코드를 지운다', assertSucceeds(deleteDoc(doc(admin, 'invites/TRANS001'))));
 
+console.log('스케줄 (관리자 달력)');
+const SCH = { s1: { date: '2026-11-20', time: '19:30', title: '사범 회의', memo: '', createdAt: 1 } };
+await t('관리자는 스케줄을 저장한다', assertSucceeds(setDoc(doc(admin, 'config/schedule'), SCH)));
+await t('관리자는 스케줄을 읽는다', assertSucceeds(getDoc(doc(admin, 'config/schedule'))));
+await t('연결된 학부모도 스케줄은 못 읽는다', assertFails(getDoc(doc(parent, 'config/schedule'))));
+await t('학부모는 스케줄을 못 고친다', assertFails(setDoc(doc(parent, 'config/schedule'), SCH)));
+await t('연결 안 된 사람은 스케줄을 못 읽는다', assertFails(getDoc(doc(other, 'config/schedule'))));
+await t('로그인 안 하면 스케줄을 못 읽는다', assertFails(getDoc(doc(nobody, 'config/schedule'))));
+
 console.log('규칙 버전 확인');
 await t('관리자는 규칙 버전 문서를 확인한다', assertSucceeds(getDoc(doc(admin, 'meta/rules-v2'))));
 await t('학부모는 규칙 버전 문서를 못 본다', assertFails(getDoc(doc(parent, 'meta/rules-v2'))));

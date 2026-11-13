@@ -634,6 +634,36 @@ table.t td.wrap{ white-space:normal; min-width:140px; }
 .cal .d.blank{ visibility:hidden; }
 .cal .d.future{ opacity:.45; }
 .cal-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+/* 스케줄 (관리자 달력): 생일 · 참가신청 행사 · 내 일정 */
+.sched{ display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:4px; }
+.sched .wd{ font-size:12px; color:var(--muted); font-weight:600; text-align:center; padding-bottom:4px; }
+.sched .wd.sun, .sched .sd.sun .n{ color:var(--bad); }
+.sched .wd.sat, .sched .sd.sat .n{ color:var(--info); }
+.sched .sd{ min-width:0; min-height:96px; display:flex; flex-direction:column; align-items:stretch; gap:3px; padding:6px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.sched .sd:hover{ border-color:var(--accent); }
+.sched .sd.blank{ visibility:hidden; }
+.sched .sd.sel{ box-shadow:inset 0 0 0 2px var(--accent); border-color:var(--accent); }
+.sched .n{ align-self:flex-start; font-size:13px; font-weight:700; line-height:1.6; font-variant-numeric:tabular-nums; }
+.sched .sd.today .n{ background:var(--accent); color:var(--on-accent); border-radius:999px; padding:0 7px; }
+.sched .it{ display:block; font-size:12px; line-height:1.5; padding:1px 6px; border-radius:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sched .it svg{ width:12px; height:12px; vertical-align:-2px; margin-right:3px; }
+.sched .it.k-bday{ background:var(--accent-soft); color:var(--accent-ink); }
+.sched .it.k-ev{ background:var(--info-soft); color:var(--info); }
+.sched .it.k-mine{ background:var(--good-soft); color:var(--good); }
+.sched .more{ font-size:11.5px; color:var(--muted); padding-left:4px; }
+.card.pad.sched-card{ padding:14px; }
+@media (max-width:700px){
+  .card.pad.sched-card{ padding:8px; }
+  .sched{ gap:2px; }
+  .sched .sd{ min-height:58px; padding:4px 3px; gap:3px; }
+  .sched .n{ align-self:center; font-size:12.5px; }
+  .sched .it{ font-size:0; height:5px; padding:0; border-radius:3px; }
+  .sched .it svg, .sched .it b{ display:none; }
+  .sched .it.k-bday{ background:var(--accent); }
+  .sched .it.k-ev{ background:var(--info); }
+  .sched .it.k-mine{ background:var(--good); }
+  .sched .more{ font-size:10.5px; padding:0; text-align:center; }
+}
 .cal-head b{ font-family:var(--f-display); font-size:16px; }
 
 .matrix{ border-collapse:separate; border-spacing:0; font-size:12.5px; }

@@ -263,9 +263,11 @@
 
   function applyConfig(snap) {
     eachChange(snap, function (type, id, data) {
-      if (type === 'removed') { delete raw.config[id]; delete synced.config[id]; return; }
+      var before = synced.config[id] || {};
+      if (type === 'removed') { delete raw.config[id]; delete synced.config[id]; if (id === 'schedule') applySchedule({}, before); return; }
       raw.config[id] = data;
       synced.config[id] = fieldsOf(data);
+      if (id === 'schedule') applySchedule(data, before);
     });
     var st = S(), pub = raw.config.public, adm = raw.config.admin;
     if (pub) {
@@ -278,6 +280,19 @@
     }
     if (adm) { st.settings.adminPin = adm.adminPin || st.settings.adminPin; st.settings.adminEmails = adm.adminEmails || []; }
     if (raw.config.fitstats) { st.fitnessStats = clean(raw.config.fitstats); lastStats = stable(strip(raw.config.fitstats, ['updatedAt'])); }
+  }
+
+  // 스케줄: 서버에서 바뀐 일정만 반영해요. 이 기기에서 방금 넣거나 지우고 아직 못 올린 일정은 그대로 둬요
+  function applySchedule(data, before) {
+    var list = S().schedules || (S().schedules = []);
+    function at(id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return i; return -1; }
+    Object.keys(data).forEach(function (id) {
+      if (before[id] === stable(data[id])) return;
+      var x = clean(data[id]), i = at(id);
+      x.id = id;
+      if (i >= 0) list[i] = x; else list.push(x);
+    });
+    Object.keys(before).forEach(function (id) { if (!(id in data)) { var i = at(id); if (i >= 0) list.splice(i, 1); } });
   }
 
   function parentDocChanged() {
@@ -365,11 +380,13 @@
     flushTimer = setTimeout(flushNow, 250);
   };
 
+  // 처음 만들 때 덮어쓰지 않고 합치는 문서 (여러 관리자 기기가 거의 동시에 처음 저장해도 서로 지우지 않게)
+  var MERGE_FIRST = { 'config/schedule': true };
   function diffMap(coll, want, ops, noDelete) {
     var s = synced[coll] || (synced[coll] = {});
     Object.keys(want).forEach(function (id) {
       var data = want[id], f = fieldsOf(data), prev = s[id];
-      if (!prev) { ops.push(['set', coll + '/' + id, data]); s[id] = f; raw[coll] && (raw[coll][id] = data); return; }
+      if (!prev) { ops.push([MERGE_FIRST[coll + '/' + id] ? 'merge' : 'set', coll + '/' + id, data]); s[id] = f; raw[coll] && (raw[coll][id] = data); return; }
       var upd = {}, n = 0;
       Object.keys(f).forEach(function (k) { if (prev[k] !== f[k]) { upd[k] = data[k]; n++; } });
       Object.keys(prev).forEach(function (k) { if (!(k in f)) { upd[k] = FV.delete(); n++; } });
@@ -434,6 +451,8 @@
     pub._createdAt = st.createdAt || null;
     pub._demo = !!st.demo;
     var out = { public: pub, admin: adm };
+    // 스케줄(관리자 달력): 보안 규칙상 학부모는 config/public·fitstats 만 읽어서, 이 문서는 관리자만 봐요
+    out.schedule = arrayMap(st.schedules);
     // 학부모 화면의 또래 비교용 통계 (이름 없이 나이별 기록만)
     if (Parts.fitnessStats) {
       var stats = Parts.fitnessStats();

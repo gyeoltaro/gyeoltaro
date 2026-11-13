@@ -56,6 +56,7 @@
       settings: defaultSettings(),
       students: [], attendance: {}, payments: [], fitness: [],
       notices: [], events: [], applications: [], exams: [],
+      schedules: [],
       parents: [], invites: [], fitnessStats: null
     };
   }

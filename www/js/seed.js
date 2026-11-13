@@ -364,6 +364,13 @@
     st.events = events;
     st.applications = apps;
     st.notices = notices;
+    // 스케줄(관리자 달력) 예시
+    st.schedules = [
+      { id: U.uid() + 's1', date: today, time: '19:30', title: '사범 회의', memo: '다음 달 심사 준비, 차량 운행표', createdAt: Date.now() - 86400000 * 3 },
+      { id: U.uid() + 's2', date: U.addDays(today, 3), time: '', title: '차량 정기 점검', memo: '오전 중 정비소', createdAt: Date.now() - 86400000 * 2 },
+      { id: U.uid() + 's3', date: U.addDays(today, 9), time: '14:00', title: '도복·띠 주문 마감', memo: '', createdAt: Date.now() - 86400000 },
+      { id: U.uid() + 's4', date: U.addDays(today, -6), time: '11:00', title: '협회 지도자 교육', memo: '구민체육관', createdAt: Date.now() - 86400000 * 10 }
+    ];
   };
 
   window.Seed = Seed;

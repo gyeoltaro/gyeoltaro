@@ -25,6 +25,8 @@
     download: '<path d="M12 4v11M7 10.5 12 15.5l5-5"/><path d="M5 19.5h14"/>',
     upload: '<path d="M12 16V5M7 9.5 12 4.5l5 5"/><path d="M5 19.5h14"/>',
     ok: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/>',
+    cake: '<path d="M4 20.5h16M5 20.5v-6.5a1.5 1.5 0 0 1 1.5-1.5h11a1.5 1.5 0 0 1 1.5 1.5v6.5"/><path d="M5 16c1.4 1 2.6 1 4 0s2.6-1 4 0 2.6 1 4 0 1.6-.7 2-.7"/><path d="M12 12.5V9M12 6.5c-.8-.8-.8-1.8 0-3 .8 1.2.8 2.2 0 3z"/>',
     iosShare: '<path d="M12 15V3.5M8 7.5l4-4 4 4"/><path d="M8.5 10H6v11h12V10h-2.5"/>',
     share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/>',
     camera: '<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
