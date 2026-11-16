@@ -160,7 +160,7 @@ grid("오늘의 세 가지 질문", [G("won", "① 9조 달러는 어디서?", "
 
 **`line`** — 꺾은선. `{"type": "line", "title": "…", "ymin": 0, "ymax": 5000, "yticks": [1000, 2000], "xticks": [[0, "지금"], [10, "10년"]], "series": [{"name": "복리", "color": "green", "points": [[0, 1000], [30, 4322]], "at": "@0:복리"}]}` — `right_pad` 로 오른쪽 이름표 자리를 넓힙니다.
 
-**`waterfall`** — 시작값에서 더하고 빼며 끝값까지(계산 과정). `{"type": "waterfall", "title": "…", "start": 2926.6, "start_label": "취업자", "start_at": "@0:취업자", "decimals": 1, "steps": [{"label": "+ 실업자", "delta": 60.0, "at": "@0:실업자"}], "end_label": "경제활동인구", "end_at": "@1:합치면", "note": "실업률 = 60 ÷ 2,986.6 ≈ 2.0%", "note_at": "@1:실업률"}`
+**`waterfall`** — 시작값에서 더하고 빼며 끝값까지(계산 과정). ⚠ 세로축이 0에서 시작하지 않아 시작 막대가 실제 비율보다 훨씬 작게 보일 수 있습니다(EP.14에서 발견). **두세 값을 더한 합계나 전후 비교는 `bars` 로** 그리고, waterfall 은 여러 단계의 증감을 보여 줄 때만 씁니다. `{"type": "waterfall", "title": "…", "start": 2926.6, "start_label": "취업자", "start_at": "@0:취업자", "decimals": 1, "steps": [{"label": "+ 실업자", "delta": 60.0, "at": "@0:실업자"}], "end_label": "경제활동인구", "end_at": "@1:합치면", "note": "실업률 = 60 ÷ 2,986.6 ≈ 2.0%", "note_at": "@1:실업률"}`
 
 **`ticker`** — 시세판(4줄까지). `chg`(퍼센트)를 주면 오름 초록·내림 빨강 표시, `chg_label` 로 글자를 직접 쓸 수 있습니다.
 ```python
