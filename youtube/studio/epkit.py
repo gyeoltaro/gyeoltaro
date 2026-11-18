@@ -146,9 +146,10 @@ def stage(lines, props=(), bubble=None, bubble_at="@0:", label=None, label_at=No
     if label:
         v["label"] = label
         v["label_at"] = label_at if label_at is not None else 0.5
+    chapter = kw.pop("chapter", None)
     v.update(kw)
     extra = {"env": env} if env else {}
-    return add(v, lines, M("stage", "present", emo, screen), **extra)
+    return add(v, lines, M("stage", "present", emo, screen), chapter=chapter, **extra)
 
 
 DEFAULT_META = {"series": "기초 경제 시리즈", "channel": "부의비상사태 911", "theme": "charcoal", "motion": 2, "look": "story",
