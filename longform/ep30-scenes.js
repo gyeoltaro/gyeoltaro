@@ -222,10 +222,10 @@ const SCENES={
       srcLine('21,000 ÷ 900 = 23.3 → 24명 · 24 ÷ 110 = 22% (python3) · 예시 가정');});
     sub('w5','w6',()=>{
       text('옮겨 오는 손님 수를 돌려 보면 (하루)',960,175,{f:'D',s:48,c:C.gold,max:1800});
-      if(L('w5')>=0&&L('w6')<0)pill('공식 통계 없음 · 예시 세 가지',960,330,{s:36,alpha:P(L('w5'),.3,.3),bg:'rgba(255,255,255,.92)'});
+      if(L('w5')>=0&&L('w6')<0)pill('공식 통계 없음 · 예시 세 가지',960,720,{s:36,alpha:P(L('w5'),.3,.3),bg:'rgba(255,255,255,.92)'});
       const ZX=960,SC=26,rows=[['10명',12000,'+1만 2,000원',CP,CT('w6')+.3],['24명',-600,'−600원',CR,FR('w6',.33)],['40명',-15000,'−1만 5,000원',CR,KT('w6',0)]];
-      if(L('w6')>=0){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;line(ZX,280,ZX,640);text('0',ZX,660,{f:'D',s:30,c:C.dim});
-        rows.forEach(([l,v,lb,col,t0],i)=>{const y=330+i*110;text(l,520,y,{a:'right',f:'D',s:44,c:'#ffd27a'});if(T<t0)return;const k=E.out(P(T,t0,.5)),w=Math.max(6,Math.abs(v)/1000*SC*k);ctx.fillStyle=col;if(v>=0){rr(ZX,y-36,w,72,14);ctx.fill();if(k>.9)text(lb,ZX+w+18,y+2,{a:'left',f:'D',s:44,c:col});}else{rr(ZX-w,y-36,w,72,14);ctx.fill();if(k>.9)text(lb,ZX+20,y+2,{a:'left',f:'D',s:44,c:col});}});
+      if(L('w5')>=0){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;line(ZX,280,ZX,640);text('0',ZX,660,{f:'D',s:30,c:C.dim});
+        rows.forEach(([l,v,lb,col,t0],i)=>{const y=330+i*110;text(l,520,y,{a:'right',f:'D',s:44,c:'#ffd27a'});if(L('w6')<0||T<t0){text('?',ZX+40,y,{f:'D',s:44,c:C.gold});return;}const k=E.out(P(T,t0,.5)),w=Math.max(6,Math.abs(v)/1000*SC*k);ctx.fillStyle=col;if(v>=0){rr(ZX,y-36,w,72,14);ctx.fill();if(k>.9)text(lb,ZX+w+18,y+2,{a:'left',f:'D',s:44,c:col});}else{rr(ZX-w,y-36,w,72,14);ctx.fill();if(k>.9)text(lb,ZX+20,y+2,{a:'left',f:'D',s:44,c:col});}});
         if(T>FR('w6',.75))group(960,760,1,0,P(T,FR('w6',.75),.3),()=>{panel(-700,-60,1400,120,{bg:'rgba(6,13,32,1)',bd:CR});text('40명이면 한 달 −37만 5,000원 · 남는 돈 205만 → 167만 5,000원',0,4,{f:'D',s:36,c:'#ffb3b3',max:1340});});}
       srcLine('21,000 − 900 × 10 = 12,000 · − 900 × 24 = −600 · − 900 × 40 = −15,000 · × 25 = −375,000 (python3) · 옮겨 오는 손님 수는 예시 가정');});
     sub('w7','w9',()=>{
@@ -264,7 +264,7 @@ const SCENES={
       text('손잡이 ① 할인 폭 · 본전이 되는 옮겨 온 손님 수',960,175,{f:'D',s:46,c:C.gold,max:1800});
       if(L('k2')<0)['① 할인 폭','② 남는 빵 개수','③ 덜 굽기'].forEach((s,i)=>{const k=P(L('k1'),.4+i*.5,.3);if(k>0)pill(s,480+i*480,520,{s:44,alpha:k,bg:'rgba(255,255,255,.92)'});});
       text('할인',260,260,{f:'D',s:30,c:C.dim});text('할인가',470,260,{f:'D',s:30,c:C.dim});text('한 명 값',700,260,{f:'D',s:30,c:C.dim});text('본전 손님 (하루)',1250,260,{f:'D',s:30,c:C.dim});
-      const rows=[['20%','2,400원','−600원',40,'40명',KT('k2',0)],['30%','2,100원','−900원',23.3,'24명',FR('k3',.05)],['50%','1,500원','−1,500원',10,'10명',KT('k3',0)],['70%','900원','−2,100원',4.3,'다섯 명 미만',FR('k4',.15)]];
+      const rows=[['20%','2,400원','−600원',40,'40명',FR('k2',.2)],['30%','2,100원','−900원',23.3,'24명',FR('k3',.05)],['50%','1,500원','−1,500원',10,'10명',KT('k3',0)],['70%','900원','−2,100원',4.3,'다섯 명 미만',FR('k4',.15)]];
       rows.forEach(([d,p,c,v,lb,t0],i)=>{const y=340+i*115;if(L('k2')<0||T<t0)return;const k=E.out(P(T,t0,.5));group(0,0,1,0,Math.min(1,k*1.5),()=>{text(d,260,y,{f:'D',s:48,c:CY});text(p,470,y,{f:'D',s:40});text(c,700,y,{f:'D',s:40,c:CR});});hbar(860,y,700,70,v*k,45,i===3?CR:CNT,k>.9?lb:'',{s:40});});
       if(L('k4')>=0&&T>FR('k4',.45))group(960,790,1,0,P(T,FR('k4',.45),.3),()=>{panel(-820,-50,1640,100,{bg:'rgba(6,13,32,1)',bd:CR});text('할인이 클수록 · 버릴 빵값은 덜 건지고, 옮겨 온 한 명은 더 비싸다',0,4,{f:'D',s:36,c:'#ffb3b3',max:1580});});
       srcLine('본전 = 남은 10개 × 할인가 ÷ (3,000 − 할인가) · 20% 40 · 30% 23.3 · 50% 10 · 70% 4.3 (python3) · 예시 가정');});
