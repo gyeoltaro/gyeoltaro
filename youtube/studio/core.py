@@ -266,6 +266,11 @@ def text_surface(*args, **kw):
 def paint(ctx, surf, x, y, scale=1.0, alpha=1.0, rot=0.0, anchor=(0.5, 0.5)):
     if alpha <= 0.003 or scale <= 0.001:
         return
+    # 바깥에서 이미 아주 작게 줄인 상태(팝업 애니메이션 첫 프레임 등)면 cairo 가
+    # 역행렬 계산에서 메모리 오류를 내므로 그리지 않는다 (EP.31 렌더링 실패)
+    xx, yx, xy, yy, _, _ = ctx.get_matrix()
+    if abs(xx * yy - xy * yx) * scale * scale < 1e-6:
+        return
     w, h = surf.get_width(), surf.get_height()
     ctx.save()
     ctx.translate(x, y)
